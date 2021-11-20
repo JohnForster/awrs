@@ -1,23 +1,30 @@
 use bevy::prelude::*;
 
+pub struct AWRSPlugin;
+
+impl Plugin for AWRSPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        app
+            .add_startup_system(load_terrain_sprites.system().label("load_sprites"))
+            .add_startup_system(load_unit_sprites.system().label("load_sprites"))
+            .add_startup_system(load_ui_sprites.system().label("load_sprites"))
+            .add_state(GameState::Running) // see if this can go after the next two method calls
+            .add_system_set(
+                SystemSet::on_enter(GameState::Running)
+                    .with_system(build_map.system())
+                    .with_system(create_cursor.system()),
+            )
+            .add_system_set(
+                SystemSet::on_update(GameState::Running)
+                    .with_system(handle_cursor_move.system())
+                    .with_system(handle_cursor_select.system()));
+    }
+}
+
 fn main() {
     App::build()
         .add_plugins(DefaultPlugins)
-        .add_state(GameState::Running)
-        .add_startup_system(load_terrain_sprites.system().label("load_sprites"))
-        .add_startup_system(load_unit_sprites.system().label("load_sprites"))
-        .add_startup_system(load_ui_sprites.system().label("load_sprites"))
-        // Can use SystemSet::on_enter and SystemSet::on_exit to run setup and cleanup code.
-        .add_system_set(
-            SystemSet::on_enter(GameState::Running)
-                .with_system(build_map.system())
-                .with_system(create_cursor.system()),
-        )
-        .add_system_set(
-            SystemSet::on_update(GameState::Running)
-                .with_system(handle_cursor_move.system())
-                .with_system(handle_cursor_select.system()),
-        )
+        .add_plugin(AWRSPlugin)
         .run();
 }
 
