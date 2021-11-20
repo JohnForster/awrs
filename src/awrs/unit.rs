@@ -4,14 +4,27 @@ use super::cell::*;
 
 #[derive(Clone)]
 pub struct Unit {
-    unit_type: UnitType,
-    team: Team,
+    pub unit_type: UnitType,
+    pub team: Team,
     pub location: Cell,
-    health: UnitHealth, // etc. etc..
+    pub health: UnitHealth, // etc. etc..
 }
 
 #[derive(Clone)]
-pub struct UnitHealth(u32);
+pub struct UnitHealth(pub u32);
+
+// Or, to avoid pub
+// impl From<u32> for UnitHealth {
+//     fn from(val: u32) -> UnitHealth {
+//         UnitHealth(val)
+//     }
+// }
+
+// impl From<UnitHealth> for u32 {
+//     fn from(health: UnitHealth) -> u32 {
+//         health.0
+//     }
+// }
 
 #[derive(Clone)]
 pub enum UnitType {
@@ -19,12 +32,25 @@ pub enum UnitType {
 }
 
 #[derive(Clone)]
-pub struct Team(u32);
+pub struct Team(pub u32);
+
+// Or, to avoid pub
+// impl From<u32> for Team {
+//     fn from(val: u32) -> Team {
+//         Team(val)
+//     }
+// }
+
+// impl From<Team> for u32 {
+//     fn from(team: Team) -> u32 {
+//         team.0
+//     }
+// }
 
 #[derive(Bundle)]
 pub struct UnitBundle {
-    id: usize,
-    data: Unit,
+    pub id: usize,
+    pub data: Unit,
     #[bundle]
-    sprite: SpriteSheetBundle,
+    pub sprite: SpriteSheetBundle,
 }
