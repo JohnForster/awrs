@@ -2,10 +2,12 @@ use bevy::prelude::*;
 
 use super::cell::*;
 use super::constants::*;
-use super::sprite_loading::*;
+use super::sprite_loading::{UnitAtlas, TerrainAtlas};
 use super::unit::*;
 
 // TODO Load sprites from json: https://github.com/serde-rs/json
+
+// TODO: should probably move the part for instantiating units into unit.rs
 pub fn build_map(mut commands: Commands, terrain_atlas: Res<TerrainAtlas>, unit_atlas: Res<UnitAtlas>) {
     info!("Building Map");
     let game_map = vec![

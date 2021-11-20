@@ -2,10 +2,10 @@ use bevy::prelude::*;
 
 use super::cell::*;
 use super::constants::*;
-use super::sprite_loading::*;
+use super::sprite_loading::{UIAtlas};
 use super::unit::*;
 
-struct Cursor;
+pub struct Cursor;
 
 pub fn create_cursor(mut commands: Commands, ui_atlas: Res<UIAtlas>) {
     info!("Creating Cursor");
