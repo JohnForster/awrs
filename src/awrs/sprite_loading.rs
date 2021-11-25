@@ -1,20 +1,14 @@
 use bevy::prelude::*;
 
-#[derive(Default)]
 pub struct TerrainAtlas {
-    texture_handle: Handle<Texture>,
     pub atlas_handle: Handle<TextureAtlas>,
 }
 
-#[derive(Default)]
 pub struct UIAtlas {
-    texture_handle: Handle<Texture>,
     pub atlas_handle: Handle<TextureAtlas>,
 }
 
-#[derive(Default)]
 pub struct UnitAtlas {
-    texture_handle: Handle<Texture>,
     pub atlas_handle: Handle<TextureAtlas>,
 }
 
@@ -24,7 +18,7 @@ pub fn load_ui_sprites(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     info!("Loading UI Sprites");
-    let texture_handle = asset_server.load("UISprites.png");
+    let texture_handle = asset_server.load("spritesheets/UISprites.png");
     let mut texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(143.0, 64.0));
 
     let cursor_rect = bevy::sprite::Rect {
@@ -35,10 +29,7 @@ pub fn load_ui_sprites(
     texture_atlas.add_texture(cursor_rect);
     let atlas_handle = texture_atlases.add(texture_atlas);
 
-    commands.insert_resource(UIAtlas {
-        texture_handle,
-        atlas_handle,
-    })
+    commands.insert_resource(UIAtlas { atlas_handle })
 }
 
 pub fn load_unit_sprites(
@@ -47,7 +38,7 @@ pub fn load_unit_sprites(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     info!("Loading Unit Sprites");
-    let texture_handle = asset_server.load("unitSprites.png");
+    let texture_handle = asset_server.load("spritesheets/unitSprites.png");
     let mut texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(349.0, 93.0));
 
     let inf_orange_sprite = bevy::sprite::Rect {
@@ -58,10 +49,7 @@ pub fn load_unit_sprites(
     texture_atlas.add_texture(inf_orange_sprite);
     let atlas_handle = texture_atlases.add(texture_atlas);
 
-    commands.insert_resource(UnitAtlas {
-        texture_handle,
-        atlas_handle,
-    })
+    commands.insert_resource(UnitAtlas { atlas_handle })
 }
 
 pub fn load_terrain_sprites(
@@ -71,7 +59,7 @@ pub fn load_terrain_sprites(
 ) {
     info!("Loading Terrain Sprites");
     // Terrain Sprites
-    let texture_handle = asset_server.load("sprites.png");
+    let texture_handle = asset_server.load("spritesheets/sprites.png");
     let mut texture_atlas =
         TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(1215.0, 1744.0));
 
@@ -89,8 +77,5 @@ pub fn load_terrain_sprites(
 
     let atlas_handle = texture_atlases.add(texture_atlas);
 
-    commands.insert_resource(TerrainAtlas {
-        texture_handle,
-        atlas_handle,
-    })
+    commands.insert_resource(TerrainAtlas { atlas_handle })
 }

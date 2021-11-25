@@ -7,7 +7,20 @@ pub struct Unit {
     pub unit_type: UnitType,
     pub team: Team,
     pub location: Cell,
-    pub health: UnitHealth, // etc. etc..
+    pub health: UnitHealth,
+    pub selected: Selected,
+    // pub has_moved: bool,
+    // etc. etc..
+}
+
+impl Unit {
+    pub fn select(&mut self) {
+        self.selected = Selected(true);
+    }
+
+    pub fn deselect(&mut self) {
+        self.selected = Selected(false);
+    }
 }
 
 #[derive(Clone)]
@@ -47,9 +60,15 @@ pub struct Team(pub u32);
 //     }
 // }
 
+#[derive(Clone)]
+pub struct Selected(pub bool);
+
+#[derive(Clone)]
+pub struct UnitId(pub usize);
+
 #[derive(Bundle)]
 pub struct UnitBundle {
-    pub id: usize,
+    pub id: UnitId,
     pub data: Unit,
     #[bundle]
     pub sprite: SpriteSheetBundle,

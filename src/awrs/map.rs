@@ -2,13 +2,17 @@ use bevy::prelude::*;
 
 use super::cell::*;
 use super::constants::*;
-use super::sprite_loading::{UnitAtlas, TerrainAtlas};
+use super::sprite_loading::{TerrainAtlas, UnitAtlas};
 use super::unit::*;
 
 // TODO Load sprites from json: https://github.com/serde-rs/json
 
 // TODO: should probably move the part for instantiating units into unit.rs
-pub fn build_map(mut commands: Commands, terrain_atlas: Res<TerrainAtlas>, unit_atlas: Res<UnitAtlas>) {
+pub fn build_map(
+    mut commands: Commands,
+    terrain_atlas: Res<TerrainAtlas>,
+    unit_atlas: Res<UnitAtlas>,
+) {
     info!("Building Map");
     let game_map = vec![
         vec![0, 0, 0, 0, 0, 1],
@@ -24,6 +28,7 @@ pub fn build_map(mut commands: Commands, terrain_atlas: Res<TerrainAtlas>, unit_
         team: Team(0),
         location: Cell { x: 1, y: 1 },
         health: UnitHealth(100),
+        selected: Selected(false),
     }];
 
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
@@ -47,7 +52,7 @@ pub fn build_map(mut commands: Commands, terrain_atlas: Res<TerrainAtlas>, unit_
         let x = unit.location.x;
         let y = unit.location.y;
         commands.spawn_bundle(UnitBundle {
-            id: i,
+            id: UnitId(i),
             data: unit.clone(),
             sprite: SpriteSheetBundle {
                 texture_atlas: unit_atlas.atlas_handle.clone(),
@@ -62,4 +67,3 @@ pub fn build_map(mut commands: Commands, terrain_atlas: Res<TerrainAtlas>, unit_
         });
     }
 }
-

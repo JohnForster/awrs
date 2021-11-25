@@ -2,7 +2,9 @@ use bevy::prelude::*;
 
 use super::cell::*;
 use super::constants::*;
-use super::sprite_loading::{UIAtlas};
+// use super::events::*;
+use super::game::GameState;
+use super::sprite_loading::UIAtlas;
 use super::unit::*;
 
 pub struct Cursor;
@@ -33,12 +35,6 @@ pub fn handle_cursor_move(
     mut cursor_query: Query<(&mut Timer, &mut Transform, &mut Cell, &Cursor)>,
 ) {
     for (mut _timer, mut transform, mut cell, _) in cursor_query.iter_mut() {
-        // timer.tick(time.delta());
-
-        // if !timer.finished() {
-        //     continue;
-        // }
-
         if keyboard_input.just_pressed(KeyCode::W) {
             transform.translation.y += 1.0 * TILE_SIZE;
             cell.y += 1;
@@ -58,23 +54,28 @@ pub fn handle_cursor_move(
             transform.translation.x += 1.0 * TILE_SIZE;
             cell.x += 1;
         }
-
-        // timer.reset()
     }
 }
 
 pub fn handle_cursor_select(
     keyboard_input: Res<Input<KeyCode>>,
-    mut cursor_query: Query<(&mut Transform, &Cell, &Cursor)>,
-    mut units_query: Query<&Unit>,
-    mut commands: Commands,
+    mut cursor_query: Query<(&Cell, &Cursor)>,
+    mut units_query: Query<&mut Unit, With<UnitId>>,
+    mut game_state: ResMut<State<GameState>>,
 ) {
-    for (mut cursor_transform, cursor_cell, _) in cursor_query.iter_mut() {
+    for (cursor_cell, _) in cursor_query.iter_mut() {
         if keyboard_input.just_pressed(KeyCode::Space) {
-            for unit in units_query.iter_mut() {
+            for mut unit in units_query.iter_mut() {
                 let unit_cell = &unit.location;
                 if unit_cell.x == cursor_cell.x && unit_cell.y == cursor_cell.y {
                     info!("Selected a unit!");
+                    unit.select();
+                    game_state
+                        .set(GameState::UnitMenu)
+                        .expect("Should be able to set the game state to UnitMenu");
+
+                    // TODO Might be better to fire a select unit event which can be listened to by units and the UI?
+                    // ev_select_unit.send(SelectUnitEvent(unit));
                 }
             }
         }
