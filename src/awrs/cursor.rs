@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::cell::*;
 use super::constants::*;
-use super::sprite_loading::{UIAtlas};
+use super::sprite_loading::UIAtlas;
 use super::unit::*;
 
 pub struct Cursor;
@@ -74,7 +74,7 @@ pub fn handle_cursor_select(
             for unit in units_query.iter_mut() {
                 let unit_cell = &unit.location;
                 if unit_cell.x == cursor_cell.x && unit_cell.y == cursor_cell.y {
-                    info!("Selected a unit!");
+                    info!("Health: {:?}", unit.health.0);
                 }
             }
         }
