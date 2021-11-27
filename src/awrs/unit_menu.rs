@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::unit::Unit;
+use super::{game::GameState, unit::Unit};
 
 pub struct UnitMenu;
 pub struct SelectedOption(usize);
@@ -40,38 +40,45 @@ pub fn open_unit_menu(
 
             // TODO get unit menu options from selected unit.
             // Move if hasn't moved yet. Attack if unit next to it.
-            let options = vec!["Move", "Attack", "Cancel"];
+            let options = vec!["M - Move", "A - Attack", "C - Cancel"];
 
             commands
                 .spawn_bundle(NodeBundle {
                     style: Style {
-                        size: Size::new(Val::Px(200.0), Val::Percent(100.0)),
-                        justify_content: JustifyContent::SpaceBetween,
+                        size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::FlexEnd,
                         ..Default::default()
                     },
                     material: materials.add(Color::NONE.into()),
                     ..Default::default()
                 })
                 .with_children(|parent| {
-                    parent
-                        .spawn_bundle(NodeBundle {
-                            style: Style {
-                                display: Display::Flex,
-                                flex_direction: FlexDirection::ColumnReverse,
-                                align_content: AlignContent::FlexStart,
-                                size: Size::new(Val::Px(200.0), Val::Percent(100.0)),
-                                border: Rect::all(Val::Px(2.0)),
-
+                    for text in options.into_iter() {
+                        parent
+                            .spawn_bundle(NodeBundle {
+                                style: Style {
+                                    margin: Rect::all(Val::Px(5.0)),
+                                    ..Default::default()
+                                },
+                                material: materials.add(Color::NONE.into()),
                                 ..Default::default()
-                            },
-                            material: materials.add(Color::rgb(0.65, 0.65, 0.65).into()),
-                            ..Default::default()
-                        })
-                        .with_children(|parent| {
-                            for text in options.into_iter() {
-                                build_button(&asset_server, parent, &mut materials, text);
-                            }
-                        });
+                            })
+                            .with_children(|parent| {
+                                parent.spawn_bundle(TextBundle {
+                                    text: Text::with_section(
+                                        text,
+                                        TextStyle {
+                                            font: asset_server.load("fonts/aw2-gba.otf"),
+                                            font_size: 20.0,
+                                            color: Color::rgb(0.9, 0.9, 0.9),
+                                        },
+                                        Default::default(),
+                                    ),
+                                    ..Default::default()
+                                });
+                            });
+                    }
                 })
                 .insert(UnitMenu)
                 .insert(SelectedOption(0));
@@ -79,96 +86,23 @@ pub fn open_unit_menu(
     }
 }
 
-fn build_button(
-    asset_server: &Res<AssetServer>,
-    parent: &mut ChildBuilder,
-    materials: &mut ResMut<Assets<ColorMaterial>>,
-    text: &str,
+pub fn handle_unit_menu_navigation(
+    keyboard_input: Res<Input<KeyCode>>,
+    mut game_state: ResMut<State<GameState>>,
 ) {
-    parent
-        .spawn_bundle(ButtonBundle {
-            style: Style {
-                size: Size::new(Val::Px(150.0), Val::Px(65.0)),
-                // center button
-                margin: Rect::all(Val::Auto),
-                // horizontally center child text
-                justify_content: JustifyContent::Center,
-                // vertically center child text
-                align_items: AlignItems::Center,
-                ..Default::default()
-            },
-            material: materials.add(Color::rgb(0.15, 0.15, 0.15).into()),
-            ..Default::default()
-        })
-        .with_children(|parent| {
-            parent.spawn_bundle(TextBundle {
-                text: Text::with_section(
-                    text,
-                    TextStyle {
-                        font: asset_server.load("fonts/aw2-gba.otf"),
-                        font_size: 40.0,
-                        color: Color::rgb(0.9, 0.9, 0.9),
-                    },
-                    Default::default(),
-                ),
-                ..Default::default()
-            });
-        });
-}
-
-fn button_system(
-    button_materials: Res<ButtonMaterials>,
-    mut interaction_query: Query<
-        (&Interaction, &mut Handle<ColorMaterial>, &Children),
-        (Changed<Interaction>, With<Button>),
-    >,
-    mut text_query: Query<&mut Text>,
-) {
-    for (interaction, mut material, children) in interaction_query.iter_mut() {
-        let mut text = text_query.get_mut(children[0]).unwrap();
-        match *interaction {
-            Interaction::Clicked => {
-                text.sections[0].value = "Press".to_string();
-                *material = button_materials.pressed.clone();
-            }
-            Interaction::Hovered => {
-                text.sections[0].value = "Hover".to_string();
-                *material = button_materials.hovered.clone();
-            }
-            Interaction::None => {
-                text.sections[0].value = "Button".to_string();
-                *material = button_materials.normal.clone();
-            }
-        }
+    if keyboard_input.just_pressed(KeyCode::M) {
+        info!("Changing Game State to MoveUnit");
+        game_state
+            .set(GameState::MoveUnit)
+            .expect("Should be able to enter MoveUnit gamestate")
     }
 }
 
-// Temporary to test out ui values
-pub fn handle_unit_menu_navigation(
-    keyboard_input: Res<Input<KeyCode>>,
-    // button_materials: Res<ButtonMaterials>,
-    mut ui_query: Query<(&mut Style, &mut SelectedOption), With<UnitMenu>>,
+pub fn handle_exit_unit_menu(
+    mut commands: Commands,
+    mut unit_menu_query: Query<Entity, With<UnitMenu>>,
 ) {
-    let (mut style, mut selected_option) =
-        ui_query.single_mut().expect("Should have found one menu.");
-
-    // if keyboard_input.just_pressed(KeyCode::W) {
-    //     transform.translation.y += 1.0 * TILE_SIZE;
-    //     cell.y += 1;
-    // }
-
-    // if keyboard_input.just_pressed(KeyCode::A) {
-    //     transform.translation.x -= 1.0 * TILE_SIZE;
-    //     cell.x -= 1;
-    // }
-
-    // if keyboard_input.just_pressed(KeyCode::S) {
-    //     transform.translation.y -= 1.0 * TILE_SIZE;
-    //     cell.y -= 1;
-    // }
-
-    // if keyboard_input.just_pressed(KeyCode::D) {
-    //     transform.translation.x += 1.0 * TILE_SIZE;
-    //     cell.x += 1;
-    // }
+    info!("Exiting Unit Menu");
+    let unit_menu_entity = unit_menu_query.single_mut().unwrap();
+    commands.entity(unit_menu_entity).despawn_recursive();
 }

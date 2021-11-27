@@ -4,6 +4,7 @@ pub mod cursor;
 pub mod events;
 pub mod game;
 pub mod map;
+pub mod move_unit;
 pub mod sprite_loading;
 pub mod unit;
 pub mod unit_menu;
