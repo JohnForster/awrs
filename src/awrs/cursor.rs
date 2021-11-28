@@ -67,9 +67,9 @@ pub fn handle_cursor_select(
     keyboard_input: Res<Input<KeyCode>>,
     mut cursor_query: Query<(&mut Transform, &Cell, &Cursor)>,
     mut units_query: Query<&Unit>,
-    mut commands: Commands,
+    mut _commands: Commands,
 ) {
-    for (mut cursor_transform, cursor_cell, _) in cursor_query.iter_mut() {
+    for (mut _cursor_transform, cursor_cell, _) in cursor_query.iter_mut() {
         if keyboard_input.just_pressed(KeyCode::Space) {
             for unit in units_query.iter_mut() {
                 let unit_cell = &unit.location;
