@@ -4,6 +4,8 @@ use super::cell::*;
 use super::constants::*;
 use super::sprite_loading::{TerrainAtlas, UnitAtlas};
 use super::unit::*;
+use super::unit_loading::UnitHandle;
+use super::unit_loading::UnitType;
 
 // TODO Load sprites from json: https://github.com/serde-rs/json
 
@@ -24,8 +26,6 @@ pub fn build_map(
         vec![0, 1, 1, 1, 1, 1],
         vec![1, 1, 1, 1, 1, 1],
     ];
-
-    info!("unit_assets.len: {:?}", unit_assets.len());
 
     let infantry = unit_assets.get(&unit_handle.handle).unwrap();
 
