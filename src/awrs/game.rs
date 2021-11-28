@@ -6,20 +6,20 @@ use super::map::*;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum AppState {
-    MainMenu,
+    _MainMenu,
     InGame(GameState),
     Loading,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
-    Loading,
+    _Loading,
     Running,
-    Paused,
-    UnitMenu,
-    BuildingMenu,
-    MoveUnit,
-    EnemyTurn,
+    _Paused,
+    _UnitMenu,
+    _BuildingMenu,
+    _MoveUnit,
+    _EnemyTurn,
 }
 
 pub struct AWRSPlugin;
