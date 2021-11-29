@@ -27,7 +27,7 @@ pub fn load_ui_sprites(
     mut loading: ResMut<AssetsLoading>,
 ) {
     info!("Loading UI Sprites");
-    let texture_handle = asset_server.load("UISprites.png");
+    let texture_handle = asset_server.load("spritesheets/UISprites.png");
     loading.0.push(texture_handle.clone_untyped());
     info!("UI sprite loading underway...");
 
@@ -54,7 +54,7 @@ pub fn load_unit_sprites(
     mut loading: ResMut<AssetsLoading>,
 ) {
     info!("Loading Unit Sprites");
-    let texture_handle = asset_server.load("unitSprites.png");
+    let texture_handle = asset_server.load("spritesheets/unitSprites.png");
     loading.0.push(texture_handle.clone_untyped());
     info!("Unit sprite loading underway...");
     let mut texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(349.0, 93.0));
@@ -81,7 +81,7 @@ pub fn load_terrain_sprites(
 ) {
     info!("Loading Terrain Sprites");
     // Terrain Sprites
-    let texture_handle = asset_server.load("sprites.png");
+    let texture_handle = asset_server.load("spritesheets/sprites.png");
     loading.0.push(texture_handle.clone_untyped());
     info!("Terrain sprite loading underway...");
     let mut texture_atlas =
