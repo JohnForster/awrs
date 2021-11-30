@@ -2,13 +2,21 @@ use bevy::prelude::*;
 
 use super::cell::*;
 use super::constants::*;
-use super::sprite_loading::{UnitAtlas, TerrainAtlas};
+use super::sprite_loading::{TerrainAtlas, UnitAtlas};
 use super::unit::*;
+use super::unit_loading::UnitHandle;
+use super::unit_loading::UnitType;
 
 // TODO Load sprites from json: https://github.com/serde-rs/json
 
 // TODO: should probably move the part for instantiating units into unit.rs
-pub fn build_map(mut commands: Commands, terrain_atlas: Res<TerrainAtlas>, unit_atlas: Res<UnitAtlas>) {
+pub fn build_map(
+    mut commands: Commands,
+    terrain_atlas: Res<TerrainAtlas>,
+    unit_atlas: Res<UnitAtlas>,
+    unit_handle: Res<UnitHandle>,
+    unit_assets: Res<Assets<UnitType>>,
+) {
     info!("Building Map");
     let game_map = vec![
         vec![0, 0, 0, 0, 0, 1],
@@ -19,11 +27,13 @@ pub fn build_map(mut commands: Commands, terrain_atlas: Res<TerrainAtlas>, unit_
         vec![1, 1, 1, 1, 1, 1],
     ];
 
+    let infantry = unit_assets.get(&unit_handle.handle).unwrap();
+
     let units = vec![Unit {
-        unit_type: UnitType::Infantry,
+        unit_type: 0,
         team: Team(0),
         location: Cell { x: 1, y: 1 },
-        health: UnitHealth(100),
+        health: UnitHealth(infantry.max_health),
     }];
 
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
@@ -43,12 +53,12 @@ pub fn build_map(mut commands: Commands, terrain_atlas: Res<TerrainAtlas>, unit_
         }
     }
 
-    for (i, unit) in units.iter().enumerate() {
+    for (i, unit) in units.into_iter().enumerate() {
         let x = unit.location.x;
         let y = unit.location.y;
         commands.spawn_bundle(UnitBundle {
             id: i,
-            data: unit.clone(),
+            data: unit,
             sprite: SpriteSheetBundle {
                 texture_atlas: unit_atlas.atlas_handle.clone(),
                 sprite: TextureAtlasSprite::new(0),
@@ -62,4 +72,3 @@ pub fn build_map(mut commands: Commands, terrain_atlas: Res<TerrainAtlas>, unit_
         });
     }
 }
-
