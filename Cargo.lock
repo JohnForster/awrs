@@ -113,9 +113,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.47"
+version = "1.0.50"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38d9ff5d688f1c13395289f67db01d4826b46dd694e7580accdc3e8430f2d98e"
+checksum = "ecc78c299ae753905840c5d3ba036c51f61ce5a98a83f98d9c9d29dffd427f71"
 
 [[package]]
 name = "approx"
@@ -183,6 +183,8 @@ name = "awrs"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_asset_ron",
+ "serde",
 ]
 
 [[package]]
@@ -256,6 +258,18 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "bevy_asset_ron"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd6b356cfb6b43ba71c1b255aa418236fa6fe89ade04865692eea70297a7a16d"
+dependencies = [
+ "anyhow",
+ "bevy",
+ "ron",
+ "serde",
 ]
 
 [[package]]
@@ -1107,9 +1121,9 @@ dependencies = [
 
 [[package]]
 name = "crc32fast"
-version = "1.2.1"
+version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81156fece84ab6a9f2afdb109ce3ae577e42b1228441eded99bd77f627953b1a"
+checksum = "3825b1e8580894917dc4468cb634a1b4e9745fddc854edad72d9c04644c0319f"
 dependencies = [
  "cfg-if 1.0.0",
 ]
@@ -1133,6 +1147,12 @@ dependencies = [
  "cfg-if 1.0.0",
  "lazy_static",
 ]
+
+[[package]]
+name = "cty"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b365fabc795046672053e29c954733ec3b05e4be654ab130fe8f1f94d7051f35"
 
 [[package]]
 name = "d3d12"
@@ -1343,15 +1363,15 @@ checksum = "3dcaa9ae7725d12cdb85b3ad99a434db70b468c09ded17e012d86b5c1010f7a7"
 
 [[package]]
 name = "futures-core"
-version = "0.3.17"
+version = "0.3.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88d1c26957f23603395cd326b0ffe64124b818f4449552f960d815cfba83a53d"
+checksum = "629316e42fe7c2a0b9a65b47d159ceaa5453ab14e8f0a3c5eedbb8cd55b4a445"
 
 [[package]]
 name = "futures-io"
-version = "0.3.17"
+version = "0.3.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "522de2a0fe3e380f1bc577ba0474108faf3f6b18321dbf60b3b9c39a75073377"
+checksum = "e481354db6b5c353246ccf6a728b0c5511d752c08da7260546fc0933869daa11"
 
 [[package]]
 name = "futures-lite"
@@ -1415,7 +1435,7 @@ dependencies = [
  "log",
  "parking_lot",
  "range-alloc",
- "raw-window-handle",
+ "raw-window-handle 0.3.4",
  "smallvec",
  "spirv_cross",
  "thunderdome",
@@ -1438,7 +1458,7 @@ dependencies = [
  "log",
  "parking_lot",
  "range-alloc",
- "raw-window-handle",
+ "raw-window-handle 0.3.4",
  "smallvec",
  "spirv_cross",
  "thunderdome",
@@ -1453,7 +1473,7 @@ checksum = "9f07ef26a65954cfdd7b4c587f485100d1bb3b0bd6a51b02d817d6c87cca7a91"
 dependencies = [
  "gfx-hal",
  "log",
- "raw-window-handle",
+ "raw-window-handle 0.3.4",
 ]
 
 [[package]]
@@ -1473,7 +1493,7 @@ dependencies = [
  "log",
  "naga",
  "parking_lot",
- "raw-window-handle",
+ "raw-window-handle 0.3.4",
  "spirv_cross",
  "wasm-bindgen",
  "web-sys",
@@ -1499,7 +1519,7 @@ dependencies = [
  "objc",
  "parking_lot",
  "range-alloc",
- "raw-window-handle",
+ "raw-window-handle 0.3.4",
  "spirv_cross",
  "storage-map",
 ]
@@ -1520,7 +1540,7 @@ dependencies = [
  "naga",
  "objc",
  "parking_lot",
- "raw-window-handle",
+ "raw-window-handle 0.3.4",
  "smallvec",
  "winapi 0.3.9",
 ]
@@ -1533,7 +1553,7 @@ checksum = "c1d9cc8d3b573dda62d0baca4f02e0209786e22c562caff001d77c389008781d"
 dependencies = [
  "bitflags",
  "naga",
- "raw-window-handle",
+ "raw-window-handle 0.3.4",
  "thiserror",
 ]
 
@@ -2247,9 +2267,9 @@ dependencies = [
 
 [[package]]
 name = "ndk-sys"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c44922cb3dbb1c70b5e5f443d63b64363a898564d739ba5198e3a9138442868d"
+checksum = "e1bcdd74c20ad5d95aacd60ef9ba40fdf77f767051040541df557b7a9b2a2121"
 
 [[package]]
 name = "net2"
@@ -2642,11 +2662,21 @@ checksum = "63e935c45e09cc6dcf00d2f0b2d630a58f4095320223d47fc68918722f0538b6"
 
 [[package]]
 name = "raw-window-handle"
-version = "0.3.3"
+version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a441a7a6c80ad6473bd4b74ec1c9a4c951794285bf941c2126f607c72e48211"
+checksum = "e28f55143d0548dad60bb4fbdc835a3d7ac6acc3324506450c5fdd6e42903a76"
 dependencies = [
  "libc",
+ "raw-window-handle 0.4.2",
+]
+
+[[package]]
+name = "raw-window-handle"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fba75eee94a9d5273a68c9e1e105d9cffe1ef700532325788389e5a83e2522b7"
+dependencies = [
+ "cty",
 ]
 
 [[package]]
@@ -2739,9 +2769,9 @@ dependencies = [
 
 [[package]]
 name = "ryu"
-version = "1.0.5"
+version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71d301d4193d031abdd79ff7e3dd721168a9572ef3fe51a1517aba235bd8f86e"
+checksum = "3c9613b5a66ab9ba26415184cfc41156594925a9cf3a2057e57f31ff145f6568"
 
 [[package]]
 name = "same-file"
@@ -2801,9 +2831,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.71"
+version = "1.0.72"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "063bf466a64011ac24040a49009724ee60a57da1b437617ceb32e53ad61bfb19"
+checksum = "d0ffa0837f2dfa6fb90868c2b5468cad482e175f7dad97e7421951e663f2b527"
 dependencies = [
  "itoa",
  "ryu",
@@ -3191,9 +3221,9 @@ dependencies = [
 
 [[package]]
 name = "ttf-parser"
-version = "0.13.3"
+version = "0.13.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47094e61a758dfddc5bc6de0862c2640ee2643997835e58332a4863bcd5852e9"
+checksum = "76dacc724328b3d5e2ed67f9e30cdb56893a34ab239032502cc8f19f8dae4bbc"
 
 [[package]]
 name = "unicode-segmentation"
@@ -3338,7 +3368,7 @@ dependencies = [
  "js-sys",
  "naga",
  "parking_lot",
- "raw-window-handle",
+ "raw-window-handle 0.3.4",
  "smallvec",
  "syn",
  "tracing",
@@ -3371,7 +3401,7 @@ dependencies = [
  "gpu-descriptor",
  "naga",
  "parking_lot",
- "raw-window-handle",
+ "raw-window-handle 0.3.4",
  "smallvec",
  "thiserror",
  "tracing",
@@ -3454,7 +3484,7 @@ dependencies = [
  "objc",
  "parking_lot",
  "percent-encoding",
- "raw-window-handle",
+ "raw-window-handle 0.3.4",
  "wasm-bindgen",
  "web-sys",
  "winapi 0.3.9",
