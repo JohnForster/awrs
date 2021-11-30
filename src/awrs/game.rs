@@ -33,8 +33,8 @@ impl Plugin for AWRSPlugin {
             // Browsing
             .add_system_set(
                 SystemSet::on_enter(AppState::InGame(GameState::Browsing))
-                    .with_system(build_map.system())
-                    .with_system(create_cursor.system()),
+                    .with_system(build_map.system().label("build map"))
+                    .with_system(create_cursor.system().after("build map")),
             )
             .add_system_set(
                 SystemSet::on_update(AppState::InGame(GameState::Browsing))

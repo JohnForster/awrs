@@ -5,6 +5,7 @@ use crate::awrs::game::GameState;
 use super::cell::*;
 use super::constants::*;
 use super::game::AppState;
+use super::map::GameMap;
 use super::sprite_loading::UIAtlas;
 use super::unit::*;
 
@@ -34,24 +35,29 @@ pub fn handle_cursor_move(
     _time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
     mut cursor_query: Query<(&mut Transform, &mut Cell), With<Cursor>>,
+    game_map_query: Query<&GameMap>,
 ) {
+    let game_map = game_map_query
+        .single()
+        .expect("Trying to move the cursor when there is no map?!");
+
     for (mut transform, mut cell) in cursor_query.iter_mut() {
-        if keyboard_input.just_pressed(KeyCode::W) {
+        if keyboard_input.just_pressed(KeyCode::W) && cell.y < game_map.height {
             transform.translation.y += 1.0 * TILE_SIZE;
             cell.y += 1;
         }
 
-        if keyboard_input.just_pressed(KeyCode::A) {
+        if keyboard_input.just_pressed(KeyCode::A) && cell.x > 0 {
             transform.translation.x -= 1.0 * TILE_SIZE;
             cell.x -= 1;
         }
 
-        if keyboard_input.just_pressed(KeyCode::S) {
+        if keyboard_input.just_pressed(KeyCode::S) && cell.y > 0 {
             transform.translation.y -= 1.0 * TILE_SIZE;
             cell.y -= 1;
         }
 
-        if keyboard_input.just_pressed(KeyCode::D) {
+        if keyboard_input.just_pressed(KeyCode::D) && cell.x < game_map.height {
             transform.translation.x += 1.0 * TILE_SIZE;
             cell.x += 1;
         }
@@ -77,9 +83,9 @@ pub fn handle_cursor_select(
                     // A field on the Unit struct that says whether or not the unit is selected. (Doesn't feel very ECS?)
                     commands.entity(entity_id).insert(Selected);
 
-                    info!("Setting game state to MoveUnit");
+                    info!("Setting game state to UnitMenu");
                     game_state
-                        .set(AppState::InGame(GameState::MoveUnit))
+                        .set(AppState::InGame(GameState::UnitMenu))
                         .expect("Problem changing state");
                 }
             }
