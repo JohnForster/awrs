@@ -7,6 +7,8 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.5.0", features = ["dynamic"] }
+bevy_asset_ron = { version = "0.2.0" }
+serde = "*"
 
 [profile.dev.package."*"]
 opt-level = 3

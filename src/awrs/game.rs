@@ -1,43 +1,42 @@
-
 use bevy::prelude::*;
 
 use super::cursor::*;
+use super::load_assets::*;
 use super::map::*;
 
-enum AppState {
-    MainMenu,
-    InGame,
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum AppState {
+    _MainMenu,
+    InGame(GameState),
+    Loading,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-enum GameState {
-    Paused,
+pub enum GameState {
+    _Loading,
     Running,
-    UnitMenu,
-    BuildingMenu,
-    MoveUnit,
-    EnemyTurn,
+    _Paused,
+    _UnitMenu,
+    _BuildingMenu,
+    _MoveUnit,
+    _EnemyTurn,
 }
-
-use super::sprite_loading::*;
 
 pub struct AWRSPlugin;
 
 impl Plugin for AWRSPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app
-            .add_startup_system(load_terrain_sprites.system().label("load_sprites"))
-            .add_startup_system(load_unit_sprites.system().label("load_sprites"))
-            .add_startup_system(load_ui_sprites.system().label("load_sprites"))
-            .add_state(GameState::Running) // see if this can go after the next two method calls
+        app.add_plugin(LoadAssets)
+            .add_state(AppState::Loading)
             .add_system_set(
-                SystemSet::on_enter(GameState::Running)
+                SystemSet::on_enter(AppState::InGame(GameState::Running))
                     .with_system(build_map.system())
                     .with_system(create_cursor.system()),
             )
             .add_system_set(
-                SystemSet::on_update(GameState::Running)
+                SystemSet::on_update(AppState::InGame(GameState::Running))
                     .with_system(handle_cursor_move.system())
-                    .with_system(handle_cursor_select.system()));
+                    .with_system(handle_cursor_select.system()),
+            );
     }
 }

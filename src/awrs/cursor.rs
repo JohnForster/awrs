@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::cell::*;
 use super::constants::*;
-use super::sprite_loading::{UIAtlas};
+use super::sprite_loading::UIAtlas;
 use super::unit::*;
 
 pub struct Cursor;
@@ -67,14 +67,14 @@ pub fn handle_cursor_select(
     keyboard_input: Res<Input<KeyCode>>,
     mut cursor_query: Query<(&mut Transform, &Cell, &Cursor)>,
     mut units_query: Query<&Unit>,
-    mut commands: Commands,
+    mut _commands: Commands,
 ) {
-    for (mut cursor_transform, cursor_cell, _) in cursor_query.iter_mut() {
+    for (mut _cursor_transform, cursor_cell, _) in cursor_query.iter_mut() {
         if keyboard_input.just_pressed(KeyCode::Space) {
             for unit in units_query.iter_mut() {
                 let unit_cell = &unit.location;
                 if unit_cell.x == cursor_cell.x && unit_cell.y == cursor_cell.y {
-                    info!("Selected a unit!");
+                    info!("Health: {:?}", unit.health.0);
                 }
             }
         }
