@@ -1,17 +1,9 @@
 use bevy::prelude::*;
 
-use super::cell::*;
+use super::cell::Cell;
 
 #[derive(Clone)]
-pub struct Unit {
-    pub unit_type: UnitType,
-    pub team: Team,
-    pub location: Cell,
-    pub health: UnitHealth, // etc. etc..
-}
-
-#[derive(Clone)]
-pub struct UnitHealth(pub u32);
+pub struct UnitHealth(pub f32);
 
 // Or, to avoid pub
 // impl From<u32> for UnitHealth {
@@ -25,11 +17,6 @@ pub struct UnitHealth(pub u32);
 //         health.0
 //     }
 // }
-
-#[derive(Clone)]
-pub enum UnitType {
-    Infantry,
-}
 
 #[derive(Clone)]
 pub struct Team(pub u32);
@@ -46,6 +33,15 @@ pub struct Team(pub u32);
 //         team.0
 //     }
 // }
+
+pub struct Unit {
+    pub unit_type: usize,
+    pub team: Team,
+    pub location: Cell,
+    pub health: UnitHealth,
+    // pub ammo: Ammo,
+    // etc. etc..
+}
 
 #[derive(Bundle)]
 pub struct UnitBundle {
