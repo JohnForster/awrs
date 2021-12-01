@@ -41,7 +41,7 @@ pub fn check_assets_ready(
             // all assets are now ready
             commands.remove_resource::<AssetsLoading>();
             game_state
-                .set(AppState::InGame(GameState::Running))
+                .set(AppState::InGame(GameState::Browsing))
                 .unwrap();
         }
         _ => {
