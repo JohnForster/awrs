@@ -7,3 +7,4 @@ pub mod map;
 pub mod sprite_loading;
 pub mod unit;
 pub mod unit_loading;
+pub mod unit_menu;

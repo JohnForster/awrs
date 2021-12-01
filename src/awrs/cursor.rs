@@ -1,7 +1,11 @@
 use bevy::prelude::*;
 
+use crate::awrs::game::GameState;
+
 use super::cell::*;
 use super::constants::*;
+use super::game::AppState;
+use super::map::GameMap;
 use super::sprite_loading::UIAtlas;
 use super::unit::*;
 
@@ -30,51 +34,59 @@ pub fn create_cursor(mut commands: Commands, ui_atlas: Res<UIAtlas>) {
 pub fn handle_cursor_move(
     _time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut cursor_query: Query<(&mut Timer, &mut Transform, &mut Cell, &Cursor)>,
+    mut cursor_query: Query<(&mut Transform, &mut Cell), With<Cursor>>,
+    game_map_query: Query<&GameMap>,
 ) {
-    for (mut _timer, mut transform, mut cell, _) in cursor_query.iter_mut() {
-        // timer.tick(time.delta());
+    let game_map = game_map_query
+        .single()
+        .expect("Trying to move the cursor when there is no map?!");
 
-        // if !timer.finished() {
-        //     continue;
-        // }
-
-        if keyboard_input.just_pressed(KeyCode::W) {
+    for (mut transform, mut cell) in cursor_query.iter_mut() {
+        if keyboard_input.just_pressed(KeyCode::W) && cell.y < game_map.height {
             transform.translation.y += 1.0 * TILE_SIZE;
             cell.y += 1;
         }
 
-        if keyboard_input.just_pressed(KeyCode::A) {
+        if keyboard_input.just_pressed(KeyCode::A) && cell.x > 0 {
             transform.translation.x -= 1.0 * TILE_SIZE;
             cell.x -= 1;
         }
 
-        if keyboard_input.just_pressed(KeyCode::S) {
+        if keyboard_input.just_pressed(KeyCode::S) && cell.y > 0 {
             transform.translation.y -= 1.0 * TILE_SIZE;
             cell.y -= 1;
         }
 
-        if keyboard_input.just_pressed(KeyCode::D) {
+        if keyboard_input.just_pressed(KeyCode::D) && cell.x < game_map.height {
             transform.translation.x += 1.0 * TILE_SIZE;
             cell.x += 1;
         }
-
-        // timer.reset()
     }
 }
 
 pub fn handle_cursor_select(
     keyboard_input: Res<Input<KeyCode>>,
     mut cursor_query: Query<(&mut Transform, &Cell, &Cursor)>,
-    mut units_query: Query<&Unit>,
-    mut _commands: Commands,
+    mut units_query: Query<(Entity, &Unit)>,
+    mut game_state: ResMut<State<AppState>>,
+    mut commands: Commands,
 ) {
     for (mut _cursor_transform, cursor_cell, _) in cursor_query.iter_mut() {
         if keyboard_input.just_pressed(KeyCode::Space) {
-            for unit in units_query.iter_mut() {
+            for (entity_id, unit) in units_query.iter_mut() {
                 let unit_cell = &unit.location;
                 if unit_cell.x == cursor_cell.x && unit_cell.y == cursor_cell.y {
                     info!("Health: {:?}", unit.health.0);
+
+                    // Potential alternatives to this:
+                    // A resource that stores an optional handle to a unit (therefore can force only one unit selected at a time)
+                    // A field on the Unit struct that says whether or not the unit is selected. (Doesn't feel very ECS?)
+                    commands.entity(entity_id).insert(Selected);
+
+                    info!("Setting game state to UnitMenu");
+                    game_state
+                        .set(AppState::InGame(GameState::UnitMenu))
+                        .expect("Problem changing state");
                 }
             }
         }
