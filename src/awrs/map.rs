@@ -41,6 +41,8 @@ pub fn build_map(
 
     let infantry = unit_assets.get(&unit_handle.handle).unwrap();
 
+    // info!("infantry.ron became this: {:#?}", infantry);
+
     let units = vec![Unit {
         unit_type: 0,
         team: Team(0),

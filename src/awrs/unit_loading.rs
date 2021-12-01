@@ -6,14 +6,16 @@ use super::load_assets::AssetsLoading;
 #[derive(Serialize, Deserialize, Debug, TypeUuid)]
 #[uuid = "5386B529-81CC-405A-9600-CB51B83F8CC9"]
 pub enum UnitTag {
-    Biological,
-    Mechanical,
-    Light,
-    Ground,
-    Air,
-    Infantry,
+    Foot,
+    Vehicle,
+    Ship,
+    Sub,
+    Plane,
+    Copter,
+    Amphib
 }
 
+// TODO: clarify the nature of bonuses. For now, use what I have in the CSVs instead (floats)
 #[derive(Serialize, Deserialize, Debug, TypeUuid)]
 #[uuid = "534753A6-C796-4792-885E-A52C7D7CBF07"]
 pub struct Bonus {
@@ -24,8 +26,10 @@ pub struct Bonus {
 #[derive(Serialize, Deserialize, Debug, TypeUuid)]
 #[uuid = "76D0BCF9-21FD-451F-8C1F-D0E600A58D0A"]
 pub enum Directness {
-    Melee,
-    Ranged(f32, f32), // Min, Max
+    Direct,
+    Indirect
+    // TODO: add supported for tuple structs to CSV to RON converter
+    // Indirect(f32, f32), // Min, Max
 }
 
 #[derive(Serialize, Deserialize, Debug, TypeUuid)]
@@ -36,7 +40,7 @@ pub struct Weapon {
     pub directness: Directness, // TODO Come up with better name
     pub base_damage: f32,
     pub num_of_attacks: f32,
-    pub bonuses: Vec<Bonus>,
+    pub bonuses: Vec<f32>,
     pub applicable: Vec<UnitTag>,
 }
 
