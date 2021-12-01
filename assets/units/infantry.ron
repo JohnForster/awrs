@@ -1,13 +1,29 @@
 UnitType(
-  id: 0,
-  name: "Infantry",
-  max_health: 20.0,
-  max_ammo: -1.0,
-  max_fuel: -1.0,
+  id: 9,
+  name: "infantry",
+  max_health: 100.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
   tags: [
-      Ground,
-      Infantry,
-      Light,
+    Foot,
   ],
-  base_armour: 0.0,
+  base_armour: 100.0,
+  weapon1: Some(
+    Weapon(
+      id: 0,
+      name: "machine_gun",
+      directness:       Direct,
+      base_damage: 10.0,
+      num_of_attacks: 5,
+      bonuses: [
+        1.2,
+        0.4,
+        0.0,
+        0.0,
+        0.0,
+        0.6,
+        0.0,
+      ],
+    )  ),
+  weapon2: None,
 )
