@@ -1,0 +1,29 @@
+UnitType(
+  id: 23,
+  name: "sub",
+  max_health: 800.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Sub,
+  ],
+  base_armour: 800.0,
+  weapon1: Some(
+    Weapon(
+      id: 7,
+      name: "torpedo",
+      directness:       Direct,
+      base_damage: 30.0,
+      num_of_attacks: 1,
+      bonuses: [
+        0.0,
+        0.0,
+        1.4,
+        1.4,
+        0.0,
+        0.0,
+        1.4,
+      ],
+    )  ),
+  weapon2: None,
+)

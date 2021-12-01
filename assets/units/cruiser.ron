@@ -1,0 +1,45 @@
+UnitType(
+  id: 21,
+  name: "cruiser",
+  max_health: 1000.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Ship,
+  ],
+  base_armour: 1000.0,
+  weapon1: Some(
+    Weapon(
+      id: 7,
+      name: "torpedo",
+      directness:       Direct,
+      base_damage: 30.0,
+      num_of_attacks: 1,
+      bonuses: [
+        0.0,
+        0.0,
+        1.4,
+        1.4,
+        0.0,
+        0.0,
+        1.4,
+      ],
+    )  ),
+  weapon2: Some(
+    Weapon(
+      id: 2,
+      name: "flak",
+      directness:       Direct,
+      base_damage: 15.0,
+      num_of_attacks: 8,
+      bonuses: [
+        1.4,
+        0.8,
+        0.6,
+        0.6,
+        1.4,
+        1.4,
+        0.6,
+      ],
+    )  ),
+)

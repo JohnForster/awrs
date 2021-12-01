@@ -1,0 +1,29 @@
+UnitType(
+  id: 26,
+  name: "fighter",
+  max_health: 400.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Plane,
+  ],
+  base_armour: 400.0,
+  weapon1: Some(
+    Weapon(
+      id: 2,
+      name: "flak",
+      directness:       Direct,
+      base_damage: 15.0,
+      num_of_attacks: 8,
+      bonuses: [
+        1.4,
+        0.8,
+        0.6,
+        0.6,
+        1.4,
+        1.4,
+        0.6,
+      ],
+    )  ),
+  weapon2: None,
+)

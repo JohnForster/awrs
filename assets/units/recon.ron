@@ -1,0 +1,29 @@
+UnitType(
+  id: 11,
+  name: "recon",
+  max_health: 300.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Vehicle,
+  ],
+  base_armour: 300.0,
+  weapon1: Some(
+    Weapon(
+      id: 0,
+      name: "machine_gun",
+      directness:       Direct,
+      base_damage: 10.0,
+      num_of_attacks: 5,
+      bonuses: [
+        1.2,
+        0.4,
+        0.0,
+        0.0,
+        0.0,
+        0.6,
+        0.0,
+      ],
+    )  ),
+  weapon2: None,
+)

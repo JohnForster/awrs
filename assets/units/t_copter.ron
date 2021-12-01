@@ -1,0 +1,13 @@
+UnitType(
+  id: 24,
+  name: "t_copter",
+  max_health: 300.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Copter,
+  ],
+  base_armour: 300.0,
+  weapon1: None,
+  weapon2: None,
+)

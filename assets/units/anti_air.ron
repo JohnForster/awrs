@@ -1,0 +1,29 @@
+UnitType(
+  id: 15,
+  name: "anti_air",
+  max_health: 350.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Vehicle,
+  ],
+  base_armour: 350.0,
+  weapon1: Some(
+    Weapon(
+      id: 2,
+      name: "flak",
+      directness:       Direct,
+      base_damage: 15.0,
+      num_of_attacks: 8,
+      bonuses: [
+        1.4,
+        0.8,
+        0.6,
+        0.6,
+        1.4,
+        1.4,
+        0.6,
+      ],
+    )  ),
+  weapon2: None,
+)

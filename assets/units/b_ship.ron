@@ -1,0 +1,29 @@
+UnitType(
+  id: 22,
+  name: "b_ship",
+  max_health: 1200.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Ship,
+  ],
+  base_armour: 1200.0,
+  weapon1: Some(
+    Weapon(
+      id: 6,
+      name: "howitzer",
+      directness:       Indirect,
+      base_damage: 25.0,
+      num_of_attacks: 1,
+      bonuses: [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+      ],
+    )  ),
+  weapon2: None,
+)

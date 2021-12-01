@@ -1,0 +1,10 @@
+weapon*?=attr:?,directness:str,base_damage:float,num_of_attacks:int
+machine_gun,direct,10,5
+cannon,direct,20,1
+flak,direct,15,8
+rocket,indirect,25,1
+missile,indirect,25,1
+bazooka,direct,12,1
+howitzer,indirect,25,1
+torpedo,direct,30,1
+bomb,direct,30,1

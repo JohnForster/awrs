@@ -1,0 +1,13 @@
+UnitType(
+  id: 12,
+  name: "apc",
+  max_health: 350.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Vehicle,
+  ],
+  base_armour: 350.0,
+  weapon1: None,
+  weapon2: None,
+)

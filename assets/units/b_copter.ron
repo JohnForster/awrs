@@ -1,0 +1,45 @@
+UnitType(
+  id: 25,
+  name: "b_copter",
+  max_health: 350.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Copter,
+  ],
+  base_armour: 350.0,
+  weapon1: Some(
+    Weapon(
+      id: 8,
+      name: "bomb",
+      directness:       Direct,
+      base_damage: 30.0,
+      num_of_attacks: 1,
+      bonuses: [
+        1.2,
+        1.2,
+        1.2,
+        1.2,
+        1.2,
+        1.2,
+        1.2,
+      ],
+    )  ),
+  weapon2: Some(
+    Weapon(
+      id: 0,
+      name: "machine_gun",
+      directness:       Direct,
+      base_damage: 10.0,
+      num_of_attacks: 5,
+      bonuses: [
+        1.2,
+        0.4,
+        0.0,
+        0.0,
+        0.0,
+        0.6,
+        0.0,
+      ],
+    )  ),
+)

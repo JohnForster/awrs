@@ -1,0 +1,45 @@
+UnitType(
+  id: 18,
+  name: "md_tank",
+  max_health: 600.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Vehicle,
+  ],
+  base_armour: 600.0,
+  weapon1: Some(
+    Weapon(
+      id: 1,
+      name: "cannon",
+      directness:       Direct,
+      base_damage: 20.0,
+      num_of_attacks: 1,
+      bonuses: [
+        1.0,
+        1.2,
+        0.6,
+        0.6,
+        0.0,
+        0.0,
+        0.6,
+      ],
+    )  ),
+  weapon2: Some(
+    Weapon(
+      id: 0,
+      name: "machine_gun",
+      directness:       Direct,
+      base_damage: 10.0,
+      num_of_attacks: 5,
+      bonuses: [
+        1.2,
+        0.4,
+        0.0,
+        0.0,
+        0.0,
+        0.6,
+        0.0,
+      ],
+    )  ),
+)

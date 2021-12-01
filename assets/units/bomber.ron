@@ -1,0 +1,29 @@
+UnitType(
+  id: 27,
+  name: "bomber",
+  max_health: 500.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Plane,
+  ],
+  base_armour: 500.0,
+  weapon1: Some(
+    Weapon(
+      id: 8,
+      name: "bomb",
+      directness:       Direct,
+      base_damage: 30.0,
+      num_of_attacks: 1,
+      bonuses: [
+        1.2,
+        1.2,
+        1.2,
+        1.2,
+        1.2,
+        1.2,
+        1.2,
+      ],
+    )  ),
+  weapon2: None,
+)

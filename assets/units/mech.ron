@@ -1,0 +1,45 @@
+UnitType(
+  id: 10,
+  name: "mech",
+  max_health: 120.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Foot,
+  ],
+  base_armour: 120.0,
+  weapon1: Some(
+    Weapon(
+      id: 5,
+      name: "bazooka",
+      directness:       Direct,
+      base_damage: 12.0,
+      num_of_attacks: 1,
+      bonuses: [
+        1.0,
+        1.2,
+        0.6,
+        0.6,
+        0.0,
+        1.2,
+        0.6,
+      ],
+    )  ),
+  weapon2: Some(
+    Weapon(
+      id: 0,
+      name: "machine_gun",
+      directness:       Direct,
+      base_damage: 10.0,
+      num_of_attacks: 5,
+      bonuses: [
+        1.2,
+        0.4,
+        0.0,
+        0.0,
+        0.0,
+        0.6,
+        0.0,
+      ],
+    )  ),
+)

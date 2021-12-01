@@ -1,0 +1,10 @@
+weapon*tag=bonus:float,foot,vehicle,ship,sub,plane,copter,amphib
+machine_gun,1.2,0.4,0,0,0,0.6,0
+cannon,1,1.2,0.6,0.6,0,0,0.6
+flak,1.4,0.8,0.6,0.6,1.4,1.4,0.6
+rocket,1,1,1,1,0,0,1
+missile,0,0,0,0,1.4,1.4,0
+bazooka,1,1.2,0.6,0.6,0,1.2,0.6
+howitzer,1,1,1,1,1,1,1
+torpedo,0,0,1.4,1.4,0,0,1.4
+bomb,1.2,1.2,1.2,1.2,1.2,1.2,1.2

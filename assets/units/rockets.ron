@@ -1,0 +1,29 @@
+UnitType(
+  id: 16,
+  name: "rockets",
+  max_health: 300.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Vehicle,
+  ],
+  base_armour: 300.0,
+  weapon1: Some(
+    Weapon(
+      id: 3,
+      name: "rocket",
+      directness:       Indirect,
+      base_damage: 25.0,
+      num_of_attacks: 1,
+      bonuses: [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+      ],
+    )  ),
+  weapon2: None,
+)

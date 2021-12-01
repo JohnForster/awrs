@@ -1,0 +1,29 @@
+UnitType(
+  id: 14,
+  name: "artillery",
+  max_health: 350.0,
+  max_ammo: 0.0,
+  max_fuel: 0.0,
+  tags: [
+    Vehicle,
+  ],
+  base_armour: 350.0,
+  weapon1: Some(
+    Weapon(
+      id: 6,
+      name: "howitzer",
+      directness:       Indirect,
+      base_damage: 25.0,
+      num_of_attacks: 1,
+      bonuses: [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+      ],
+    )  ),
+  weapon2: None,
+)
