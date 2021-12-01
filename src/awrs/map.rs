@@ -7,6 +7,18 @@ use super::unit::*;
 use super::unit_loading::UnitHandle;
 use super::unit_loading::UnitType;
 
+pub struct GameMap {
+    pub width: usize,
+    pub height: usize,
+}
+
+#[derive(Bundle)]
+struct GameMapBundle {
+    game_map: GameMap,
+    transform: Transform,
+    global_transform: GlobalTransform,
+}
+
 // TODO Load sprites from json: https://github.com/serde-rs/json
 
 // TODO: should probably move the part for instantiating units into unit.rs
@@ -38,26 +50,40 @@ pub fn build_map(
 
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
-    for (y, row) in game_map.iter().rev().enumerate() {
-        for (x, &terrain_index) in row.iter().enumerate() {
-            commands.spawn_bundle(SpriteSheetBundle {
-                texture_atlas: terrain_atlas.atlas_handle.clone(),
-                sprite: TextureAtlasSprite::new(terrain_index),
-                transform: Transform::from_translation(Vec3::new(
-                    x as f32 * TILE_SIZE,
-                    y as f32 * TILE_SIZE,
-                    0.0,
-                )),
-                ..Default::default()
-            });
-        }
-    }
+    commands
+        .spawn()
+        .insert(GameMap {
+            height: game_map.len(),
+            width: game_map[0].len(),
+        })
+        .insert(Transform {
+            ..Default::default()
+        })
+        .insert(GlobalTransform {
+            ..Default::default()
+        })
+        .with_children(|parent| {
+            for (y, row) in game_map.iter().rev().enumerate() {
+                for (x, &terrain_index) in row.iter().enumerate() {
+                    parent.spawn_bundle(SpriteSheetBundle {
+                        texture_atlas: terrain_atlas.atlas_handle.clone(),
+                        sprite: TextureAtlasSprite::new(terrain_index),
+                        transform: Transform::from_translation(Vec3::new(
+                            x as f32 * TILE_SIZE,
+                            y as f32 * TILE_SIZE,
+                            0.0,
+                        )),
+                        ..Default::default()
+                    });
+                }
+            }
+        });
 
     for (i, unit) in units.into_iter().enumerate() {
         let x = unit.location.x;
         let y = unit.location.y;
         commands.spawn_bundle(UnitBundle {
-            id: i,
+            id: UnitId(i),
             data: unit,
             sprite: SpriteSheetBundle {
                 texture_atlas: unit_atlas.atlas_handle.clone(),
