@@ -16,7 +16,7 @@ pub enum AppState {
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
-    Loading,
+    SetUp,
     Browsing,
     _Paused,
     UnitMenu,
@@ -31,10 +31,12 @@ pub struct AWRSPlugin;
 impl Plugin for AWRSPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_plugin(LoadAssets)
+            .add_event::<AttackEvent>()
+            .add_event::<DamageEvent>()
             .add_state(AppState::Loading)
-            // Loading
+            // ------------------------ Loading ------------------------
             .add_system_set(
-                SystemSet::on_enter(AppState::InGame(GameState::Loading))
+                SystemSet::on_enter(AppState::InGame(GameState::SetUp))
                     .with_system(build_map.system().label("build map"))
                     .with_system(
                         create_cursor
@@ -44,14 +46,17 @@ impl Plugin for AWRSPlugin {
                     )
                     .with_system(transition_to_browsing.system().after("create cursor")),
             )
-            .add_system_set(SystemSet::on_update(AppState::InGame(GameState::Loading)))
-            // Browsing
+            .add_system_set(SystemSet::on_update(AppState::InGame(GameState::SetUp)))
+            // ------------------------ Browsing ------------------------
+            .add_system_set(SystemSet::on_enter(AppState::InGame(GameState::Browsing)))
             .add_system_set(
                 SystemSet::on_update(AppState::InGame(GameState::Browsing))
                     .with_system(handle_cursor_move.system())
-                    .with_system(handle_cursor_select.system()),
+                    .with_system(handle_cursor_select.system())
+                    .with_system(handle_attack.system())
+                    .with_system(handle_damage.system()),
             )
-            // Unit Menu
+            // ------------------------ Unit Menu ------------------------
             .add_system_set(
                 SystemSet::on_enter(AppState::InGame(GameState::UnitMenu))
                     .with_system(handle_open_unit_menu.system()),
@@ -64,12 +69,12 @@ impl Plugin for AWRSPlugin {
                 SystemSet::on_exit(AppState::InGame(GameState::UnitMenu))
                     .with_system(handle_exit_unit_menu.system()),
             )
-            // Unit Movement
+            // ------------------------ Unit Movement ------------------------
             .add_system_set(
                 SystemSet::on_update(AppState::InGame(GameState::MoveUnit))
                     .with_system(handle_unit_movement.system()),
             )
-            // Choose Target
+            // ------------------------ Choose Target ------------------------
             .add_system_set(
                 SystemSet::on_enter(AppState::InGame(GameState::ChooseTarget))
                     .with_system(handle_open_choose_target.system()),
@@ -86,6 +91,7 @@ impl Plugin for AWRSPlugin {
     }
 }
 
+// Should probably listen for loading to be finished.
 fn transition_to_browsing(mut game_state: ResMut<State<AppState>>) {
     info!("Done loading! Start Browsing!");
     game_state
