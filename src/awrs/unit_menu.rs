@@ -24,7 +24,7 @@ pub fn handle_open_unit_menu(
 
         // TODO get unit menu options from selected unit.
         // Move if hasn't moved yet. Attack if unit next to it.
-        let options = vec!["M - Move", "A - Attack", "C - Cancel"];
+        let options = vec!["M - Move", "T - Attack", "C - Cancel"];
 
         commands
             .spawn_bundle(NodeBundle {
@@ -77,6 +77,13 @@ pub fn handle_navigate_unit_menu(
         game_state
             .set(AppState::InGame(GameState::MoveUnit))
             .expect("Should be able to enter MoveUnit gamestate")
+    }
+    if keyboard_input.just_pressed(KeyCode::T) {
+        info!("Performing Attack");
+
+        game_state
+            .set(AppState::InGame(GameState::ChooseTarget))
+            .expect("Should be able to return to browsing")
     }
 }
 
