@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use super::cell::*;
 use super::constants::*;
+use super::sprite_loading::HealthAtlas;
 use super::sprite_loading::{TerrainAtlas, UnitAtlas};
 use super::unit::*;
 use super::unit_loading::UnitHandle;
@@ -30,6 +31,7 @@ pub fn build_map(
     mut commands: Commands,
     terrain_atlas: Res<TerrainAtlas>,
     unit_atlas: Res<UnitAtlas>,
+    health_atlas: Res<HealthAtlas>,
     unit_handle: Res<UnitHandle>,
     unit_assets: Res<Assets<UnitType>>,
 ) {
@@ -50,6 +52,12 @@ pub fn build_map(
             unit_type: 0,
             team: Team(0),
             location: Cell { x: 1, y: 1 },
+            health: UnitHealth(infantry.max_health.clone()),
+        },
+        Unit {
+            unit_type: 0,
+            team: Team(0),
+            location: Cell { x: 4, y: 5 },
             health: UnitHealth(infantry.max_health.clone()),
         },
         Unit {
@@ -96,19 +104,31 @@ pub fn build_map(
     for (i, unit) in units.into_iter().enumerate() {
         let x = unit.location.x;
         let y = unit.location.y;
-        commands.spawn_bundle(UnitBundle {
-            id: UnitId(i),
-            data: unit,
-            sprite: SpriteSheetBundle {
-                texture_atlas: unit_atlas.atlas_handle.clone(),
-                sprite: TextureAtlasSprite::new(unit.team.0.clone()),
-                transform: Transform::from_translation(Vec3::new(
-                    x as f32 * TILE_SIZE,
-                    y as f32 * TILE_SIZE,
-                    1.0,
-                )),
-                ..Default::default()
-            },
-        });
+        commands
+            .spawn_bundle(UnitBundle {
+                id: UnitId(i),
+                data: unit,
+                sprite: SpriteSheetBundle {
+                    texture_atlas: unit_atlas.atlas_handle.clone(),
+                    sprite: TextureAtlasSprite::new(unit.team.0.clone()),
+                    transform: Transform::from_translation(Vec3::new(
+                        x as f32 * TILE_SIZE,
+                        y as f32 * TILE_SIZE,
+                        1.0,
+                    )),
+                    ..Default::default()
+                },
+            })
+            .with_children(|unit| {
+                let mut transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
+                transform.scale = Vec3::new(0.7, 0.7, 1.0);
+                unit.spawn_bundle(SpriteSheetBundle {
+                    texture_atlas: health_atlas.atlas_handle.clone(),
+                    sprite: TextureAtlasSprite::new(10),
+                    transform,
+                    ..Default::default()
+                })
+                .insert(HealthIndicator);
+            });
     }
 }

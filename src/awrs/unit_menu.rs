@@ -71,6 +71,8 @@ pub fn handle_open_unit_menu(
 pub fn handle_navigate_unit_menu(
     keyboard_input: Res<Input<KeyCode>>,
     mut game_state: ResMut<State<AppState>>,
+    units_query: Query<Entity, (With<Selected>, With<Unit>)>,
+    mut commands: Commands,
 ) {
     if keyboard_input.just_pressed(KeyCode::M) {
         info!("Changing Game State to MoveUnit");
@@ -83,6 +85,17 @@ pub fn handle_navigate_unit_menu(
 
         game_state
             .set(AppState::InGame(GameState::ChooseTarget))
+            .expect("Should be able to return to browsing")
+    }
+    if keyboard_input.just_pressed(KeyCode::C) {
+        info!("Returning to Browse");
+        let unit_entity = units_query
+            .single()
+            .expect("Unit Menu is open but there is no unit selected?!");
+        commands.entity(unit_entity).remove::<Selected>();
+
+        game_state
+            .set(AppState::InGame(GameState::Browsing))
             .expect("Should be able to return to browsing")
     }
 }
