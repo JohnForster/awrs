@@ -34,11 +34,17 @@ pub fn load_ui_sprites(
     let mut texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(143.0, 64.0));
 
     let cursor_rect = bevy::sprite::Rect {
-        min: Vec2::new(44.0, 6.0),
-        max: Vec2::new(44.0 + 28.0, 6.0 + 32.0),
+        min: Vec2::new(44.0, 5.0),
+        max: Vec2::new(44.0 + 29.0, 6.0 + 32.0),
+    };
+
+    let attack_cursor_rect = bevy::sprite::Rect {
+        min: Vec2::new(75.0, 5.0),
+        max: Vec2::new(75.0 + 29.0, 5.0 + 32.0),
     };
 
     texture_atlas.add_texture(cursor_rect);
+    texture_atlas.add_texture(attack_cursor_rect);
     let atlas_handle = texture_atlases.add(texture_atlas);
 
     commands.insert_resource(UIAtlas {
@@ -64,7 +70,13 @@ pub fn load_unit_sprites(
         max: Vec2::new(24.0 + 14.0, 4.0 + 16.0),
     };
 
+    let inf_blue_sprite = bevy::sprite::Rect {
+        min: Vec2::new(24.0, 22.0),
+        max: Vec2::new(24.0 + 14.0, 22.0 + 16.0),
+    };
+
     texture_atlas.add_texture(inf_orange_sprite);
+    texture_atlas.add_texture(inf_blue_sprite);
     let atlas_handle = texture_atlases.add(texture_atlas);
 
     commands.insert_resource(UnitAtlas {

@@ -1,8 +1,13 @@
 use bevy::prelude::*;
 
-use super::{cell::Cell, constants::TILE_SIZE, map::GameMap};
+use super::{
+    cell::Cell,
+    constants::TILE_SIZE,
+    game::{AppState, GameState},
+    map::GameMap,
+};
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct UnitHealth(pub f32);
 
 // Or, to avoid pub
@@ -18,7 +23,7 @@ pub struct UnitHealth(pub f32);
 //     }
 // }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Copy)]
 pub struct Team(pub u32);
 
 // Or, to avoid pub
@@ -36,6 +41,7 @@ pub struct Team(pub u32);
 
 pub struct Selected;
 
+#[derive(Clone, Copy)]
 pub struct Unit {
     pub unit_type: usize,
     pub team: Team,
@@ -45,7 +51,7 @@ pub struct Unit {
     // etc. etc..
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct UnitId(pub usize);
 
 #[derive(Bundle)]
@@ -63,6 +69,7 @@ pub fn handle_unit_movement(
     keyboard_input: Res<Input<KeyCode>>,
     mut unit_query: Query<(&mut Transform, &mut Unit), With<Selected>>,
     game_map_query: Query<&GameMap>,
+    mut game_state: ResMut<State<AppState>>,
 ) {
     let game_map = game_map_query
         .single()
@@ -87,6 +94,13 @@ pub fn handle_unit_movement(
         if keyboard_input.just_pressed(KeyCode::D) && unit.location.x < game_map.width {
             transform.translation.x += 1.0 * TILE_SIZE;
             unit.location.x += 1;
+        }
+
+        if keyboard_input.just_pressed(KeyCode::Space) {
+            info!("Returning to UnitMenu state");
+            game_state
+                .set(AppState::InGame(GameState::UnitMenu))
+                .expect("Problem changing state");
         }
     }
 }
