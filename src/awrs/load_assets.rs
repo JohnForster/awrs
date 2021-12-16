@@ -40,9 +40,7 @@ pub fn check_assets_ready(
         LoadState::Loaded => {
             // all assets are now ready
             commands.remove_resource::<AssetsLoading>();
-            game_state
-                .set(AppState::InGame(GameState::Loading))
-                .unwrap();
+            game_state.set(AppState::InGame(GameState::SetUp)).unwrap();
         }
         _ => {
             // NotLoaded/Loading: not fully ready yet

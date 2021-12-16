@@ -62,6 +62,8 @@ pub struct UnitBundle {
     pub sprite: SpriteSheetBundle,
 }
 
+pub struct HealthIndicator;
+
 // Very similar to moving cursor.
 // Could have Movable struct component so that this can be reused?
 // Or could extract movement logic into a separate function?
@@ -101,6 +103,58 @@ pub fn handle_unit_movement(
             game_state
                 .set(AppState::InGame(GameState::UnitMenu))
                 .expect("Problem changing state");
+        }
+    }
+}
+
+pub fn calculate_damage(_attacking_unit: &Unit, _defending_unit: &Unit) -> (f32, f32) {
+    return (2.0, 4.0);
+}
+
+pub struct AttackEvent(pub Entity, pub Entity);
+
+pub fn handle_attack(
+    units_query: Query<&Unit>,
+    mut ev_attack: EventReader<AttackEvent>,
+    mut ev_damage: EventWriter<DamageEvent>,
+) {
+    for ev in ev_attack.iter() {
+        info!("Attacking!");
+        let attacker = units_query.get(ev.0).expect("Could not find attacker");
+        let defender = units_query.get(ev.1).expect("Could not find defender");
+
+        let (att_damage, def_damage) = calculate_damage(attacker, defender);
+
+        ev_damage.send(DamageEvent(ev.0, att_damage));
+        ev_damage.send(DamageEvent(ev.1, def_damage));
+    }
+}
+
+pub struct DamageEvent(pub Entity, pub f32);
+
+pub fn handle_damage(
+    mut ev_damage: EventReader<DamageEvent>,
+    mut units_query: Query<(&mut Unit, &Children)>,
+    mut health_indicator_query: Query<&mut TextureAtlasSprite, With<HealthIndicator>>,
+    mut commands: Commands,
+) {
+    for DamageEvent(entity, damage) in ev_damage.iter() {
+        let (mut unit, children) = units_query
+            .get_mut(*entity)
+            .expect("Could not find unit to damage");
+
+        unit.health.0 -= damage;
+
+        // Maybe updating health indicator should be moved to a UI system?
+        for &child in children.iter() {
+            if let Ok(mut health_indicator) = health_indicator_query.get_mut(child) {
+                let floored_health = unit.health.0.floor().max(0.0);
+                health_indicator.index = floored_health as u32;
+            }
+        }
+
+        if unit.health.0 <= 0.0 {
+            commands.entity(*entity).despawn_recursive()
         }
     }
 }
