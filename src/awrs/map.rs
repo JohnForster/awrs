@@ -19,6 +19,10 @@ struct GameMapBundle {
     global_transform: GlobalTransform,
 }
 
+pub struct ActiveTeam {
+    pub team: Team,
+}
+
 // TODO Load sprites from json: https://github.com/serde-rs/json
 
 // TODO: should probably move the part for instantiating units into unit.rs
@@ -41,14 +45,24 @@ pub fn build_map(
 
     let infantry = unit_assets.get(&unit_handle.handle).unwrap();
 
-    let units = vec![Unit {
-        unit_type: 0,
-        team: Team(0),
-        location: Cell { x: 1, y: 1 },
-        health: UnitHealth(infantry.max_health),
-    }];
+    let units = vec![
+        Unit {
+            unit_type: 0,
+            team: Team(0),
+            location: Cell { x: 1, y: 1 },
+            health: UnitHealth(infantry.max_health.clone()),
+        },
+        Unit {
+            unit_type: 0,
+            team: Team(1),
+            location: Cell { x: 2, y: 1 },
+            health: UnitHealth(infantry.max_health.clone()),
+        },
+    ];
 
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+
+    commands.insert_resource(ActiveTeam { team: Team(0) });
 
     commands
         .spawn()
@@ -87,7 +101,7 @@ pub fn build_map(
             data: unit,
             sprite: SpriteSheetBundle {
                 texture_atlas: unit_atlas.atlas_handle.clone(),
-                sprite: TextureAtlasSprite::new(0),
+                sprite: TextureAtlasSprite::new(unit.team.0.clone()),
                 transform: Transform::from_translation(Vec3::new(
                     x as f32 * TILE_SIZE,
                     y as f32 * TILE_SIZE,

@@ -1,4 +1,5 @@
 pub mod cell;
+pub mod choose_target;
 pub mod constants;
 pub mod cursor;
 pub mod game;
