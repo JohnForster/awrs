@@ -2,23 +2,18 @@ use bevy::prelude::*;
 
 use super::{
     cell::Cell,
-    cursor::Cursor,
+    cursor::{ChangeCursorEvent, Cursor, CursorStyle},
     game::{AppState, GameState},
     map::ActiveTeam,
     unit::{AttackEvent, Selected, Unit},
 };
 
-pub fn handle_open_choose_target(mut cursor_query: Query<&mut TextureAtlasSprite, With<Cursor>>) {
-    let mut texture_atlas_sprite = cursor_query.single_mut().expect("Should be a cursor");
-    texture_atlas_sprite.index = 1;
+pub fn open_target_selection(mut ev_change_cursor: EventWriter<ChangeCursorEvent>) {
+    info!("Changed to Target Selection");
+    ev_change_cursor.send(ChangeCursorEvent(CursorStyle::Target));
 }
 
-pub fn handle_exit_choose_target(mut cursor_query: Query<&mut TextureAtlasSprite, With<Cursor>>) {
-    let mut texture_atlas_sprite = cursor_query.single_mut().expect("Should be a cursor");
-    texture_atlas_sprite.index = 0;
-}
-
-pub fn handle_cursor_target_select(
+pub fn select_target(
     keyboard_input: Res<Input<KeyCode>>,
     cursor_query: Query<&Cell, With<Cursor>>,
     mut game_state: ResMut<State<AppState>>,
