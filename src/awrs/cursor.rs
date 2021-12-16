@@ -12,6 +12,10 @@ use super::unit::*;
 
 pub struct Cursor;
 
+pub fn open_browse(mut ev_change_cursor: EventWriter<ChangeCursorEvent>) {
+    ev_change_cursor.send(ChangeCursorEvent(CursorStyle::Browse));
+}
+
 pub fn create_cursor(mut commands: Commands, ui_atlas: Res<UIAtlas>) {
     info!("Creating Cursor");
     let x = 0;
@@ -95,5 +99,28 @@ pub fn handle_cursor_select(
                 }
             }
         }
+    }
+}
+pub enum CursorStyle {
+    Browse,
+    Target,
+    None,
+}
+
+pub struct ChangeCursorEvent(pub CursorStyle);
+
+pub fn handle_change_cursor(
+    mut ev_change_cursor: EventReader<ChangeCursorEvent>,
+    mut q_cursor_sprite: Query<&mut TextureAtlasSprite, With<Cursor>>,
+) {
+    for ChangeCursorEvent(cursor_style) in ev_change_cursor.iter() {
+        let sprite_index = match cursor_style {
+            CursorStyle::Browse => 0,
+            CursorStyle::Target => 1,
+            CursorStyle::None => 9,
+        };
+        info!("Changing cursor sprite index to {:?}", sprite_index);
+        let mut cursor_sprite = q_cursor_sprite.single_mut().expect("No Cursor Found?!");
+        cursor_sprite.index = sprite_index;
     }
 }
