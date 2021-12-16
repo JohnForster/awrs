@@ -1,16 +1,7 @@
 use bevy::prelude::*;
 
-use super::choose_target::*;
-use super::cursor::*;
 use super::load_assets::*;
-use super::map::*;
-use super::plugins::browsing::BrowsingPlugin;
-use super::plugins::move_unit::MoveUnitPlugin;
-use super::plugins::setup::SetupPlugin;
-use super::plugins::targeting::TargetingPlugin;
-use super::plugins::unit_menu::UnitMenuPlugin;
-use super::unit::*;
-use super::unit_menu::*;
+use super::plugins::*;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum AppState {
