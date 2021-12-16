@@ -1,22 +1,22 @@
-use bevy::{asset::LoadState, prelude::*};
+use bevy::prelude::*;
 
 use super::load_assets::AssetsLoading;
 
 #[derive(Default)]
 pub struct TerrainAtlas {
-    texture_handle: Handle<Texture>,
+    _texture_handle: Handle<Texture>,
     pub atlas_handle: Handle<TextureAtlas>,
 }
 
 #[derive(Default)]
 pub struct UIAtlas {
-    texture_handle: Handle<Texture>,
+    _texture_handle: Handle<Texture>,
     pub atlas_handle: Handle<TextureAtlas>,
 }
 
 #[derive(Default)]
 pub struct UnitAtlas {
-    texture_handle: Handle<Texture>,
+    _texture_handle: Handle<Texture>,
     pub atlas_handle: Handle<TextureAtlas>,
 }
 
@@ -64,7 +64,7 @@ pub fn load_ui_sprites(
     let health_atlas_handle = texture_atlases.add(health_texture_atlas);
 
     commands.insert_resource(UIAtlas {
-        texture_handle,
+        _texture_handle: texture_handle,
         atlas_handle: cursor_atlas_handle,
     });
     commands.insert_resource(HealthAtlas {
@@ -99,7 +99,7 @@ pub fn load_unit_sprites(
     let atlas_handle = texture_atlases.add(texture_atlas);
 
     commands.insert_resource(UnitAtlas {
-        texture_handle,
+        _texture_handle: texture_handle,
         atlas_handle,
     })
 }
@@ -133,7 +133,7 @@ pub fn load_terrain_sprites(
     let atlas_handle = texture_atlases.add(texture_atlas);
 
     commands.insert_resource(TerrainAtlas {
-        texture_handle,
+        _texture_handle: texture_handle,
         atlas_handle,
     })
 }
