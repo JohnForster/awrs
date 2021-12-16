@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use super::{
     cell::Cell,
     constants::TILE_SIZE,
+    cursor::{ChangeCursorEvent, CursorStyle},
     game::{AppState, GameState},
     map::GameMap,
 };
@@ -64,10 +65,14 @@ pub struct UnitBundle {
 
 pub struct HealthIndicator;
 
+pub fn open_move_unit(mut ev_change_cursor: EventWriter<ChangeCursorEvent>) {
+    ev_change_cursor.send(ChangeCursorEvent(CursorStyle::None));
+}
+
 // Very similar to moving cursor.
 // Could have Movable struct component so that this can be reused?
 // Or could extract movement logic into a separate function?
-pub fn handle_unit_movement(
+pub fn move_unit(
     keyboard_input: Res<Input<KeyCode>>,
     mut unit_query: Query<(&mut Transform, &mut Unit), With<Selected>>,
     game_map_query: Query<&GameMap>,

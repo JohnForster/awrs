@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
+use crate::awrs::cursor::CursorStyle;
+
 use super::{
+    cursor::ChangeCursorEvent,
     game::{AppState, GameState},
     unit::{Selected, Unit},
 };
@@ -11,8 +14,10 @@ pub fn handle_open_unit_menu(
     mut commands: Commands,
     units_query: Query<&Unit, With<Selected>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut ev_change_cursor: EventWriter<ChangeCursorEvent>,
     asset_server: Res<AssetServer>,
 ) {
+    ev_change_cursor.send(ChangeCursorEvent(CursorStyle::Browse));
     info!("Opening unit menu...");
 
     // ui camera
