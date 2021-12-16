@@ -25,6 +25,7 @@ pub fn handle_cursor_target_select(
     mut attacking_unit_query: Query<Entity, (With<Selected>, With<Unit>)>,
     mut units_query: Query<(Entity, &mut Unit), Without<Selected>>,
     mut ev_attack: EventWriter<AttackEvent>,
+    mut commands: Commands,
     active_team: Res<ActiveTeam>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Space) {
@@ -40,6 +41,8 @@ pub fn handle_cursor_target_select(
             let is_enemy = unit.team != active_team.team;
             if is_enemy && cursor_hovering {
                 ev_attack.send(AttackEvent(attacker_entity, defender_entity));
+
+                commands.entity(attacker_entity).remove::<Selected>();
 
                 game_state
                     .set(AppState::InGame(GameState::Browsing))
