@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::awrs::{
-    choose_target::{open_target_selection, select_target},
-    cursor::handle_cursor_move,
+    choose_target::{open_target_selection, target_select},
+    cursor::{move_cursor, select_unit},
     game::{AppState, GameState},
 };
 
@@ -16,8 +16,9 @@ impl Plugin for TargetingPlugin {
         )
         .add_system_set(
             SystemSet::on_update(AppState::InGame(GameState::ChooseTarget))
-                .with_system(handle_cursor_move.system())
-                .with_system(select_target.system()),
+                .with_system(move_cursor.system())
+                .with_system(select_unit.system())
+                .with_system(target_select.system()),
         );
     }
 }

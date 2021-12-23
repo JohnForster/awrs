@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::awrs::{
-    cursor::handle_cursor_move,
+    cursor::move_cursor,
     game::{AppState, GameState},
     unit::{move_unit, open_move_unit},
 };
@@ -17,7 +17,7 @@ impl Plugin for MoveUnitPlugin {
         .add_system_set(
             SystemSet::on_update(AppState::InGame(GameState::MoveUnit))
                 .with_system(move_unit.system())
-                .with_system(handle_cursor_move.system()),
+                .with_system(move_cursor.system()),
         );
     }
 }
