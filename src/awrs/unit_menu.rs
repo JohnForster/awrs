@@ -10,7 +10,7 @@ use super::{
 
 pub struct UnitMenu;
 
-pub fn handle_open_unit_menu(
+pub fn open_unit_menu(
     mut commands: Commands,
     units_query: Query<&Unit, With<Selected>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -73,7 +73,7 @@ pub fn handle_open_unit_menu(
     }
 }
 
-pub fn handle_navigate_unit_menu(
+pub fn unit_menu_input(
     keyboard_input: Res<Input<KeyCode>>,
     mut game_state: ResMut<State<AppState>>,
     units_query: Query<Entity, (With<Selected>, With<Unit>)>,
@@ -105,10 +105,7 @@ pub fn handle_navigate_unit_menu(
     }
 }
 
-pub fn handle_exit_unit_menu(
-    mut commands: Commands,
-    mut unit_menu_query: Query<Entity, With<UnitMenu>>,
-) {
+pub fn exit_unit_menu(mut commands: Commands, mut unit_menu_query: Query<Entity, With<UnitMenu>>) {
     info!("Exiting Unit Menu");
     let unit_menu_entity = unit_menu_query.single_mut().unwrap();
     commands.entity(unit_menu_entity).despawn_recursive();
