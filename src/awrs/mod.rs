@@ -1,9 +1,11 @@
 pub mod cell;
+pub mod choose_target;
 pub mod constants;
 pub mod cursor;
 pub mod game;
 pub mod load_assets;
 pub mod map;
+pub mod plugins;
 pub mod sprite_loading;
 pub mod unit;
 pub mod unit_loading;

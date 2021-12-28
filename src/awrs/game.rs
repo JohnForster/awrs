@@ -1,26 +1,24 @@
 use bevy::prelude::*;
 
-use super::cursor::*;
 use super::load_assets::*;
-use super::map::*;
-use super::unit::*;
-use super::unit_menu::*;
+use super::plugins::*;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum AppState {
     _MainMenu,
     InGame(GameState),
     Loading,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum GameState {
-    _Loading,
+    SetUp,
     Browsing,
     _Paused,
     UnitMenu,
     _BuildingMenu,
     MoveUnit,
+    ChooseTarget,
     _EnemyTurn,
 }
 
@@ -30,34 +28,11 @@ impl Plugin for AWRSPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_plugin(LoadAssets)
             .add_state(AppState::Loading)
-            // Browsing
-            .add_system_set(
-                SystemSet::on_enter(AppState::InGame(GameState::Browsing))
-                    .with_system(build_map.system().label("build map"))
-                    .with_system(create_cursor.system().after("build map")),
-            )
-            .add_system_set(
-                SystemSet::on_update(AppState::InGame(GameState::Browsing))
-                    .with_system(handle_cursor_move.system())
-                    .with_system(handle_cursor_select.system()),
-            )
-            // Unit Menu
-            .add_system_set(
-                SystemSet::on_enter(AppState::InGame(GameState::UnitMenu))
-                    .with_system(handle_open_unit_menu.system()),
-            )
-            .add_system_set(
-                SystemSet::on_update(AppState::InGame(GameState::UnitMenu))
-                    .with_system(handle_navigate_unit_menu.system()),
-            )
-            .add_system_set(
-                SystemSet::on_exit(AppState::InGame(GameState::UnitMenu))
-                    .with_system(handle_exit_unit_menu.system()),
-            )
-            // Unit Movement
-            .add_system_set(
-                SystemSet::on_update(AppState::InGame(GameState::MoveUnit))
-                    .with_system(handle_unit_movement.system()),
-            );
+            // Add plugins for each of the InGame states
+            .add_plugin(SetupPlugin)
+            .add_plugin(BrowsingPlugin)
+            .add_plugin(UnitMenuPlugin)
+            .add_plugin(MoveUnitPlugin)
+            .add_plugin(TargetingPlugin);
     }
 }
