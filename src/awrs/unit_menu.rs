@@ -1,18 +1,23 @@
 use bevy::prelude::*;
 
+use crate::awrs::cursor::CursorStyle;
+
 use super::{
+    cursor::ChangeCursorEvent,
     game::{AppState, GameState},
     unit::{Selected, Unit},
 };
 
 pub struct UnitMenu;
 
-pub fn handle_open_unit_menu(
+pub fn open_unit_menu(
     mut commands: Commands,
     units_query: Query<&Unit, With<Selected>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut ev_change_cursor: EventWriter<ChangeCursorEvent>,
     asset_server: Res<AssetServer>,
 ) {
+    ev_change_cursor.send(ChangeCursorEvent(CursorStyle::Browse));
     info!("Opening unit menu...");
 
     // ui camera
@@ -24,7 +29,7 @@ pub fn handle_open_unit_menu(
 
         // TODO get unit menu options from selected unit.
         // Move if hasn't moved yet. Attack if unit next to it.
-        let options = vec!["M - Move", "A - Attack", "C - Cancel"];
+        let options = vec!["M - Move", "T - Attack", "C - Cancel"];
 
         commands
             .spawn_bundle(NodeBundle {
@@ -68,9 +73,11 @@ pub fn handle_open_unit_menu(
     }
 }
 
-pub fn handle_navigate_unit_menu(
+pub fn unit_menu_input(
     keyboard_input: Res<Input<KeyCode>>,
     mut game_state: ResMut<State<AppState>>,
+    units_query: Query<Entity, (With<Selected>, With<Unit>)>,
+    mut commands: Commands,
 ) {
     if keyboard_input.just_pressed(KeyCode::M) {
         info!("Changing Game State to MoveUnit");
@@ -78,12 +85,27 @@ pub fn handle_navigate_unit_menu(
             .set(AppState::InGame(GameState::MoveUnit))
             .expect("Should be able to enter MoveUnit gamestate")
     }
+    if keyboard_input.just_pressed(KeyCode::T) {
+        info!("Performing Attack");
+
+        game_state
+            .set(AppState::InGame(GameState::ChooseTarget))
+            .expect("Should be able to return to browsing")
+    }
+    if keyboard_input.just_pressed(KeyCode::C) {
+        info!("Returning to Browse");
+        let unit_entity = units_query
+            .single()
+            .expect("Unit Menu is open but there is no unit selected?!");
+        commands.entity(unit_entity).remove::<Selected>();
+
+        game_state
+            .set(AppState::InGame(GameState::Browsing))
+            .expect("Should be able to return to browsing")
+    }
 }
 
-pub fn handle_exit_unit_menu(
-    mut commands: Commands,
-    mut unit_menu_query: Query<Entity, With<UnitMenu>>,
-) {
+pub fn exit_unit_menu(mut commands: Commands, mut unit_menu_query: Query<Entity, With<UnitMenu>>) {
     info!("Exiting Unit Menu");
     let unit_menu_entity = unit_menu_query.single_mut().unwrap();
     commands.entity(unit_menu_entity).despawn_recursive();
