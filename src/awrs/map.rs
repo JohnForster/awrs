@@ -107,10 +107,9 @@ pub fn build_map(
         commands
             .spawn_bundle(UnitBundle {
                 id: UnitId(i),
-                data: unit,
                 sprite: SpriteSheetBundle {
                     texture_atlas: unit_atlas.atlas_handle.clone(),
-                    sprite: TextureAtlasSprite::new(unit.team.0.clone()),
+                    sprite: TextureAtlasSprite::new(unit.team.0),
                     transform: Transform::from_translation(Vec3::new(
                         x as f32 * TILE_SIZE,
                         y as f32 * TILE_SIZE,
@@ -118,6 +117,7 @@ pub fn build_map(
                     )),
                     ..Default::default()
                 },
+                data: unit,
             })
             .with_children(|unit| {
                 let mut transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
