@@ -8,7 +8,7 @@ use super::{
     map::GameMap,
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct UnitHealth(pub f32);
 
 // Or, to avoid pub
@@ -24,7 +24,7 @@ pub struct UnitHealth(pub f32);
 //     }
 // }
 
-#[derive(Clone, PartialEq, Copy)]
+#[derive(Clone, PartialEq)]
 pub struct Team(pub u32);
 
 // Or, to avoid pub
@@ -42,7 +42,7 @@ pub struct Team(pub u32);
 
 pub struct Selected;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Unit {
     pub unit_type: usize,
     pub team: Team,
@@ -52,7 +52,7 @@ pub struct Unit {
     // etc. etc..
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct UnitId(pub usize);
 
 #[derive(Bundle)]
