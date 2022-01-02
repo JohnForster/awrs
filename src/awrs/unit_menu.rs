@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::awrs::cursor::CursorStyle;
 
 use super::{
+    _cell::Cell,
     cursor::ChangeCursorEvent,
     game::{AppState, GameState},
     unit::{Selected, Unit},
@@ -12,7 +13,7 @@ pub struct UnitMenu;
 
 pub fn open_unit_menu(
     mut commands: Commands,
-    units_query: Query<&Unit, With<Selected>>,
+    units_query: Query<&Cell, (With<Unit>, With<Selected>)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut ev_change_cursor: EventWriter<ChangeCursorEvent>,
     asset_server: Res<AssetServer>,
@@ -23,9 +24,9 @@ pub fn open_unit_menu(
     // ui camera
     commands.spawn_bundle(UiCameraBundle::default());
 
-    for unit in units_query.iter() {
+    for location in units_query.iter() {
         info!("Found a unit, spawning node...");
-        info!("location: ({}, {})", unit.location.x, unit.location.y);
+        info!("location: ({}, {})", location.x, location.y);
 
         // TODO get unit menu options from selected unit.
         // Move if hasn't moved yet. Attack if unit next to it.

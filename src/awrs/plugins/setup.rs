@@ -2,7 +2,8 @@ use bevy::prelude::*;
 
 use crate::awrs::{
     cursor::{handle_change_cursor, ChangeCursorEvent, SelectEvent},
-    unit::{AttackEvent, DamageEvent},
+    register_inputs::InputEvent,
+    unit::{AddUnitMoveStepEvent, DamageEvent},
 };
 
 use super::super::{cursor::create_cursor, game::AppState, game::GameState, map::build_map};
@@ -15,6 +16,9 @@ impl Plugin for SetupPlugin {
             .add_event::<DamageEvent>()
             .add_event::<ChangeCursorEvent>()
             .add_event::<SelectEvent>()
+            .add_event::<MoveEvent>()
+            .add_event::<InputEvent>()
+            .add_event::<AddUnitMoveStepEvent>()
             .add_system(handle_change_cursor.system())
             .add_system_set(
                 SystemSet::on_enter(AppState::InGame(GameState::SetUp))

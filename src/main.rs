@@ -1,3 +1,5 @@
+#![feature(mixed_integer_ops)]
+
 use bevy::prelude::*;
 
 mod awrs;

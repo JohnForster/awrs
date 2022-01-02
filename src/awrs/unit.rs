@@ -1,165 +1,150 @@
 use bevy::prelude::*;
 
 use super::{
-    cell::Cell,
-    constants::TILE_SIZE,
-    cursor::{ChangeCursorEvent, CursorStyle},
-    game::{AppState, GameState},
+    engine::ScenarioState,
+    interface::{ActionResult, ActionResultEvent},
     map::GameMap,
+    plugins::UnitMove,
+    register_inputs::InputEvent,
+    sprite_loading::UIAtlas,
+    tile::{Tile, TILE_SIZE},
 };
 
-#[derive(Clone)]
-pub struct UnitHealth(pub f32);
-
-// Or, to avoid pub
-// impl From<u32> for UnitHealth {
-//     fn from(val: u32) -> UnitHealth {
-//         UnitHealth(val)
-//     }
-// }
-
-// impl From<UnitHealth> for u32 {
-//     fn from(health: UnitHealth) -> u32 {
-//         health.0
-//     }
-// }
+type UnitHealth = f32;
 
 #[derive(Clone, PartialEq)]
 pub struct Team(pub u32);
 
-// Or, to avoid pub
-// impl From<u32> for Team {
-//     fn from(val: u32) -> Team {
-//         Team(val)
-//     }
-// }
-
-// impl From<Team> for u32 {
-//     fn from(team: Team) -> u32 {
-//         team.0
-//     }
-// }
-
 pub struct Selected;
 
-#[derive(Clone)]
-pub struct Unit {
-    pub unit_type: usize,
-    pub team: Team,
-    pub location: Cell,
-    pub health: UnitHealth,
-    // pub ammo: Ammo,
-    // etc. etc..
-}
-
-#[derive(Clone)]
-pub struct UnitId(pub usize);
-
-#[derive(Bundle)]
-pub struct UnitBundle {
-    pub id: UnitId,
-    pub data: Unit,
-    #[bundle]
-    pub sprite: SpriteSheetBundle,
-}
+pub struct UnitId(pub u32);
 
 pub struct HealthIndicator;
 
-pub fn open_move_unit(mut ev_change_cursor: EventWriter<ChangeCursorEvent>) {
-    ev_change_cursor.send(ChangeCursorEvent(CursorStyle::None));
-}
-
-// Very similar to moving cursor.
-// Could have Movable struct component so that this can be reused?
-// Or could extract movement logic into a separate function?
-pub fn move_unit(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut unit_query: Query<(&mut Transform, &mut Unit), With<Selected>>,
-    game_map_query: Query<&GameMap>,
-    mut game_state: ResMut<State<AppState>>,
+pub fn handle_attack_result(
+    q_units: Query<(Entity, &UnitId)>,
+    ev_attack_result: EventReader<ActionResultEvent>,
+    ev_damage: EventWriter<DamageEvent>,
 ) {
-    let game_map = game_map_query
-        .single()
-        .expect("Trying to move a unit when there is no map?!");
-
-    for (mut transform, mut unit) in unit_query.iter_mut() {
-        if keyboard_input.just_pressed(KeyCode::W) && unit.location.y < game_map.height {
-            transform.translation.y += 1.0 * TILE_SIZE;
-            unit.location.y += 1;
-        }
-
-        if keyboard_input.just_pressed(KeyCode::A) && unit.location.x > 0 {
-            transform.translation.x -= 1.0 * TILE_SIZE;
-            unit.location.x -= 1;
-        }
-
-        if keyboard_input.just_pressed(KeyCode::S) && unit.location.y > 0 {
-            transform.translation.y -= 1.0 * TILE_SIZE;
-            unit.location.y -= 1;
-        }
-
-        if keyboard_input.just_pressed(KeyCode::D) && unit.location.x < game_map.width {
-            transform.translation.x += 1.0 * TILE_SIZE;
-            unit.location.x += 1;
-        }
-
-        if keyboard_input.just_pressed(KeyCode::Space) {
-            info!("Returning to UnitMenu state");
-            game_state
-                .set(AppState::InGame(GameState::UnitMenu))
-                .expect("Problem changing state");
+    for ActionResultEvent(action_result) in ev_attack_result.iter() {
+        if let ActionResult::AttackResult(damaged_units) = action_result {
+            for (id, hp) in damaged_units {
+                for (entity, unit_id) in q_units.iter_mut() {
+                    if unit_id.0 == id {
+                        ev_damage.send(DamageEvent { entity, new_hp: hp })
+                    }
+                }
+            }
         }
     }
 }
 
-pub fn calculate_damage(_attacking_unit: &Unit, _defending_unit: &Unit) -> (f32, f32) {
-    return (2.0, 4.0);
+pub struct DamageEvent {
+    entity: Entity,
+    new_hp: UnitHealth,
 }
-
-pub struct AttackEvent(pub Entity, pub Entity);
-
-pub fn handle_attack(
-    units_query: Query<&Unit>,
-    mut ev_attack: EventReader<AttackEvent>,
-    mut ev_damage: EventWriter<DamageEvent>,
-) {
-    for ev in ev_attack.iter() {
-        info!("Attacking!");
-        let attacker = units_query.get(ev.0).expect("Could not find attacker");
-        let defender = units_query.get(ev.1).expect("Could not find defender");
-
-        let (att_damage, def_damage) = calculate_damage(attacker, defender);
-
-        ev_damage.send(DamageEvent(ev.0, att_damage));
-        ev_damage.send(DamageEvent(ev.1, def_damage));
-    }
-}
-
-pub struct DamageEvent(pub Entity, pub f32);
 
 pub fn handle_damage(
     mut ev_damage: EventReader<DamageEvent>,
-    mut units_query: Query<(&mut Unit, &Children)>,
+    mut units_query: Query<(&UnitId, &Children)>,
     mut health_indicator_query: Query<&mut TextureAtlasSprite, With<HealthIndicator>>,
     mut commands: Commands,
 ) {
-    for DamageEvent(entity, damage) in ev_damage.iter() {
+    for DamageEvent { entity, new_hp } in ev_damage.iter() {
         let (mut unit, children) = units_query
             .get_mut(*entity)
             .expect("Could not find unit to damage");
 
-        unit.health.0 -= damage;
-
-        // Maybe updating health indicator should be moved to a UI system?
         for &child in children.iter() {
             if let Ok(mut health_indicator) = health_indicator_query.get_mut(child) {
-                let floored_health = unit.health.0.floor().max(0.0);
+                let floored_health = new_hp.floor().max(0.0);
                 health_indicator.index = floored_health as u32;
             }
         }
 
-        if unit.health.0 <= 0.0 {
+        if *new_hp <= 0.0 {
             commands.entity(*entity).despawn_recursive()
+        }
+    }
+}
+
+pub struct AddUnitMoveStepEvent(pub Tile);
+
+pub struct MoveStep;
+
+pub fn add_move_step(
+    mut q_selected_unit: Query<(&mut Transform, &mut Tile), (With<UnitId>, With<Selected>)>,
+    q_game_map: Query<&GameMap>,
+    mut ev_add_move: EventReader<AddUnitMoveStepEvent>,
+    mut res_unit_move: ResMut<UnitMove>,
+    res_ui_atlas: Res<UIAtlas>,
+    mut commands: Commands,
+) {
+    for AddUnitMoveStepEvent(tile) in ev_add_move.iter() {
+        let mut sprite = TextureAtlasSprite::new(0);
+        let mut color = Color::WHITE;
+        color.set_a(0.5);
+        sprite.color = color;
+
+        let entity = commands
+            .spawn_bundle(SpriteSheetBundle {
+                texture_atlas: res_ui_atlas.atlas_handle.clone(),
+                sprite,
+                transform: Transform::from_translation(Vec3::new(
+                    tile.x as f32 * TILE_SIZE,
+                    tile.y as f32 * TILE_SIZE,
+                    5.0,
+                )),
+                ..Default::default()
+            })
+            .insert(MoveStep)
+            .id();
+
+        res_unit_move.tiles.push(*tile);
+        res_unit_move.entities.push(entity);
+    }
+}
+
+pub fn move_unit(
+    mut q_selected_unit: Query<(&UnitId, &mut Transform), With<Selected>>,
+    scenario_state: Res<ScenarioState>,
+    q_game_map: Query<&GameMap>,
+    mut ev_input: EventReader<InputEvent>,
+    mut ev_move_step: EventWriter<AddUnitMoveStepEvent>,
+) {
+    let game_map = q_game_map
+        .single()
+        .expect("Trying to move a unit when there is no map?!");
+
+    for input_event in ev_input.iter() {
+        let (UnitId(unit_id), mut transform) = q_selected_unit
+            .single_mut()
+            // Maybe allow this to fail gracefully, so that we don't error if there is Select -> Direction within same tick.
+            .expect("Should be one selected unit");
+
+        let (dx, dy): (i32, i32) = match input_event {
+            &InputEvent::Up => (0, 1),
+            &InputEvent::Down => (0, -1),
+            &InputEvent::Left => (-1, 0),
+            &InputEvent::Right => (1, 0),
+            _ => break, // Could add select here?
+        };
+
+        let current_pos = Tile::from(*transform);
+
+        let valid_tiles = scenario_state.get_moveable_tiles(*unit_id);
+
+        let maybe_tile = valid_tiles.into_iter().find(|tile| {
+            tile.x as i32 == current_pos.x as i32 + dx && tile.y as i32 == current_pos.y as i32 + dy
+        });
+
+        if let Some(tile) = maybe_tile {
+            ev_move_step.send(AddUnitMoveStepEvent(Tile {
+                x: tile.x,
+                y: tile.y,
+            }));
+            transform.translation.x += dy as f32 * TILE_SIZE;
+            transform.translation.y += dy as f32 * TILE_SIZE;
         }
     }
 }

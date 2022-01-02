@@ -2,8 +2,9 @@ use bevy::prelude::*;
 
 use crate::awrs::{
     choose_target::{open_target_selection, target_select},
-    cursor::{move_cursor, select_unit},
+    cursor::select_unit,
     game::{AppState, GameState},
+    register_inputs::register_inputs,
 };
 
 pub struct TargetingPlugin;
@@ -16,9 +17,10 @@ impl Plugin for TargetingPlugin {
         )
         .add_system_set(
             SystemSet::on_update(AppState::InGame(GameState::ChooseTarget))
-                .with_system(move_cursor.system())
-                .with_system(select_unit.system())
-                .with_system(target_select.system()),
+                .with_system(register_inputs.system().label("inputs"))
+                .with_system(select_unit.system().after("inputs"))
+                .with_system(move_in_game_map.system().after("inputs"))
+                .with_system(target_select.system().after("inputs")),
         );
     }
 }

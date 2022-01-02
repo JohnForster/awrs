@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
 use super::{
-    cell::Cell,
     cursor::{ChangeCursorEvent, CursorStyle, SelectEvent},
     game::{AppState, GameState},
     map::ActiveTeam,

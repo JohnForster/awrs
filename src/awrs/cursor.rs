@@ -2,12 +2,11 @@ use bevy::prelude::*;
 
 use crate::awrs::game::GameState;
 
-use super::cell::*;
 use super::constants::*;
 use super::game::AppState;
 use super::map::ActiveTeam;
-use super::map::GameMap;
-use super::sprite_loading::UIAtlas;
+use super::sprite_loading::CursorAtlas;
+use super::tile::Tile;
 use super::unit::*;
 
 pub struct Cursor;
@@ -16,7 +15,7 @@ pub fn open_browse(mut ev_change_cursor: EventWriter<ChangeCursorEvent>) {
     ev_change_cursor.send(ChangeCursorEvent(CursorStyle::Browse));
 }
 
-pub fn create_cursor(mut commands: Commands, ui_atlas: Res<UIAtlas>) {
+pub fn create_cursor(mut commands: Commands, ui_atlas: Res<CursorAtlas>) {
     info!("Creating Cursor");
     let x = 0;
     let y = 0;
@@ -32,41 +31,8 @@ pub fn create_cursor(mut commands: Commands, ui_atlas: Res<UIAtlas>) {
             ..Default::default()
         })
         .insert(Cursor)
-        .insert(Cell { x, y })
+        .insert(Moveable)
         .insert(Timer::from_seconds(0.075, false));
-}
-
-pub fn move_cursor(
-    _time: Res<Time>,
-    keyboard_input: Res<Input<KeyCode>>,
-    mut cursor_query: Query<(&mut Transform, &mut Cell), With<Cursor>>,
-    game_map_query: Query<&GameMap>,
-) {
-    let game_map = game_map_query
-        .single()
-        .expect("Trying to move the cursor when there is no map?!");
-
-    for (mut transform, mut cell) in cursor_query.iter_mut() {
-        if keyboard_input.just_pressed(KeyCode::W) && cell.y < game_map.height {
-            transform.translation.y += 1.0 * TILE_SIZE;
-            cell.y += 1;
-        }
-
-        if keyboard_input.just_pressed(KeyCode::A) && cell.x > 0 {
-            transform.translation.x -= 1.0 * TILE_SIZE;
-            cell.x -= 1;
-        }
-
-        if keyboard_input.just_pressed(KeyCode::S) && cell.y > 0 {
-            transform.translation.y -= 1.0 * TILE_SIZE;
-            cell.y -= 1;
-        }
-
-        if keyboard_input.just_pressed(KeyCode::D) && cell.x < game_map.height {
-            transform.translation.x += 1.0 * TILE_SIZE;
-            cell.x += 1;
-        }
-    }
 }
 
 pub enum CursorStyle {
@@ -97,19 +63,21 @@ pub struct SelectEvent(pub Entity);
 
 pub fn select_unit(
     keyboard_input: Res<Input<KeyCode>>,
-    cursor_query: Query<&Cell, With<Cursor>>,
-    units_query: Query<(Entity, &Unit)>,
+    q_cursor: Query<&Transform, With<Cursor>>,
+    q_units: Query<(Entity, &Transform), With<Unit>>,
     mut ev_select: EventWriter<SelectEvent>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Space) {
-        let cursor_cell = cursor_query.single().expect("No Cursor found?!");
+        let cursor_transform = q_cursor.single().expect("No Cursor found?!");
+        let cursor_tile = Tile::from(*cursor_transform);
 
-        let maybe_unit = units_query
+        let maybe_unit = q_units
             .iter()
-            .find(|(_, unit)| unit.location.x == cursor_cell.x && unit.location.y == cursor_cell.y);
+            .find(|(_, transform)| Tile::from(**transform) == cursor_tile);
 
         if let Some(tuple) = maybe_unit {
             let entity = tuple.0;
+
             ev_select.send(SelectEvent(entity));
         }
     }
