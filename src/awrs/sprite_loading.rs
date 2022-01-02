@@ -9,7 +9,7 @@ pub struct TerrainAtlas {
 }
 
 #[derive(Default)]
-pub struct UIAtlas {
+pub struct CursorAtlas {
     _texture_handle: Handle<Texture>,
     pub atlas_handle: Handle<TextureAtlas>,
 }
@@ -21,6 +21,10 @@ pub struct UnitAtlas {
 }
 
 pub struct HealthAtlas {
+    pub atlas_handle: Handle<TextureAtlas>,
+}
+
+pub struct UIAtlas {
     pub atlas_handle: Handle<TextureAtlas>,
 }
 
@@ -38,6 +42,7 @@ pub fn load_ui_sprites(
     let image_size = Vec2::new(143.0, 64.0);
     let mut cursor_texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), image_size);
     let mut health_texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), image_size);
+    let mut ui_texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), image_size);
 
     let cursor_rect = bevy::sprite::Rect {
         min: Vec2::new(44.0, 5.0),
@@ -47,6 +52,11 @@ pub fn load_ui_sprites(
     let attack_cursor_rect = bevy::sprite::Rect {
         min: Vec2::new(75.0, 5.0),
         max: Vec2::new(75.0 + 29.0, 5.0 + 32.0),
+    };
+
+    let movement_overlay_rect = bevy::sprite::Rect {
+        min: Vec2::new(7.0, 10.0),
+        max: Vec2::new(7.0 + 16.0, 10.0 + 16.0),
     };
 
     cursor_texture_atlas.add_texture(cursor_rect);
@@ -60,16 +70,23 @@ pub fn load_ui_sprites(
         };
         health_texture_atlas.add_texture(number_rect);
     }
+
+    ui_texture_atlas.add_texture(movement_overlay_rect);
+
     let cursor_atlas_handle = texture_atlases.add(cursor_texture_atlas);
     let health_atlas_handle = texture_atlases.add(health_texture_atlas);
+    let ui_atlas_handle = texture_atlases.add(ui_texture_atlas);
 
-    commands.insert_resource(UIAtlas {
+    commands.insert_resource(CursorAtlas {
         _texture_handle: texture_handle,
         atlas_handle: cursor_atlas_handle,
     });
     commands.insert_resource(HealthAtlas {
         atlas_handle: health_atlas_handle,
-    })
+    });
+    commands.insert_resource(UIAtlas {
+        atlas_handle: ui_atlas_handle,
+    });
 }
 
 pub fn load_unit_sprites(
@@ -137,3 +154,17 @@ pub fn load_terrain_sprites(
         atlas_handle,
     })
 }
+
+// struct SemiTransparentMaterial {
+//     handle: Handle<ColorMaterial>,
+// }
+
+// pub fn load_material(
+//     mut materials: ResMut<Assets<ColorMaterial>>,
+//     mut loading: ResMut<AssetsLoading>,
+//     mut commands: Commands,
+// ) {
+//     let color_material = ColorMaterial::from(Color::rgba(1.0, 1.0, 1.0, 0.5));
+//     let handle = materials.add(color_material);
+//     commands.insert_resource(SemiTransparentMaterial { handle })
+// }

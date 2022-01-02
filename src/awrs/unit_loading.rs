@@ -3,6 +3,7 @@ use serde::*;
 
 use super::load_assets::AssetsLoading;
 
+// TODO Move Into Engine
 #[derive(Serialize, Deserialize, Debug, TypeUuid)]
 #[uuid = "5386B529-81CC-405A-9600-CB51B83F8CC9"]
 pub enum UnitTag {
