@@ -1,6 +1,7 @@
 pub mod choose_target;
 pub mod constants;
 pub mod cursor;
+pub mod dev_helpers;
 pub mod engine;
 pub mod game;
 pub mod interface;

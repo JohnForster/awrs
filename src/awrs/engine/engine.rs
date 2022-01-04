@@ -9,9 +9,9 @@ pub enum UnitType {
     Infantry,
 }
 
-type UnitId = u32;
+pub type UnitId = u32;
 pub type UnitHp = f32;
-type Team = u32;
+pub type Team = u32;
 
 #[derive(Debug)]
 pub struct Unit {
