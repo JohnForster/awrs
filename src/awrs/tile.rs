@@ -1,6 +1,6 @@
 use bevy::prelude::Transform;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Tile {
     pub x: u32,
     pub y: u32,

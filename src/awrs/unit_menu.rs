@@ -5,7 +5,6 @@ use crate::awrs::cursor::CursorStyle;
 use super::{
     cursor::ChangeCursorEvent,
     game::{AppState, GameState},
-    tile::Tile,
     unit::{Selected, UnitId},
 };
 
@@ -13,7 +12,7 @@ pub struct UnitMenu;
 
 pub fn open_unit_menu(
     mut commands: Commands,
-    units_query: Query<&Tile, (With<UnitId>, With<Selected>)>,
+    units_query: Query<&UnitId, With<Selected>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut ev_change_cursor: EventWriter<ChangeCursorEvent>,
     asset_server: Res<AssetServer>,
@@ -24,9 +23,8 @@ pub fn open_unit_menu(
     // ui camera
     commands.spawn_bundle(UiCameraBundle::default());
 
-    for location in units_query.iter() {
+    for _id in units_query.iter() {
         info!("Found a unit, spawning node...");
-        info!("location: ({}, {})", location.x, location.y);
 
         // TODO get unit menu options from selected unit.
         // Move if hasn't moved yet. Attack if unit next to it.
