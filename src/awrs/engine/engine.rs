@@ -48,6 +48,26 @@ impl ScenarioMapMethods for ScenarioMap {
     }
 }
 
+pub trait Contains<T> {
+    fn contains(&self, x: &T, y: &T) -> bool;
+}
+
+impl Contains<f32> for ScenarioState {
+    fn contains(&self, x: &f32, y: &f32) -> bool {
+        let width = self.map.width() as f32;
+        let height = self.map.height() as f32;
+        return *x >= 0.0 && *x < width && *y >= 0.0 && *y < height;
+    }
+}
+
+impl Contains<i32> for ScenarioState {
+    fn contains(&self, x: &i32, y: &i32) -> bool {
+        let width = self.map.width() as i32;
+        let height = self.map.height() as i32;
+        return (0..width).contains(x) && (0..height).contains(y);
+    }
+}
+
 pub enum Command {
     Move {
         unit_id: UnitId,
