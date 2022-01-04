@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use super::constants::*;
+use super::dev_helpers::{new_scenario_map, new_scenario_state};
 use super::engine::ScenarioState;
 use super::engine::TerrainType;
 use super::sprite_loading::HealthAtlas;
@@ -33,10 +34,10 @@ pub fn build_map(
     terrain_atlas: Res<TerrainAtlas>,
     unit_atlas: Res<UnitAtlas>,
     health_atlas: Res<HealthAtlas>,
-    unit_handle: Res<UnitHandle>,
-    unit_assets: Res<Assets<UnitType>>,
-    scenario_state: Res<ScenarioState>,
 ) {
+    let scenario_map = new_scenario_map();
+    let scenario_state = new_scenario_state(scenario_map);
+
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     commands.insert_resource(ActiveTeam {
@@ -61,8 +62,8 @@ pub fn build_map(
                     parent.spawn_bundle(SpriteSheetBundle {
                         texture_atlas: terrain_atlas.atlas_handle.clone(),
                         sprite: TextureAtlasSprite::new(match terrain_type {
-                            TerrainType::Grass => 0,
-                            TerrainType::Water => 1,
+                            TerrainType::Water => 0,
+                            TerrainType::Grass => 1,
                         }),
                         transform: Transform::from_translation(Vec3::new(
                             x as f32 * TILE_SIZE,
@@ -75,7 +76,7 @@ pub fn build_map(
             }
         });
 
-    for (i, unit) in scenario_state.units.iter().enumerate() {
+    for unit in scenario_state.units.iter() {
         let x = unit.position.x;
         let y = unit.position.y;
         let sprite_index = unit.team; // Only valid while there is only one unit type
@@ -104,109 +105,5 @@ pub fn build_map(
                 .insert(HealthIndicator);
             });
     }
-
-    // ----------------------- OLD -----------------------
-    // info!("Building Map");
-    // let game_map = vec![
-    //     vec![0, 0, 0, 0, 0, 1],
-    //     vec![0, 0, 0, 0, 1, 1],
-    //     vec![0, 0, 0, 1, 1, 1],
-    //     vec![0, 0, 1, 1, 1, 1],
-    //     vec![0, 1, 1, 1, 1, 1],
-    //     vec![1, 1, 1, 1, 1, 1],
-    // ];
-
-    // let infantry = unit_assets.get(&unit_handle.handle).unwrap();
-
-    // let units = vec![
-    //     (
-    //         Unit {
-    //             unit_type: 0,
-    //             team: Team(0),
-    //             health: UnitHealth(infantry.max_health.clone()),
-    //         },
-    //         Cell { x: 1, y: 1 },
-    //     ),
-    //     (
-    //         Unit {
-    //             unit_type: 0,
-    //             team: Team(0),
-    //             health: UnitHealth(infantry.max_health.clone()),
-    //         },
-    //         Cell { x: 4, y: 5 },
-    //     ),
-    //     (
-    //         Unit {
-    //             unit_type: 0,
-    //             team: Team(1),
-    //             health: UnitHealth(infantry.max_health.clone()),
-    //         },
-    //         Cell { x: 2, y: 1 },
-    //     ),
-    // ];
-
-    // commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-
-    // commands.insert_resource(ActiveTeam { team: Team(0) });
-
-    // commands
-    //     .spawn()
-    //     .insert(GameMap {
-    //         height: game_map.len(),
-    //         width: game_map[0].len(),
-    //     })
-    //     .insert(Transform {
-    //         ..Default::default()
-    //     })
-    //     .insert(GlobalTransform {
-    //         ..Default::default()
-    //     })
-    //     .with_children(|parent| {
-    //         for (y, row) in game_map.iter().rev().enumerate() {
-    //             for (x, &terrain_index) in row.iter().enumerate() {
-    //                 parent.spawn_bundle(SpriteSheetBundle {
-    //                     texture_atlas: terrain_atlas.atlas_handle.clone(),
-    //                     sprite: TextureAtlasSprite::new(terrain_index),
-    //                     transform: Transform::from_translation(Vec3::new(
-    //                         x as f32 * TILE_SIZE,
-    //                         y as f32 * TILE_SIZE,
-    //                         0.0,
-    //                     )),
-    //                     ..Default::default()
-    //                 });
-    //             }
-    //         }
-    //     });
-
-    // for (i, (unit, location)) in units.into_iter().enumerate() {
-    //     let x = location.x;
-    //     let y = location.y;
-    //     commands
-    //         .spawn_bundle(UnitBundle {
-    //             id: UnitId(i),
-    //             sprite: SpriteSheetBundle {
-    //                 texture_atlas: unit_atlas.atlas_handle.clone(),
-    //                 sprite: TextureAtlasSprite::new(unit.team.0),
-    //                 transform: Transform::from_translation(Vec3::new(
-    //                     x as f32 * TILE_SIZE,
-    //                     y as f32 * TILE_SIZE,
-    //                     1.0,
-    //                 )),
-    //                 ..Default::default()
-    //             },
-    //             data: unit,
-    //             location,
-    //         })
-    //         .with_children(|unit| {
-    //             let mut transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
-    //             transform.scale = Vec3::new(0.7, 0.7, 1.0);
-    //             unit.spawn_bundle(SpriteSheetBundle {
-    //                 texture_atlas: health_atlas.atlas_handle.clone(),
-    //                 sprite: TextureAtlasSprite::new(10),
-    //                 transform,
-    //                 ..Default::default()
-    //             })
-    //             .insert(HealthIndicator);
-    //         });
-    // }
+    commands.insert_resource(scenario_state);
 }

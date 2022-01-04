@@ -47,7 +47,8 @@ pub struct ChangeCursorEvent(pub CursorStyle);
 
 pub fn handle_change_cursor(
     mut ev_change_cursor: EventReader<ChangeCursorEvent>,
-    mut q_cursor_sprite: Query<&mut TextureAtlasSprite, With<Cursor>>,
+    mut q_cursor_children: Query<&mut Children, With<Cursor>>,
+    mut q_sprite: Query<&mut TextureAtlasSprite>,
 ) {
     for ChangeCursorEvent(cursor_style) in ev_change_cursor.iter() {
         let sprite_index = match cursor_style {
@@ -56,8 +57,13 @@ pub fn handle_change_cursor(
             CursorStyle::None => 9,
         };
         info!("Changing cursor sprite index to {:?}", sprite_index);
-        let mut cursor_sprite = q_cursor_sprite.single_mut().expect("No Cursor Found?!");
-        cursor_sprite.index = sprite_index;
+        let cursor_children = q_cursor_children.single_mut().expect("No Cursor Found?!");
+
+        for child in cursor_children.iter() {
+            if let Ok(mut cursor_sprite) = q_sprite.get_mut(*child) {
+                cursor_sprite.index = sprite_index;
+            }
+        }
     }
 }
 
