@@ -18,8 +18,6 @@ impl Plugin for BrowsingPlugin {
                     .with_system(register_inputs.system())
                     .with_system(select_unit.system())
                     .with_system(browse_select.system())
-                    .with_system(handle_attack.system())
-                    .with_system(move_in_game_map.system())
                     .with_system(handle_damage.system()),
             );
     }

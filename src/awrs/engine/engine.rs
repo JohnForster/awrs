@@ -10,7 +10,7 @@ pub enum UnitType {
 }
 
 type UnitId = u32;
-type UnitHp = f32;
+pub type UnitHp = f32;
 type Team = u32;
 
 #[derive(Debug)]
@@ -90,7 +90,7 @@ pub enum CommandResult {
 }
 
 impl ScenarioState {
-    pub fn execute(self, command: Command) -> CommandResult {
+    pub fn execute(&mut self, command: Command) -> CommandResult {
         match command {
             Command::Move { unit_id, tiles } => self.unit_move(unit_id, tiles),
             Command::Attack {
@@ -101,7 +101,7 @@ impl ScenarioState {
         }
     }
 
-    fn unit_move(mut self, id: UnitId, tiles: Vec<Tile>) -> CommandResult {
+    fn unit_move(&mut self, id: UnitId, tiles: Vec<Tile>) -> CommandResult {
         let mut units_iterator = self.units.iter_mut();
 
         let mut unit = units_iterator
@@ -149,7 +149,7 @@ impl ScenarioState {
         };
     }
 
-    fn attack(mut self, attacker_id: UnitId, defender_id: UnitId) -> CommandResult {
+    fn attack(&mut self, attacker_id: UnitId, defender_id: UnitId) -> CommandResult {
         // Validate attack
         //   Range
         //   Ammo
@@ -180,7 +180,7 @@ impl ScenarioState {
         };
     }
 
-    fn end_turn(mut self) -> CommandResult {
+    fn end_turn(&mut self) -> CommandResult {
         let new_active_team = (self.active_team + 1) % (self.teams.len() as u32);
         self.active_team = new_active_team;
         for mut unit in self.units.iter_mut() {
@@ -193,13 +193,13 @@ impl ScenarioState {
         };
     }
 
-    fn find_unit(&self, unit_id: UnitId) -> Option<&Unit> {
+    pub fn get_unit(&self, unit_id: UnitId) -> Option<&Unit> {
         self.units.iter().find(|u| u.id == unit_id)
     }
 
     pub fn get_moveable_tiles(&self, unit_id: UnitId) -> Vec<Tile> {
         let mut valid_tiles = vec![];
-        let unit = self.find_unit(unit_id).expect("No unit found!");
+        let unit = self.get_unit(unit_id).expect("No unit found!");
         let range = 3;
 
         // Add all tiles within a given movement range

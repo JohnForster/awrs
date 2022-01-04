@@ -22,16 +22,19 @@ pub struct UnitId(pub u32);
 pub struct HealthIndicator;
 
 pub fn handle_attack_result(
-    q_units: Query<(Entity, &UnitId)>,
-    ev_attack_result: EventReader<ActionResultEvent>,
-    ev_damage: EventWriter<DamageEvent>,
+    mut q_units: Query<(Entity, &UnitId)>,
+    mut ev_attack_result: EventReader<ActionResultEvent>,
+    mut ev_damage: EventWriter<DamageEvent>,
 ) {
     for ActionResultEvent(action_result) in ev_attack_result.iter() {
         if let ActionResult::AttackResult(damaged_units) = action_result {
             for (id, hp) in damaged_units {
                 for (entity, unit_id) in q_units.iter_mut() {
-                    if unit_id.0 == id {
-                        ev_damage.send(DamageEvent { entity, new_hp: hp })
+                    if unit_id.0 == id.0 {
+                        ev_damage.send(DamageEvent {
+                            entity,
+                            new_hp: *hp,
+                        })
                     }
                 }
             }
@@ -73,8 +76,6 @@ pub struct AddUnitMoveStepEvent(pub Tile);
 pub struct MoveStep;
 
 pub fn add_move_step(
-    mut q_selected_unit: Query<(&mut Transform, &mut Tile), (With<UnitId>, With<Selected>)>,
-    q_game_map: Query<&GameMap>,
     mut ev_add_move: EventReader<AddUnitMoveStepEvent>,
     mut res_unit_move: ResMut<UnitMove>,
     res_ui_atlas: Res<UIAtlas>,
@@ -108,14 +109,9 @@ pub fn add_move_step(
 pub fn move_unit(
     mut q_selected_unit: Query<(&UnitId, &mut Transform), With<Selected>>,
     scenario_state: Res<ScenarioState>,
-    q_game_map: Query<&GameMap>,
     mut ev_input: EventReader<InputEvent>,
     mut ev_move_step: EventWriter<AddUnitMoveStepEvent>,
 ) {
-    let game_map = q_game_map
-        .single()
-        .expect("Trying to move a unit when there is no map?!");
-
     for input_event in ev_input.iter() {
         let (UnitId(unit_id), mut transform) = q_selected_unit
             .single_mut()

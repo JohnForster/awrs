@@ -80,18 +80,17 @@ pub fn build_map(
         let y = unit.position.y;
         let sprite_index = unit.team; // Only valid while there is only one unit type
         commands
-            .spawn_bundle(UnitBundle {
-                id: UnitId(unit.id),
-                sprite: SpriteSheetBundle {
-                    texture_atlas: unit_atlas.atlas_handle.clone(),
-                    sprite: TextureAtlasSprite::new(sprite_index),
-                    transform: Transform::from_translation(Vec3::new(
-                        x as f32 * TILE_SIZE,
-                        y as f32 * TILE_SIZE,
-                        1.0,
-                    )),
-                    ..Default::default()
-                },
+            .spawn()
+            .insert(UnitId(unit.id))
+            .insert_bundle(SpriteSheetBundle {
+                texture_atlas: unit_atlas.atlas_handle.clone(),
+                sprite: TextureAtlasSprite::new(sprite_index),
+                transform: Transform::from_translation(Vec3::new(
+                    x as f32 * TILE_SIZE,
+                    y as f32 * TILE_SIZE,
+                    1.0,
+                )),
+                ..Default::default()
             })
             .with_children(|unit| {
                 let mut transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));

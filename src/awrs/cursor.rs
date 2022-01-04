@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use crate::awrs::game::GameState;
 
 use super::constants::*;
+use super::engine::ScenarioState;
 use super::game::AppState;
 use super::map::ActiveTeam;
 use super::sprite_loading::CursorAtlas;
@@ -17,22 +18,23 @@ pub fn open_browse(mut ev_change_cursor: EventWriter<ChangeCursorEvent>) {
 
 pub fn create_cursor(mut commands: Commands, ui_atlas: Res<CursorAtlas>) {
     info!("Creating Cursor");
-    let x = 0;
-    let y = 0;
-    let starting_position = Vec3::new(x as f32, y as f32, 0.0) * TILE_SIZE;
+    let tile = Tile { x: 0, y: 0 };
+    let starting_position = Vec3::new(tile.x as f32, tile.y as f32, 0.0) * TILE_SIZE;
     let adjustment = Vec3::new(4.0, -5.0, 2.0);
 
     // Combine these into the Cursor struct?
     commands
-        .spawn_bundle(SpriteSheetBundle {
-            texture_atlas: ui_atlas.atlas_handle.clone(),
-            sprite: TextureAtlasSprite::new(0),
-            transform: Transform::from_translation(starting_position + adjustment),
-            ..Default::default()
-        })
+        .spawn()
         .insert(Cursor)
-        .insert(Moveable)
-        .insert(Timer::from_seconds(0.075, false));
+        .insert(Transform::from_translation(starting_position))
+        .with_children(|parent| {
+            parent.spawn_bundle(SpriteSheetBundle {
+                texture_atlas: ui_atlas.atlas_handle.clone(),
+                sprite: TextureAtlasSprite::new(0),
+                transform: Transform::from_translation(adjustment),
+                ..Default::default()
+            });
+        });
 }
 
 pub enum CursorStyle {
@@ -64,7 +66,7 @@ pub struct SelectEvent(pub Entity);
 pub fn select_unit(
     keyboard_input: Res<Input<KeyCode>>,
     q_cursor: Query<&Transform, With<Cursor>>,
-    q_units: Query<(Entity, &Transform), With<Unit>>,
+    q_units: Query<(Entity, &Transform), With<UnitId>>,
     mut ev_select: EventWriter<SelectEvent>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Space) {
@@ -86,15 +88,20 @@ pub fn select_unit(
 pub fn browse_select(
     mut ev_select: EventReader<SelectEvent>,
     mut commands: Commands,
-    q_unit: Query<&Unit>,
-    mut r_game_state: ResMut<State<AppState>>,
-    r_active_team: Res<ActiveTeam>,
+    q_unit: Query<&UnitId>,
+    mut game_state: ResMut<State<AppState>>,
+    active_team: Res<ActiveTeam>,
+    scenario_state: Res<ScenarioState>,
 ) {
     for SelectEvent(entity) in ev_select.iter() {
-        let unit = q_unit.get(*entity).expect("Unit doesn't exist?!");
+        let UnitId(unit_id) = q_unit.get(*entity).expect("Unit doesn't exist?!");
+
+        let unit = scenario_state
+            .get_unit(*unit_id)
+            .expect("Could not find unit in ScenarioState");
 
         // Cannot select enemy units
-        let is_enemy = unit.team != r_active_team.team;
+        let is_enemy = unit.team != active_team.team.0;
         if is_enemy {
             continue;
         }
@@ -105,7 +112,7 @@ pub fn browse_select(
         commands.entity(*entity).insert(Selected);
 
         info!("Setting game state to UnitMenu");
-        r_game_state
+        game_state
             .set(AppState::InGame(GameState::UnitMenu))
             .expect("Problem changing state");
     }
