@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 
-use super::engine::{Command, CommandResult, ScenarioState, Tile as EngineTile, Unit};
+use super::engine::{Command, CommandResult, ScenarioState, Tile as EngineTile, Unit, UnitHp};
 use super::tile::Tile;
-use super::unit::{UnitHealth, UnitId};
+use super::unit::UnitId;
 
+// Do we _need_ a wrapper here? Can the event be the enum?
 pub struct ActionEvent(pub Action);
 
 pub enum Action {
@@ -14,7 +15,7 @@ pub enum Action {
 
 // Will need to add more detail once its clear what is needed from these result events.
 pub enum ActionResult {
-    AttackResult(Vec<(UnitId, UnitHealth)>), // Include ammo in this struct?
+    AttackResult(Vec<(UnitId, UnitHp)>), // Include ammo in this struct?
     MoveResult(Vec<Tile>),
     EndTurnResult(u32),
 }
@@ -29,10 +30,7 @@ impl From<CommandResult> for ActionResultEvent {
                     .collect(),
             ),
             CommandResult::Attack { status, unit_hp } => ActionResult::AttackResult(
-                unit_hp
-                    .iter()
-                    .map(|(id, hp)| (UnitId(*id), UnitHealth(*hp)))
-                    .collect(),
+                unit_hp.iter().map(|(id, hp)| (UnitId(*id), *hp)).collect(),
             ),
             CommandResult::EndTurn {
                 status,
@@ -46,7 +44,7 @@ impl From<CommandResult> for ActionResultEvent {
 pub struct ActionResultEvent(pub ActionResult);
 
 pub fn handle_action(
-    ev_action: EventReader<ActionEvent>,
+    mut ev_action: EventReader<ActionEvent>,
     mut ev_action_result: EventWriter<ActionResultEvent>,
     mut scenario_state: ResMut<ScenarioState>,
     mut q_units: Query<&Unit>,
@@ -54,23 +52,24 @@ pub fn handle_action(
     for ActionEvent(action) in ev_action.iter() {
         let command = match action {
             Action::Attack(attacker_entity, defender_entity) => {
-                let mut attacker = q_units
-                    .get_mut(*attacker_entity)
+                let attacker = q_units
+                    .get(*attacker_entity)
                     .expect("Couldn't find attacker");
-                let mut defender = q_units
-                    .get_mut(*defender_entity)
+                let attacker_id = attacker.id;
+
+                let defender = q_units
+                    .get(*defender_entity)
                     .expect("Couldn't find defender");
+                let defender_id = defender.id;
 
                 Command::Attack {
-                    attacker_id: attacker.id,
-                    defender_id: defender.id,
+                    attacker_id,
+                    defender_id,
                 }
             }
 
             Action::Move(entity, cells) => {
-                let mut unit = q_units
-                    .get_mut(*entity)
-                    .expect("Couldn't find unit to move");
+                let unit = q_units.get(*entity).expect("Couldn't find unit to move");
 
                 Command::Move {
                     unit_id: unit.id,

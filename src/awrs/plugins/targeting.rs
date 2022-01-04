@@ -19,7 +19,6 @@ impl Plugin for TargetingPlugin {
             SystemSet::on_update(AppState::InGame(GameState::ChooseTarget))
                 .with_system(register_inputs.system().label("inputs"))
                 .with_system(select_unit.system().after("inputs"))
-                .with_system(move_in_game_map.system().after("inputs"))
                 .with_system(target_select.system().after("inputs")),
         );
     }

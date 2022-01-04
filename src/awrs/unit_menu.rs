@@ -3,17 +3,17 @@ use bevy::prelude::*;
 use crate::awrs::cursor::CursorStyle;
 
 use super::{
-    _cell::Cell,
     cursor::ChangeCursorEvent,
     game::{AppState, GameState},
-    unit::{Selected, Unit},
+    tile::Tile,
+    unit::{Selected, UnitId},
 };
 
 pub struct UnitMenu;
 
 pub fn open_unit_menu(
     mut commands: Commands,
-    units_query: Query<&Cell, (With<Unit>, With<Selected>)>,
+    units_query: Query<&Tile, (With<UnitId>, With<Selected>)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut ev_change_cursor: EventWriter<ChangeCursorEvent>,
     asset_server: Res<AssetServer>,
@@ -77,7 +77,7 @@ pub fn open_unit_menu(
 pub fn unit_menu_input(
     keyboard_input: Res<Input<KeyCode>>,
     mut game_state: ResMut<State<AppState>>,
-    units_query: Query<Entity, (With<Selected>, With<Unit>)>,
+    units_query: Query<Entity, (With<Selected>, With<UnitId>)>,
     mut commands: Commands,
 ) {
     if keyboard_input.just_pressed(KeyCode::M) {

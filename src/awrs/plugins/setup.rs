@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::awrs::{
     cursor::{handle_change_cursor, ChangeCursorEvent, SelectEvent},
+    interface::ActionEvent,
     register_inputs::InputEvent,
     unit::{AddUnitMoveStepEvent, DamageEvent},
 };
@@ -12,11 +13,10 @@ pub struct SetupPlugin;
 
 impl Plugin for SetupPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_event::<AttackEvent>()
+        app.add_event::<ActionEvent>()
             .add_event::<DamageEvent>()
             .add_event::<ChangeCursorEvent>()
             .add_event::<SelectEvent>()
-            .add_event::<MoveEvent>()
             .add_event::<InputEvent>()
             .add_event::<AddUnitMoveStepEvent>()
             .add_system(handle_change_cursor.system())
