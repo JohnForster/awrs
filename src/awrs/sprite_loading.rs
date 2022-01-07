@@ -28,6 +28,10 @@ pub struct UIAtlas {
     pub atlas_handle: Handle<TextureAtlas>,
 }
 
+pub struct ArrowAtlas {
+    pub atlas_handle: Handle<TextureAtlas>,
+}
+
 pub fn load_ui_sprites(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -153,6 +157,32 @@ pub fn load_terrain_sprites(
         _texture_handle: texture_handle,
         atlas_handle,
     })
+}
+
+pub fn load_movement_arrow_sprites(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut loading: ResMut<AssetsLoading>,
+) {
+    let texture_handle = asset_server.load("spritesheets/units.png");
+    loading.0.push(texture_handle.clone_untyped());
+    info!("Terrain sprite loading underway...");
+
+    let mut texture_atlas =
+        TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(680.0, 756.0));
+
+    let top_left = Vec2::new(576.0, 139.0);
+
+    for n in 0..24 {
+        let min = top_left + Vec2::new(17.0 * (n % 6) as f32, 17.0 * (n / 6) as f32);
+        let max = min + Vec2::new(16.0, 16.0);
+        let rect = bevy::sprite::Rect { min, max };
+        texture_atlas.add_texture(rect);
+    }
+
+    let atlas_handle = texture_atlases.add(texture_atlas);
+    commands.insert_resource(ArrowAtlas { atlas_handle })
 }
 
 // struct SemiTransparentMaterial {

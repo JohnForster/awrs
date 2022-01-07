@@ -9,8 +9,8 @@ pub struct ActionEvent(pub Action);
 
 pub enum Action {
     Attack(Entity, Entity),
-    Move(Entity, Vec<Tile>),
-    EndTurn,
+    _Move(Entity, Vec<Tile>),
+    _EndTurn,
 }
 
 // Will need to add more detail once its clear what is needed from these result events.
@@ -43,11 +43,11 @@ impl From<CommandResult> for ActionResultEvent {
 
 pub struct ActionResultEvent(pub ActionResult);
 
-pub fn handle_action(
+pub fn _handle_action(
     mut ev_action: EventReader<ActionEvent>,
     mut ev_action_result: EventWriter<ActionResultEvent>,
     mut scenario_state: ResMut<ScenarioState>,
-    mut q_units: Query<&Unit>,
+    q_units: Query<&Unit>,
 ) {
     for ActionEvent(action) in ev_action.iter() {
         let command = match action {
@@ -68,7 +68,7 @@ pub fn handle_action(
                 }
             }
 
-            Action::Move(entity, cells) => {
+            Action::_Move(entity, cells) => {
                 let unit = q_units.get(*entity).expect("Couldn't find unit to move");
 
                 Command::Move {
@@ -82,7 +82,7 @@ pub fn handle_action(
                         .collect(),
                 }
             }
-            Action::EndTurn => Command::EndTurn,
+            Action::_EndTurn => Command::EndTurn,
         };
 
         let result = scenario_state.execute(command);

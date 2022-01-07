@@ -1,3 +1,4 @@
+pub mod arrows;
 pub mod choose_target;
 pub mod constants;
 pub mod cursor;
