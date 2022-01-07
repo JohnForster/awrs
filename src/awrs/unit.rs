@@ -1,12 +1,6 @@
 use bevy::prelude::*;
 
-use super::{
-    engine::{ScenarioState, Tile as EngineTile},
-    interface::{ActionResult, ActionResultEvent},
-    register_inputs::InputEvent,
-    sprite_loading::UIAtlas,
-    tile::{Tile, TILE_SIZE},
-};
+use super::interface::{ActionResult, ActionResultEvent};
 
 type UnitHealth = f32;
 
@@ -19,7 +13,7 @@ pub struct UnitId(pub u32);
 
 pub struct HealthIndicator;
 
-pub fn handle_attack_result(
+pub fn _handle_attack_result(
     mut q_units: Query<(Entity, &UnitId)>,
     mut ev_attack_result: EventReader<ActionResultEvent>,
     mut ev_damage: EventWriter<DamageEvent>,
@@ -52,7 +46,7 @@ pub fn handle_damage(
     mut commands: Commands,
 ) {
     for DamageEvent { entity, new_hp } in ev_damage.iter() {
-        let (mut unit, children) = units_query
+        let (mut _unit, children) = units_query
             .get_mut(*entity)
             .expect("Could not find unit to damage");
 

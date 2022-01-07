@@ -18,6 +18,7 @@ impl Plugin for LoadAssets {
                 SystemSet::on_enter(AppState::Loading)
                     .with_system(load_terrain_sprites.system())
                     .with_system(load_unit_sprites.system())
+                    .with_system(load_movement_arrow_sprites.system())
                     .with_system(load_ui_sprites.system())
                     .with_system(load_units.system()),
             )
