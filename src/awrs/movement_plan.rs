@@ -120,12 +120,20 @@ fn check_valid(
 }
 
 fn check_plan(unit_plan: &ResMut<UnitPlan>, tile: Tile) -> PlanChange {
-    if let Some(index) = unit_plan
+    // Don't allow overlapping vision.
+    // if let Some(index) = unit_plan
+    //     .steps
+    //     .iter()
+    //     .position(|move_step| move_step.tile == tile)
+    // {
+    // Allow overlapping vision
+    if unit_plan
         .steps
-        .iter()
-        .position(|move_step| move_step.tile == tile)
+        .len()
+        .checked_sub(2)
+        .map_or(false, |i| unit_plan.steps[i].tile == tile)
     {
-        return PlanChange::Remove(index);
+        return PlanChange::Remove(unit_plan.steps.len() - 2);
     } else if (unit_plan.steps.len() as u32) <= unit_plan.range {
         return PlanChange::Add(tile);
     } else {
