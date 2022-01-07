@@ -2,13 +2,10 @@ use bevy::prelude::*;
 
 use super::constants::*;
 use super::dev_helpers::{new_scenario_map, new_scenario_state};
-use super::engine::ScenarioState;
 use super::engine::TerrainType;
 use super::sprite_loading::HealthAtlas;
 use super::sprite_loading::{TerrainAtlas, UnitAtlas};
 use super::unit::*;
-use super::unit_loading::UnitHandle;
-use super::unit_loading::UnitType;
 
 pub struct GameMap {
     pub width: usize,

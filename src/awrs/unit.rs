@@ -1,10 +1,8 @@
 use bevy::prelude::*;
 
 use super::{
-    engine::ScenarioState,
+    engine::{ScenarioState, Tile as EngineTile},
     interface::{ActionResult, ActionResultEvent},
-    map::GameMap,
-    plugins::UnitMove,
     register_inputs::InputEvent,
     sprite_loading::UIAtlas,
     tile::{Tile, TILE_SIZE},
@@ -67,80 +65,6 @@ pub fn handle_damage(
 
         if *new_hp <= 0.0 {
             commands.entity(*entity).despawn_recursive()
-        }
-    }
-}
-
-pub struct AddUnitMoveStepEvent(pub Tile);
-
-pub struct MoveStep;
-
-pub fn add_move_step(
-    mut ev_add_move: EventReader<AddUnitMoveStepEvent>,
-    mut res_unit_move: ResMut<UnitMove>,
-    res_ui_atlas: Res<UIAtlas>,
-    mut commands: Commands,
-) {
-    for AddUnitMoveStepEvent(tile) in ev_add_move.iter() {
-        let mut sprite = TextureAtlasSprite::new(0);
-        let mut color = Color::WHITE;
-        color.set_a(0.5);
-        sprite.color = color;
-
-        let entity = commands
-            .spawn_bundle(SpriteSheetBundle {
-                texture_atlas: res_ui_atlas.atlas_handle.clone(),
-                sprite,
-                transform: Transform::from_translation(Vec3::new(
-                    tile.x as f32 * TILE_SIZE,
-                    tile.y as f32 * TILE_SIZE,
-                    5.0,
-                )),
-                ..Default::default()
-            })
-            .insert(MoveStep)
-            .id();
-
-        res_unit_move.tiles.push(*tile);
-        res_unit_move.entities.push(entity);
-    }
-}
-
-pub fn move_unit(
-    mut q_selected_unit: Query<(&UnitId, &mut Transform), With<Selected>>,
-    scenario_state: Res<ScenarioState>,
-    mut ev_input: EventReader<InputEvent>,
-    mut ev_move_step: EventWriter<AddUnitMoveStepEvent>,
-) {
-    for input_event in ev_input.iter() {
-        let (UnitId(unit_id), mut transform) = q_selected_unit
-            .single_mut()
-            // Maybe allow this to fail gracefully, so that we don't error if there is Select -> Direction within same tick.
-            .expect("Should be one selected unit");
-
-        let (dx, dy): (i32, i32) = match input_event {
-            &InputEvent::Up => (0, 1),
-            &InputEvent::Down => (0, -1),
-            &InputEvent::Left => (-1, 0),
-            &InputEvent::Right => (1, 0),
-            _ => break, // Could add select here?
-        };
-
-        let current_pos = Tile::from(*transform);
-
-        let valid_tiles = scenario_state.get_moveable_tiles(*unit_id);
-
-        let maybe_tile = valid_tiles.into_iter().find(|tile| {
-            tile.x as i32 == current_pos.x as i32 + dx && tile.y as i32 == current_pos.y as i32 + dy
-        });
-
-        if let Some(tile) = maybe_tile {
-            ev_move_step.send(AddUnitMoveStepEvent(Tile {
-                x: tile.x,
-                y: tile.y,
-            }));
-            transform.translation.x += dy as f32 * TILE_SIZE;
-            transform.translation.y += dy as f32 * TILE_SIZE;
         }
     }
 }

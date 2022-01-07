@@ -100,14 +100,12 @@ pub fn handle_cursor_move(
 
 pub fn handle_cursor_select(
     mut ev_input_event: EventReader<InputEvent>,
-    mut q_cursor: Query<&Transform, With<Cursor>>,
+    q_cursor: Query<&Transform, With<Cursor>>,
     q_units: Query<(Entity, &Transform), With<UnitId>>,
     mut ev_select: EventWriter<SelectEvent>,
 ) {
     for input_event in ev_input_event.iter() {
-        let mut transform = q_cursor.single_mut().expect("Should be one cursor.");
-
-        let unit = match input_event {
+        match input_event {
             &InputEvent::Select => {
                 let cursor_transform = q_cursor.single().expect("No Cursor found?!");
                 let cursor_tile = Tile::from(*cursor_transform);

@@ -2,29 +2,26 @@ use bevy::prelude::*;
 
 use crate::awrs::{
     game::{AppState, GameState},
+    movement_plan::{begin_unit_plan, update_movement_plan, UnitPlan},
     register_inputs::register_inputs,
-    tile::Tile,
-    unit::add_move_step,
 };
 
 pub struct MoveUnitPlugin;
 
-pub struct UnitMove {
-    pub tiles: Vec<Tile>,
-    pub entities: Vec<Entity>,
-}
-
 impl Plugin for MoveUnitPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.insert_resource(UnitMove {
-            tiles: vec![],
-            entities: vec![],
+        app.insert_resource(UnitPlan {
+            range: 0,
+            steps: vec![],
         })
-        .add_system_set(SystemSet::on_enter(AppState::InGame(GameState::MoveUnit)))
+        .add_system_set(
+            SystemSet::on_enter(AppState::InGame(GameState::MoveUnit))
+                .with_system(begin_unit_plan.system()),
+        )
         .add_system_set(
             SystemSet::on_update(AppState::InGame(GameState::MoveUnit))
                 .with_system(register_inputs.system())
-                .with_system(add_move_step.system()),
+                .with_system(update_movement_plan.system()),
         );
     }
 }

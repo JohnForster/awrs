@@ -7,6 +7,7 @@ pub mod game;
 pub mod interface;
 pub mod load_assets;
 pub mod map;
+pub mod movement_plan;
 pub mod plugins;
 pub mod register_inputs;
 pub mod sprite_loading;
