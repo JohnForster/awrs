@@ -4,6 +4,12 @@ pub struct Tile {
     pub y: u32,
 }
 
+impl PartialEq for Tile {
+    fn eq(&self, other: &Tile) -> bool {
+        self.x == other.x && self.y == other.y
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub enum UnitType {
     Infantry,
@@ -218,26 +224,37 @@ impl ScenarioState {
     }
 
     pub fn get_moveable_tiles(&self, unit_id: UnitId) -> Vec<Tile> {
-        let mut valid_tiles = vec![];
+        let mut moveable_tiles = vec![];
         let unit = self.get_unit(unit_id).expect("No unit found!");
-        let range = 3;
+        let range = self.get_movement_range(&unit_id) as i32;
 
         // Add all tiles within a given movement range
-        for dx in (0..=range).rev() {
-            for dy in (0..=(range - dx)).rev() {
-                valid_tiles.push(Tile {
-                    x: unit.position.x + dx,
-                    y: unit.position.y + dy,
-                })
+        for dx in -range..=range {
+            let remaining_range = range - dx.abs();
+            for dy in -remaining_range..=remaining_range {
+                let new_x = unit.position.x as i32 + dx;
+                let new_y = unit.position.y as i32 + dy;
+
+                if self.is_tile_valid(new_x, new_y) {
+                    moveable_tiles.push(Tile {
+                        x: new_x as u32,
+                        y: new_y as u32,
+                    })
+                }
             }
         }
 
-        valid_tiles = valid_tiles
-            .into_iter()
-            .filter(|tile| tile.x >= 0 && tile.y >= 0)
-            .filter(|tile| tile.x < self.map.width() && tile.y < self.map.height())
-            .collect();
+        return moveable_tiles;
+    }
 
-        return valid_tiles;
+    pub fn is_tile_valid(&self, x: i32, y: i32) -> bool {
+        let x_is_valid = x >= 0 && x < self.map.width() as i32;
+        let y_is_valid = y >= 0 && y < self.map.height() as i32;
+
+        return x_is_valid && y_is_valid;
+    }
+
+    pub fn get_movement_range(&self, unit_id: &UnitId) -> u32 {
+        return 3;
     }
 }
