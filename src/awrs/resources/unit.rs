@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::interface::ActionResultEvent;
+use super::action_event::ActionResultEvent;
 
 type UnitHealth = f32;
 
@@ -39,6 +39,7 @@ pub struct DamageEvent {
     new_hp: UnitHealth,
 }
 
+// Belongs elsewhere
 pub fn handle_damage(
     mut ev_damage: EventReader<DamageEvent>,
     mut units_query: Query<(&UnitId, &Children)>,

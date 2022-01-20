@@ -1,10 +1,8 @@
 use bevy::prelude::*;
 
-use crate::awrs::cursor::CursorStyle;
-
-use super::{
-    cursor::ChangeCursorEvent,
-    game::{AppState, GameState},
+use crate::awrs::resources::{
+    cursor::{ChangeCursorEvent, CursorStyle},
+    state::{AppState, GameState},
     unit::{Selected, UnitId},
 };
 

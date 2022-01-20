@@ -1,7 +1,7 @@
 use bevy::{prelude::*, reflect::TypeUuid};
 use serde::*;
 
-use super::load_assets::AssetsLoading;
+use super::AssetsLoading;
 
 // TODO Move Into Engine
 #[derive(Serialize, Deserialize, Debug, TypeUuid)]

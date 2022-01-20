@@ -2,7 +2,8 @@ use bevy::asset::LoadState;
 use bevy::prelude::*;
 use bevy_asset_ron::RonAssetPlugin;
 
-use super::game::*;
+use crate::awrs::resources::state::{AppState, GameState};
+
 use super::sprite_loading::*;
 use super::unit_loading::*;
 

@@ -1,6 +1,6 @@
 use bevy::prelude::info;
 
-use super::tile::Tile;
+use crate::awrs::resources::tile::Tile;
 
 pub fn get_index_from_tiles(
     before_tile: Option<Tile>,

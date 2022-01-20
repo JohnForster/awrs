@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
-use super::{
+use crate::awrs::engine::ScenarioState;
+use crate::awrs::resources::{
+    action_event::{Action, ActionEvent},
     cursor::{ChangeCursorEvent, CursorStyle, SelectEvent},
-    engine::ScenarioState,
-    game::{AppState, GameState},
-    interface::{Action, ActionEvent},
     map::ActiveTeam,
+    state::{AppState, GameState},
     unit::{Selected, UnitId},
 };
 

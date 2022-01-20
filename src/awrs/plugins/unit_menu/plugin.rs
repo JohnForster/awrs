@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 
-use crate::awrs::{
-    game::{AppState, GameState},
-    unit_menu::{exit_unit_menu, open_unit_menu, unit_menu_input},
-};
+use super::unit_menu::{exit_unit_menu, open_unit_menu, unit_menu_input};
+
+use crate::awrs::resources::state::{AppState, GameState};
 
 pub struct UnitMenuPlugin;
 

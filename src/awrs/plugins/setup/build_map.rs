@@ -1,31 +1,17 @@
 use bevy::prelude::*;
 
-use super::constants::*;
-use super::dev_helpers::{new_scenario_map, new_scenario_state};
-use super::engine::TerrainType;
-use super::sprite_loading::HealthAtlas;
-use super::sprite_loading::{TerrainAtlas, UnitAtlas};
-use super::unit::*;
+use crate::awrs::{
+    constants::*,
+    dev_helpers::{new_scenario_map, new_scenario_state},
+    engine::TerrainType,
+    resources::{
+        atlases::{HealthAtlas, TerrainAtlas, UnitAtlas},
+        map::{ActiveTeam, GameMap},
+        unit::*,
+    },
+};
 
-pub struct GameMap {
-    pub width: usize,
-    pub height: usize,
-}
-
-#[derive(Bundle)]
-struct GameMapBundle {
-    game_map: GameMap,
-    transform: Transform,
-    global_transform: GlobalTransform,
-}
-
-pub struct ActiveTeam {
-    pub team: Team,
-}
-
-// TODO Load sprites from json: https://github.com/serde-rs/json
-
-// TODO: should probably move the part for instantiating units into unit.rs
+// TODO: should probably move the part for instantiating units elsewhere?
 pub fn build_map(
     mut commands: Commands,
     terrain_atlas: Res<TerrainAtlas>,

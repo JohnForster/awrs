@@ -1,13 +1,15 @@
 use bevy::prelude::*;
 
-use crate::awrs::{
-    cursor::{handle_change_cursor, ChangeCursorEvent, SelectEvent},
-    interface::ActionEvent,
-    register_inputs::InputEvent,
-    unit::DamageEvent,
-};
+use super::build_map::build_map;
+use super::cursor::{create_cursor, handle_change_cursor};
 
-use super::super::{cursor::create_cursor, game::AppState, game::GameState, map::build_map};
+use crate::awrs::resources::cursor::SelectEvent;
+use crate::awrs::resources::unit::DamageEvent;
+use crate::awrs::resources::{
+    cursor::ChangeCursorEvent,
+    state::{AppState, GameState},
+};
+use crate::awrs::{register_inputs::InputEvent, resources::action_event::ActionEvent};
 
 pub struct SetupPlugin;
 

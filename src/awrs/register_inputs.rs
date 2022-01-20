@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::tile::Tile;
+use super::resources::tile::Tile;
 
 #[derive(Debug)]
 pub enum InputEvent {
