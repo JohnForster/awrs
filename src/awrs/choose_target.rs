@@ -25,6 +25,7 @@ pub fn target_select(
     mut ev_select: EventReader<SelectEvent>,
 ) {
     for SelectEvent(defender_entity) in ev_select.iter() {
+        info!("Executing target_select");
         // ! What happens if SelectEvent is triggered for a Selected unit?
         let (defender_entity, def_unit_id) = units_query
             .get_mut(*defender_entity)
@@ -48,6 +49,7 @@ pub fn target_select(
             defender_entity,
         )));
 
+        info!("Clearing selected unit");
         commands.entity(attacker_entity).remove::<Selected>();
 
         game_state

@@ -96,6 +96,8 @@ pub fn unit_menu_input(
         let unit_entity = units_query
             .single()
             .expect("Unit Menu is open but there is no unit selected?!");
+
+        info!("Clearing selected unit");
         commands.entity(unit_entity).remove::<Selected>();
 
         game_state

@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use super::interface::ActionEvent;
+use super::interface::ActionResultEvent;
 use super::load_assets::*;
 use super::plugins::*;
 
@@ -33,6 +35,8 @@ impl Plugin for AWRSPlugin {
             .add_plugin(BrowsingPlugin)
             .add_plugin(UnitMenuPlugin)
             .add_plugin(MoveUnitPlugin)
-            .add_plugin(TargetingPlugin);
+            .add_plugin(TargetingPlugin)
+            .add_plugin(InterfacePlugin);
+        // Add events
     }
 }

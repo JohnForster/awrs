@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::interface::{ActionResult, ActionResultEvent};
+use super::interface::ActionResultEvent;
 
 type UnitHealth = f32;
 
@@ -15,11 +15,11 @@ pub struct HealthIndicator;
 
 pub fn _handle_attack_result(
     mut q_units: Query<(Entity, &UnitId)>,
-    mut ev_attack_result: EventReader<ActionResultEvent>,
+    mut ev_action_result: EventReader<ActionResultEvent>,
     mut ev_damage: EventWriter<DamageEvent>,
 ) {
-    for ActionResultEvent(action_result) in ev_attack_result.iter() {
-        if let ActionResult::AttackResult(damaged_units) = action_result {
+    for action_result in ev_action_result.iter() {
+        if let ActionResultEvent::AttackResult(damaged_units) = action_result {
             for (id, hp) in damaged_units {
                 for (entity, unit_id) in q_units.iter_mut() {
                     if unit_id.0 == id.0 {
