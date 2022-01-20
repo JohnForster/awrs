@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 
-use crate::awrs::{
-    game::{AppState, GameState},
-    interface::{handle_action, ActionEvent, ActionResultEvent},
+use super::interface::*;
+
+use crate::awrs::resources::{
+    action_event::{ActionEvent, ActionResultEvent},
+    state::{AppState, GameState},
 };
 
 pub struct InterfacePlugin;

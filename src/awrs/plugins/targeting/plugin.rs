@@ -1,10 +1,13 @@
 use bevy::prelude::*;
 
+use super::choose_target::{open_target_selection, target_select};
+
 use crate::awrs::{
-    choose_target::{open_target_selection, target_select},
-    cursor::handle_cursor_select,
-    game::{AppState, GameState},
     register_inputs::register_inputs,
+    resources::{
+        cursor::handle_cursor_select,
+        state::{AppState, GameState},
+    },
 };
 
 pub struct TargetingPlugin;

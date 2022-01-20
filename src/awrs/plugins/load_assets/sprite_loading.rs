@@ -1,36 +1,10 @@
 use bevy::prelude::*;
 
-use super::load_assets::AssetsLoading;
+use crate::awrs::resources::atlases::{
+    ArrowAtlas, CursorAtlas, HealthAtlas, TerrainAtlas, UIAtlas, UnitAtlas,
+};
 
-#[derive(Default)]
-pub struct TerrainAtlas {
-    _texture_handle: Handle<Texture>,
-    pub atlas_handle: Handle<TextureAtlas>,
-}
-
-#[derive(Default)]
-pub struct CursorAtlas {
-    _texture_handle: Handle<Texture>,
-    pub atlas_handle: Handle<TextureAtlas>,
-}
-
-#[derive(Default)]
-pub struct UnitAtlas {
-    _texture_handle: Handle<Texture>,
-    pub atlas_handle: Handle<TextureAtlas>,
-}
-
-pub struct HealthAtlas {
-    pub atlas_handle: Handle<TextureAtlas>,
-}
-
-pub struct UIAtlas {
-    pub atlas_handle: Handle<TextureAtlas>,
-}
-
-pub struct ArrowAtlas {
-    pub atlas_handle: Handle<TextureAtlas>,
-}
+use super::AssetsLoading;
 
 pub fn load_ui_sprites(
     mut commands: Commands,
@@ -82,7 +56,6 @@ pub fn load_ui_sprites(
     let ui_atlas_handle = texture_atlases.add(ui_texture_atlas);
 
     commands.insert_resource(CursorAtlas {
-        _texture_handle: texture_handle,
         atlas_handle: cursor_atlas_handle,
     });
     commands.insert_resource(HealthAtlas {
@@ -119,10 +92,7 @@ pub fn load_unit_sprites(
     texture_atlas.add_texture(inf_blue_sprite);
     let atlas_handle = texture_atlases.add(texture_atlas);
 
-    commands.insert_resource(UnitAtlas {
-        _texture_handle: texture_handle,
-        atlas_handle,
-    })
+    commands.insert_resource(UnitAtlas { atlas_handle })
 }
 
 pub fn load_terrain_sprites(
@@ -153,10 +123,7 @@ pub fn load_terrain_sprites(
 
     let atlas_handle = texture_atlases.add(texture_atlas);
 
-    commands.insert_resource(TerrainAtlas {
-        _texture_handle: texture_handle,
-        atlas_handle,
-    })
+    commands.insert_resource(TerrainAtlas { atlas_handle })
 }
 
 pub fn load_movement_arrow_sprites(

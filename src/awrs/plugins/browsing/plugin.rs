@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 
+use super::browsing::*;
+
 use crate::awrs::{
-    cursor::{browse_select, handle_cursor_move, handle_cursor_select, open_browse},
-    game::{AppState, GameState},
     register_inputs::register_inputs,
-    unit::handle_damage,
+    resources::cursor::{handle_cursor_move, handle_cursor_select},
+    resources::state::{AppState, GameState},
+    resources::unit::handle_damage,
 };
 
 pub struct BrowsingPlugin;

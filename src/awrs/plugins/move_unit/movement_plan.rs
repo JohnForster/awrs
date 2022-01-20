@@ -1,16 +1,18 @@
 use bevy::prelude::*;
 
-use super::{
-    arrows::get_index_from_tiles,
-    cursor::{ChangeCursorEvent, Cursor, CursorStyle},
-    engine::ScenarioState,
-    engine::Tile as EngineTile,
-    game::{AppState, GameState},
-    interface::{Action, ActionEvent, ActionResultEvent},
+use super::arrows::get_index_from_tiles;
+
+use crate::awrs::{
+    engine::{ScenarioState, Tile as EngineTile},
     register_inputs::InputEvent,
-    sprite_loading::ArrowAtlas,
-    tile::{Tile, TILE_SIZE},
-    unit::{Selected, UnitId},
+    resources::{
+        action_event::{Action, ActionEvent, ActionResultEvent},
+        atlases::ArrowAtlas,
+        cursor::{ChangeCursorEvent, Cursor, CursorStyle},
+        state::{AppState, GameState},
+        tile::{Tile, TILE_SIZE},
+        unit::{Selected, UnitId},
+    },
 };
 
 pub struct UnitPlan {
