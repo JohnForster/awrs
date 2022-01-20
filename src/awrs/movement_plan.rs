@@ -2,8 +2,11 @@ use bevy::prelude::*;
 
 use super::{
     arrows::get_index_from_tiles,
+    cursor::{ChangeCursorEvent, Cursor, CursorStyle},
     engine::ScenarioState,
     engine::Tile as EngineTile,
+    game::{AppState, GameState},
+    interface::{Action, ActionEvent, ActionResultEvent},
     register_inputs::InputEvent,
     sprite_loading::ArrowAtlas,
     tile::{Tile, TILE_SIZE},
@@ -29,13 +32,18 @@ enum PlanChange {
     Invalid,
 }
 
+pub struct ConfirmMoveEvent;
+
 pub fn begin_unit_plan(
     mut q_selected_unit: Query<(&UnitId, &mut Transform), With<Selected>>,
+    mut ev_change_cursor: EventWriter<ChangeCursorEvent>,
     scenario_state: Res<ScenarioState>,
     mut unit_plan: ResMut<UnitPlan>,
     mut commands: Commands,
     arrow_atlas: Res<ArrowAtlas>,
 ) {
+    ev_change_cursor.send(ChangeCursorEvent(CursorStyle::None));
+
     let (UnitId(unit_id), transform) = q_selected_unit
         .single_mut()
         // Maybe allow this to fail gracefully, so that we don't error if there is Select -> Direction within same tick.
@@ -58,8 +66,10 @@ pub fn update_movement_plan(
     mut commands: Commands,
     arrow_atlas: Res<ArrowAtlas>,
     mut ev_plan_update: EventWriter<PlanUpdateEvent>,
+    mut ev_confirm_move: EventWriter<ConfirmMoveEvent>,
 ) {
-    for input_event in ev_input.iter() {
+    'outer: for input_event in ev_input.iter() {
+        info!("Executing update_movement_plan");
         let (UnitId(unit_id), mut transform) = q_selected_unit
             .single_mut()
             // Maybe allow this to fail gracefully, so that we don't error if there is Select -> Direction within same tick.
@@ -70,6 +80,11 @@ pub fn update_movement_plan(
             &InputEvent::Down => (0, -1),
             &InputEvent::Left => (-1, 0),
             &InputEvent::Right => (1, 0),
+            &InputEvent::Select => {
+                info!("Sending confirm move event!");
+                ev_confirm_move.send(ConfirmMoveEvent);
+                break 'outer;
+            }
             _ => break, // Could add select here?
         };
 
@@ -190,6 +205,7 @@ pub fn update_arrows(
     mut q_texture_atlas_sprite: Query<&mut TextureAtlasSprite, With<MoveStepSprite>>,
 ) {
     for _ in ev_plan_update.iter() {
+        info!("Executing update_arrows");
         let len = unit_plan.steps.len();
         for i in 0..len {
             let MoveStep { tile, entity } = unit_plan.steps[i];
@@ -212,4 +228,64 @@ pub fn update_arrows(
             move_step_sprite.index = sprite_index as u32;
         }
     }
+}
+
+pub fn confirm_move(
+    mut ev_input: EventReader<ConfirmMoveEvent>,
+    mut ev_action: EventWriter<ActionEvent>,
+    q_selected_unit: Query<Entity, (With<Selected>, With<UnitId>)>,
+    unit_plan: Res<UnitPlan>,
+) {
+    for _ in ev_input.iter() {
+        info!("Executing confirm_move");
+
+        let entity = q_selected_unit
+            .single()
+            .expect("More than one unit selected?!");
+        info!("Sending ActionEvent!");
+        ev_action.send(ActionEvent(Action::Move {
+            entity,
+            tiles: unit_plan.steps.iter().map(|step| step.tile).collect(),
+        }))
+    }
+}
+
+pub fn move_result(
+    mut ev_move_result: EventReader<ActionResultEvent>,
+    mut game_state: ResMut<State<AppState>>,
+    mut q: QuerySet<(
+        Query<&mut Transform, With<Selected>>,
+        Query<&mut Transform, With<Cursor>>,
+    )>,
+) {
+    for action_result in ev_move_result.iter() {
+        info!("Executing move_result");
+        if let ActionResultEvent::MoveResult(tiles) = action_result {
+            if let Some(location) = tiles.last() {
+                info!("Moving unit...");
+
+                let mut unit_transform =
+                    q.q0_mut().single_mut().expect("No selected unit to move?!");
+                unit_transform.translation.x = location.x as f32 * TILE_SIZE;
+                unit_transform.translation.y = location.y as f32 * TILE_SIZE;
+
+                let mut cursor_transform = q.q1_mut().single_mut().expect("Couldn't find cursor?!");
+                cursor_transform.translation.x = location.x as f32 * TILE_SIZE;
+                cursor_transform.translation.y = location.y as f32 * TILE_SIZE;
+            }
+
+            game_state
+                .set(AppState::InGame(GameState::Browsing))
+                .expect("Problem changing state");
+        }
+    }
+}
+
+pub fn exit_movement_plan(mut unit_plan: ResMut<UnitPlan>, mut commands: Commands) {
+    for step in unit_plan.steps.iter() {
+        commands.entity(step.entity).despawn();
+    }
+
+    unit_plan.range = 0;
+    unit_plan.steps = vec![];
 }

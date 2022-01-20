@@ -9,12 +9,12 @@ pub struct ActionEvent(pub Action);
 
 pub enum Action {
     Attack(Entity, Entity),
-    _Move(Entity, Vec<Tile>),
+    Move { entity: Entity, tiles: Vec<Tile> },
     _EndTurn,
 }
 
 // Will need to add more detail once its clear what is needed from these result events.
-pub enum ActionResult {
+pub enum ActionResultEvent {
     AttackResult(Vec<(UnitId, UnitHp)>), // Include ammo in this struct?
     MoveResult(Vec<Tile>),
     EndTurnResult(u32),
@@ -22,45 +22,41 @@ pub enum ActionResult {
 
 impl From<CommandResult> for ActionResultEvent {
     fn from(command_result: CommandResult) -> ActionResultEvent {
-        let result = match command_result {
-            CommandResult::Move { status, tiles } => ActionResult::MoveResult(
+        match command_result {
+            CommandResult::Move { status, tiles } => ActionResultEvent::MoveResult(
                 tiles
                     .iter()
                     .map(|EngineTile { x, y }| Tile { x: *x, y: *y })
                     .collect(),
             ),
-            CommandResult::Attack { status, unit_hp } => ActionResult::AttackResult(
+            CommandResult::Attack { status, unit_hp } => ActionResultEvent::AttackResult(
                 unit_hp.iter().map(|(id, hp)| (UnitId(*id), *hp)).collect(),
             ),
             CommandResult::EndTurn {
                 status,
                 new_active_team,
-            } => ActionResult::EndTurnResult(new_active_team),
-        };
-        return ActionResultEvent(result);
+            } => ActionResultEvent::EndTurnResult(new_active_team),
+        }
     }
 }
 
-pub struct ActionResultEvent(pub ActionResult);
-
-pub fn _handle_action(
+pub fn handle_action(
     mut ev_action: EventReader<ActionEvent>,
     mut ev_action_result: EventWriter<ActionResultEvent>,
     mut scenario_state: ResMut<ScenarioState>,
-    q_units: Query<&Unit>,
+    q_units: Query<&UnitId>,
 ) {
     for ActionEvent(action) in ev_action.iter() {
+        info!("Action event fired!");
         let command = match action {
             Action::Attack(attacker_entity, defender_entity) => {
-                let attacker = q_units
+                let &UnitId(attacker_id) = q_units
                     .get(*attacker_entity)
                     .expect("Couldn't find attacker");
-                let attacker_id = attacker.id;
 
-                let defender = q_units
+                let &UnitId(defender_id) = q_units
                     .get(*defender_entity)
                     .expect("Couldn't find defender");
-                let defender_id = defender.id;
 
                 Command::Attack {
                     attacker_id,
@@ -68,12 +64,11 @@ pub fn _handle_action(
                 }
             }
 
-            Action::_Move(entity, cells) => {
-                let unit = q_units.get(*entity).expect("Couldn't find unit to move");
-
+            Action::Move { entity, tiles } => {
+                let unit = q_units.get(*entity).expect("Unable to find unit");
                 Command::Move {
-                    unit_id: unit.id,
-                    tiles: cells
+                    unit_id: unit.0,
+                    tiles: tiles
                         .iter()
                         .map(|tile| EngineTile {
                             x: tile.x,
@@ -86,6 +81,7 @@ pub fn _handle_action(
         };
 
         let result = scenario_state.execute(command);
+        info!("Sending Action Result Event!");
         ev_action_result.send(ActionResultEvent::from(result))
     }
 }

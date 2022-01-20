@@ -138,6 +138,7 @@ pub fn browse_select(
     scenario_state: Res<ScenarioState>,
 ) {
     for SelectEvent(entity) in ev_select.iter() {
+        info!("Executing browse_select");
         let UnitId(unit_id) = q_unit.get(*entity).expect("Unit doesn't exist?!");
 
         let unit = scenario_state
