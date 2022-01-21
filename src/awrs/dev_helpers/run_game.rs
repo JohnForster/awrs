@@ -3,7 +3,7 @@ use crate::awrs::{
     engine::{Command, Tile},
 };
 
-pub fn run_game() {
+pub fn _run_game() {
     let scenario_map = new_scenario_map();
     let mut scenario_state = new_scenario_state(scenario_map);
 

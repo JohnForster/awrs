@@ -12,17 +12,17 @@ use crate::awrs::{
 impl From<CommandResult> for ActionResultEvent {
     fn from(command_result: CommandResult) -> ActionResultEvent {
         match command_result {
-            CommandResult::Move { status, tiles } => ActionResultEvent::MoveResult(
+            CommandResult::Move { status: _, tiles } => ActionResultEvent::MoveResult(
                 tiles
                     .iter()
                     .map(|EngineTile { x, y }| Tile { x: *x, y: *y })
                     .collect(),
             ),
-            CommandResult::Attack { status, unit_hp } => ActionResultEvent::AttackResult(
+            CommandResult::Attack { status: _, unit_hp } => ActionResultEvent::AttackResult(
                 unit_hp.iter().map(|(id, hp)| (UnitId(*id), *hp)).collect(),
             ),
             CommandResult::EndTurn {
-                status,
+                status: _,
                 new_active_team,
             } => ActionResultEvent::EndTurnResult(new_active_team),
         }

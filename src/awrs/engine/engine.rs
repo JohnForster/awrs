@@ -254,7 +254,7 @@ impl ScenarioState {
         return x_is_valid && y_is_valid;
     }
 
-    pub fn get_movement_range(&self, unit_id: &UnitId) -> u32 {
+    pub fn get_movement_range(&self, _unit_id: &UnitId) -> u32 {
         return 3;
     }
 }

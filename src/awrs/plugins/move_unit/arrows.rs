@@ -1,5 +1,3 @@
-use bevy::prelude::info;
-
 use crate::awrs::resources::tile::Tile;
 
 pub fn get_index_from_tiles(
@@ -13,18 +11,17 @@ pub fn get_index_from_tiles(
 }
 
 fn get_direction(tile_a: Tile, tile_b: Tile) -> Dir {
-    info!("tile_a {:?}", tile_a);
-    if tile_a.x < tile_b.x {
-        return Dir::Right;
-    }
-    if tile_a.x > tile_b.x {
+    if tile_b.x < tile_a.x {
         return Dir::Left;
     }
-    if tile_a.y < tile_b.y {
-        return Dir::Up;
+    if tile_b.x > tile_a.x {
+        return Dir::Right;
     }
-    if tile_a.y > tile_b.y {
+    if tile_b.y < tile_a.y {
         return Dir::Down;
+    }
+    if tile_b.y > tile_a.y {
+        return Dir::Up;
     }
     panic!(
         "Tried to create arrow path between tiles which were not next to each other: {:?} and {:?}",
@@ -42,8 +39,7 @@ enum Dir {
 }
 
 fn get_index_from_directions((from, to): (Dir, Dir)) -> usize {
-    info!("{:?}", (from, to));
-    let a = match (from, to) {
+    match (from, to) {
         (Dir::Down, Dir::Down) => 11,
         (Dir::Down, Dir::Right) => 15,
         (Dir::Down, Dir::Left) => 14,
@@ -74,7 +70,5 @@ fn get_index_from_directions((from, to): (Dir, Dir)) -> usize {
         | (Dir::Up, Dir::Down)
         | (Dir::Down, Dir::Up)
         | (Dir::None, Dir::None) => 24,
-    };
-    info!("{}", a);
-    a
+    }
 }
