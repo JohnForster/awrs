@@ -5,7 +5,7 @@ use super::choose_target::{open_target_selection, target_select};
 use crate::awrs::{
     register_inputs::register_inputs,
     resources::{
-        cursor::handle_cursor_select,
+        cursor::{handle_cursor_move, handle_cursor_select},
         state::{AppState, GameState},
     },
 };
@@ -21,6 +21,7 @@ impl Plugin for TargetingPlugin {
         .add_system_set(
             SystemSet::on_update(AppState::InGame(GameState::ChooseTarget))
                 .with_system(register_inputs.system().label("inputs"))
+                .with_system(handle_cursor_move.system().after("inputs"))
                 .with_system(handle_cursor_select.system().after("inputs"))
                 .with_system(target_select.system().after("inputs")),
         );

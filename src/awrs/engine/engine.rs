@@ -235,7 +235,7 @@ impl ScenarioState {
                 let new_x = unit.position.x as i32 + dx;
                 let new_y = unit.position.y as i32 + dy;
 
-                if self.is_tile_valid(new_x, new_y) {
+                if self.is_tile_moveable(new_x, new_y) {
                     moveable_tiles.push(Tile {
                         x: new_x as u32,
                         y: new_y as u32,
@@ -247,7 +247,15 @@ impl ScenarioState {
         return moveable_tiles;
     }
 
-    pub fn is_tile_valid(&self, x: i32, y: i32) -> bool {
+    pub fn is_tile_moveable(&self, x: i32, y: i32) -> bool {
+        // Is tile within the map bounds?
+        self.is_tile_within_bounds(x, y)
+        // Can this unit move over this terrain?
+        // Are there any other units already here?
+        // Is this blocked by enemy units? (Might require pathfinding?)
+    }
+
+    pub fn is_tile_within_bounds(&self, x: i32, y: i32) -> bool {
         let x_is_valid = x >= 0 && x < self.map.width() as i32;
         let y_is_valid = y >= 0 && y < self.map.height() as i32;
 

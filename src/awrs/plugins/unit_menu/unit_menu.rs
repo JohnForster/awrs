@@ -25,7 +25,7 @@ pub fn open_unit_menu(
         info!("Found a unit, spawning node...");
 
         // TODO get unit menu options from selected unit.
-        // Move if hasn't moved yet. Attack if unit next to it.
+        // eg. Move if hasn't moved yet. Attack if unit next to it etc.
         let options = vec!["M - Move", "T - Attack", "C - Cancel"];
 
         commands
