@@ -76,19 +76,26 @@ pub fn load_unit_sprites(
     let texture_handle = asset_server.load("spritesheets/unitSprites.png");
     loading.0.push(texture_handle.clone_untyped());
     info!("Unit sprite loading underway...");
-    let mut texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(349.0, 93.0));
+    let mut texture_atlas =
+        TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(349.0, 111.0));
 
     let inf_orange_sprite = bevy::sprite::Rect {
-        min: Vec2::new(24.0, 4.0),
-        max: Vec2::new(24.0 + 14.0, 4.0 + 16.0),
+        min: Vec2::new(23.0, 3.0),
+        max: Vec2::new(23.0 + 16.0, 3.0 + 16.0),
     };
 
     let inf_blue_sprite = bevy::sprite::Rect {
-        min: Vec2::new(24.0, 22.0),
-        max: Vec2::new(24.0 + 14.0, 22.0 + 16.0),
+        min: Vec2::new(23.0, 21.0),
+        max: Vec2::new(23.0 + 16.0, 21.0 + 16.0),
+    };
+
+    let ling_purple_sprite = bevy::sprite::Rect {
+        min: Vec2::new(23.0, 93.0),
+        max: Vec2::new(23.0 + 16.0, 93.0 + 16.0),
     };
 
     texture_atlas.add_texture(inf_orange_sprite);
+    texture_atlas.add_texture(ling_purple_sprite);
     texture_atlas.add_texture(inf_blue_sprite);
     let atlas_handle = texture_atlases.add(texture_atlas);
 
