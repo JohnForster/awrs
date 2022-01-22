@@ -5,10 +5,7 @@ use super::cursor::{create_cursor, handle_change_cursor};
 
 use crate::awrs::resources::cursor::SelectEvent;
 use crate::awrs::resources::unit::DamageEvent;
-use crate::awrs::resources::{
-    cursor::ChangeCursorEvent,
-    state::{AppState, GameState},
-};
+use crate::awrs::resources::{cursor::ChangeCursorEvent, state::GameState};
 use crate::awrs::{register_inputs::InputEvent, resources::action_event::ActionEvent};
 
 pub struct SetupPlugin;
@@ -22,7 +19,7 @@ impl Plugin for SetupPlugin {
             .add_event::<InputEvent>()
             .add_system(handle_change_cursor.system())
             .add_system_set(
-                SystemSet::on_enter(AppState::InGame(GameState::SetUp))
+                SystemSet::on_enter(GameState::SetUp)
                     .with_system(build_map.system().label("build map"))
                     .with_system(
                         create_cursor
@@ -32,14 +29,14 @@ impl Plugin for SetupPlugin {
                     )
                     .with_system(transition_to_browsing.system().after("create cursor")),
             )
-            .add_system_set(SystemSet::on_update(AppState::InGame(GameState::SetUp)));
+            .add_system_set(SystemSet::on_update(GameState::SetUp));
     }
 }
 
 // Should probably listen for loading to be finished.
-fn transition_to_browsing(mut game_state: ResMut<State<AppState>>) {
+fn transition_to_browsing(mut game_state: ResMut<State<GameState>>) {
     info!("Done loading! Start Browsing!");
     game_state
-        .set(AppState::InGame(GameState::Browsing))
+        .set(GameState::Browsing)
         .expect("Problem transitioning to browsing state")
 }

@@ -6,20 +6,29 @@ use crate::awrs::resources::atlases::{
 
 use super::AssetsLoading;
 
-pub fn load_ui_sprites(
+pub fn load_images(asset_server: Res<AssetServer>, mut loading: ResMut<AssetsLoading>) {
+    let paths = [
+        "spritesheets/UISprites.png",
+        "spritesheets/units.png",
+        "spritesheets/unitSprites.png",
+    ];
+
+    for &path in paths.iter() {
+        let texture_handle: Handle<Texture> = asset_server.load(path);
+        loading.0.push(texture_handle.clone_untyped());
+    }
+}
+
+pub fn create_ui_sprites(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut loading: ResMut<AssetsLoading>,
 ) {
     info!("Loading UI Sprites");
     let texture_handle = asset_server.load("spritesheets/UISprites.png");
-    loading.0.push(texture_handle.clone_untyped());
-    info!("UI sprite loading underway...");
 
     let image_size = Vec2::new(143.0, 64.0);
     let mut cursor_texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), image_size);
-    let mut health_texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), image_size);
     let mut ui_texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), image_size);
 
     let cursor_rect = bevy::sprite::Rect {
@@ -40,11 +49,16 @@ pub fn load_ui_sprites(
     cursor_texture_atlas.add_texture(cursor_rect);
     cursor_texture_atlas.add_texture(attack_cursor_rect);
 
+    let icons_texture_handle: Handle<Texture> = asset_server.load("spritesheets/units.png");
+    let icons_image_size = Vec2::new(680.0, 756.0);
+    let mut health_texture_atlas =
+        TextureAtlas::new_empty(icons_texture_handle.clone(), icons_image_size);
+
     for n in 0..10 {
-        let min = Vec2::new(42.0 + 9.0 * n as f32, 41.0);
+        let min = Vec2::new(384.0 + 9.0 * n as f32, 25.0);
         let number_rect = bevy::sprite::Rect {
             min,
-            max: min + Vec2::new(8.0, 12.0),
+            max: min + Vec2::new(8.0, 8.0),
         };
         health_texture_atlas.add_texture(number_rect);
     }
@@ -66,16 +80,14 @@ pub fn load_ui_sprites(
     });
 }
 
-pub fn load_unit_sprites(
+pub fn create_unit_sprites(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut loading: ResMut<AssetsLoading>,
 ) {
     info!("Loading Unit Sprites");
     let texture_handle = asset_server.load("spritesheets/unitSprites.png");
-    loading.0.push(texture_handle.clone_untyped());
-    info!("Unit sprite loading underway...");
+
     let mut texture_atlas =
         TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(349.0, 111.0));
 
@@ -102,17 +114,15 @@ pub fn load_unit_sprites(
     commands.insert_resource(UnitAtlas { atlas_handle })
 }
 
-pub fn load_terrain_sprites(
+pub fn create_terrain_sprites(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut loading: ResMut<AssetsLoading>,
 ) {
     info!("Loading Terrain Sprites");
     // Terrain Sprites
     let texture_handle = asset_server.load("spritesheets/sprites.png");
-    loading.0.push(texture_handle.clone_untyped());
-    info!("Terrain sprite loading underway...");
+
     let mut texture_atlas =
         TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(1215.0, 1744.0));
 
@@ -133,15 +143,12 @@ pub fn load_terrain_sprites(
     commands.insert_resource(TerrainAtlas { atlas_handle })
 }
 
-pub fn load_movement_arrow_sprites(
+pub fn create_movement_arrow_sprites(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-    mut loading: ResMut<AssetsLoading>,
 ) {
     let texture_handle = asset_server.load("spritesheets/units.png");
-    loading.0.push(texture_handle.clone_untyped());
-    info!("Terrain sprite loading underway...");
 
     let mut texture_atlas =
         TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(680.0, 756.0));
@@ -158,17 +165,3 @@ pub fn load_movement_arrow_sprites(
     let atlas_handle = texture_atlases.add(texture_atlas);
     commands.insert_resource(ArrowAtlas { atlas_handle })
 }
-
-// struct SemiTransparentMaterial {
-//     handle: Handle<ColorMaterial>,
-// }
-
-// pub fn load_material(
-//     mut materials: ResMut<Assets<ColorMaterial>>,
-//     mut loading: ResMut<AssetsLoading>,
-//     mut commands: Commands,
-// ) {
-//     let color_material = ColorMaterial::from(Color::rgba(1.0, 1.0, 1.0, 0.5));
-//     let handle = materials.add(color_material);
-//     commands.insert_resource(SemiTransparentMaterial { handle })
-// }

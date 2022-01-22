@@ -9,7 +9,7 @@ use crate::awrs::{
         action_event::{Action, ActionEvent, ActionResultEvent},
         atlases::ArrowAtlas,
         cursor::{ChangeCursorEvent, Cursor, CursorStyle},
-        state::{AppState, GameState},
+        state::GameState,
         tile::{Tile, TILE_SIZE},
         unit::{Selected, UnitId},
     },
@@ -254,7 +254,7 @@ pub fn confirm_move(
 
 pub fn move_result(
     mut ev_move_result: EventReader<ActionResultEvent>,
-    mut game_state: ResMut<State<AppState>>,
+    mut game_state: ResMut<State<GameState>>,
     mut q: QuerySet<(
         Query<&mut Transform, With<Selected>>,
         Query<&mut Transform, With<Cursor>>,
@@ -277,7 +277,7 @@ pub fn move_result(
             }
 
             game_state
-                .set(AppState::InGame(GameState::Browsing))
+                .set(GameState::Browsing)
                 .expect("Problem changing state");
         }
     }

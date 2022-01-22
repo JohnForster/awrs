@@ -77,11 +77,15 @@ pub fn build_map(
                 ..Default::default()
             })
             .with_children(|unit| {
-                let mut transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
-                transform.scale = Vec3::new(0.7, 0.7, 1.0);
+                let transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
+                // transform.scale = Vec3::new(0.7, 0.7, 1.0);
                 unit.spawn_bundle(SpriteSheetBundle {
                     texture_atlas: health_atlas.atlas_handle.clone(),
-                    sprite: TextureAtlasSprite::new(10),
+                    sprite: TextureAtlasSprite::new(9),
+                    visible: Visible {
+                        is_visible: false,
+                        is_transparent: true,
+                    },
                     transform,
                     ..Default::default()
                 })

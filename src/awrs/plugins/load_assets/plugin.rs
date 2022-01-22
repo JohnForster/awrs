@@ -17,10 +17,11 @@ impl Plugin for LoadAssets {
             .add_plugin(RonAssetPlugin::<UnitType>::new(&["ron"]))
             .add_system_set(
                 SystemSet::on_enter(AppState::Loading)
-                    .with_system(load_terrain_sprites.system())
-                    .with_system(load_unit_sprites.system())
-                    .with_system(load_movement_arrow_sprites.system())
-                    .with_system(load_ui_sprites.system())
+                    .with_system(load_images.system())
+                    .with_system(create_terrain_sprites.system())
+                    .with_system(create_unit_sprites.system())
+                    .with_system(create_movement_arrow_sprites.system())
+                    .with_system(create_ui_sprites.system())
                     .with_system(load_units.system()),
             )
             .add_system_set(
@@ -32,7 +33,8 @@ impl Plugin for LoadAssets {
 pub fn check_assets_ready(
     loading: ResMut<AssetsLoading>,
     asset_server: Res<AssetServer>,
-    mut game_state: ResMut<State<AppState>>,
+    mut app_state: ResMut<State<AppState>>,
+    mut game_state: ResMut<State<GameState>>,
     mut commands: Commands,
 ) {
     match asset_server.get_group_load_state(loading.0.iter().map(|h| h.id)) {
@@ -42,7 +44,8 @@ pub fn check_assets_ready(
         LoadState::Loaded => {
             // all assets are now ready
             commands.remove_resource::<AssetsLoading>();
-            game_state.set(AppState::InGame(GameState::SetUp)).unwrap();
+            app_state.set(AppState::InGame).unwrap();
+            game_state.set(GameState::SetUp).unwrap();
         }
         _ => {
             // NotLoaded/Loading: not fully ready yet

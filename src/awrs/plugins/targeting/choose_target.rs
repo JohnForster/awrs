@@ -5,7 +5,7 @@ use crate::awrs::resources::{
     action_event::{Action, ActionEvent},
     cursor::{ChangeCursorEvent, CursorStyle, SelectEvent},
     map::ActiveTeam,
-    state::{AppState, GameState},
+    state::GameState,
     unit::{Selected, UnitId},
 };
 
@@ -15,7 +15,7 @@ pub fn open_target_selection(mut ev_change_cursor: EventWriter<ChangeCursorEvent
 }
 
 pub fn target_select(
-    mut game_state: ResMut<State<AppState>>,
+    mut game_state: ResMut<State<GameState>>,
     mut attacking_unit_query: Query<Entity, (With<Selected>, With<UnitId>)>,
     mut units_query: Query<(Entity, &UnitId), Without<Selected>>,
     mut commands: Commands,
@@ -44,6 +44,7 @@ pub fn target_select(
             .single_mut()
             .expect("Trying to attack a target without a unit selected!");
 
+        info!("Sending Attack Action Event");
         ev_action.send(ActionEvent(Action::Attack(
             attacker_entity,
             defender_entity,
@@ -53,7 +54,7 @@ pub fn target_select(
         commands.entity(attacker_entity).remove::<Selected>();
 
         game_state
-            .set(AppState::InGame(GameState::Browsing))
+            .set(GameState::Browsing)
             .expect("Problem changing state");
     }
 }

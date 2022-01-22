@@ -1,7 +1,7 @@
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Copy)]
 pub enum AppState {
     _MainMenu,
-    InGame(GameState),
+    InGame,
     Loading,
 }
 
@@ -15,4 +15,5 @@ pub enum GameState {
     MoveUnit,
     ChooseTarget,
     _EnemyTurn,
+    None,
 }

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::awrs::resources::{
     cursor::{ChangeCursorEvent, CursorStyle},
-    state::{AppState, GameState},
+    state::GameState,
     unit::{Selected, UnitId},
 };
 
@@ -72,21 +72,21 @@ pub fn open_unit_menu(
 
 pub fn unit_menu_input(
     keyboard_input: Res<Input<KeyCode>>,
-    mut game_state: ResMut<State<AppState>>,
+    mut game_state: ResMut<State<GameState>>,
     units_query: Query<Entity, (With<Selected>, With<UnitId>)>,
     mut commands: Commands,
 ) {
     if keyboard_input.just_pressed(KeyCode::M) {
         info!("Changing Game State to MoveUnit");
         game_state
-            .set(AppState::InGame(GameState::MoveUnit))
+            .set(GameState::MoveUnit)
             .expect("Should be able to enter MoveUnit gamestate")
     }
     if keyboard_input.just_pressed(KeyCode::T) {
         info!("Performing Attack");
 
         game_state
-            .set(AppState::InGame(GameState::ChooseTarget))
+            .set(GameState::ChooseTarget)
             .expect("Should be able to return to browsing")
     }
     if keyboard_input.just_pressed(KeyCode::C) {
@@ -99,7 +99,7 @@ pub fn unit_menu_input(
         commands.entity(unit_entity).remove::<Selected>();
 
         game_state
-            .set(AppState::InGame(GameState::Browsing))
+            .set(GameState::Browsing)
             .expect("Should be able to return to browsing")
     }
 }
