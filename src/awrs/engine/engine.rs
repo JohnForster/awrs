@@ -235,7 +235,7 @@ impl ScenarioState {
                 let new_x = unit.position.x as i32 + dx;
                 let new_y = unit.position.y as i32 + dy;
 
-                if self.is_tile_moveable(new_x, new_y) {
+                if self.is_tile_moveable(unit_id, new_x, new_y) {
                     moveable_tiles.push(Tile {
                         x: new_x as u32,
                         y: new_y as u32,
@@ -247,12 +247,26 @@ impl ScenarioState {
         return moveable_tiles;
     }
 
-    pub fn is_tile_moveable(&self, x: i32, y: i32) -> bool {
+    pub fn is_tile_moveable(&self, unit_id: UnitId, x: i32, y: i32) -> bool {
         // Is tile within the map bounds?
-        self.is_tile_within_bounds(x, y)
+        self.is_tile_within_bounds(x, y) &&
         // Can this unit move over this terrain?
         // Are there any other units already here?
+        !self.is_tile_occupied(unit_id, x as u32, y as u32)
         // Is this blocked by enemy units? (Might require pathfinding?)
+    }
+
+    pub fn is_tile_occupied(&self, unit_id: u32, x: u32, y: u32) -> bool {
+        if let Some(unit) = self.get_unit_at(x, y) {
+            return unit.id != unit_id;
+        }
+        return false;
+    }
+
+    pub fn get_unit_at(&self, x: u32, y: u32) -> Option<&Unit> {
+        self.units
+            .iter()
+            .find(|unit| unit.position.x == x && unit.position.y == y)
     }
 
     pub fn is_tile_within_bounds(&self, x: i32, y: i32) -> bool {
