@@ -17,6 +17,7 @@ impl Plugin for AWRSPlugin {
             .add_plugin(InterfacePlugin)
             .add_plugin(BrowsingPlugin)
             .add_plugin(UnitMenuPlugin)
+            .add_plugin(GameMenuPlugin)
             .add_plugin(MoveUnitPlugin)
             .add_plugin(TargetingPlugin);
         // Add events

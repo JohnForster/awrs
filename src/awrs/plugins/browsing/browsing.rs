@@ -1,7 +1,8 @@
-use bevy::prelude::*;
+use bevy::{app::Events, prelude::*};
 
 use crate::awrs::{
     engine::ScenarioState,
+    register_inputs::InputEvent,
     resources::{
         cursor::{ChangeCursorEvent, CursorStyle, SelectEvent},
         map::ActiveTeam,
@@ -26,7 +27,7 @@ pub fn browse_select(
                 .expect("Could not find unit in ScenarioState");
 
             // Cannot select enemy units
-            let is_enemy = unit.team != active_team.team.0;
+            let is_enemy = unit.team != active_team.team;
             if is_enemy {
                 continue;
             }
@@ -40,6 +41,17 @@ pub fn browse_select(
             game_state
                 .set(GameState::UnitMenu)
                 .expect("Problem changing state");
+        }
+    }
+}
+
+pub fn listen_for_open_menu(
+    mut ev_game_menu: EventReader<InputEvent>,
+    mut game_state: ResMut<State<GameState>>,
+) {
+    for ev in ev_game_menu.iter() {
+        if matches!(ev, InputEvent::ToggleMenu) {
+            game_state.push(GameState::GameMenu);
         }
     }
 }

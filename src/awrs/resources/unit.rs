@@ -4,8 +4,7 @@ use super::action_event::ActionResultEvent;
 
 type UnitHealth = f32;
 
-#[derive(Clone, PartialEq)]
-pub struct Team(pub u32);
+pub type Team = u32;
 
 pub struct Selected;
 

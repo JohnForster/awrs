@@ -19,6 +19,7 @@ impl Plugin for BrowsingPlugin {
                     .with_system(register_inputs.system())
                     .with_system(browse_select.system())
                     .with_system(handle_cursor_move.system())
+                    .with_system(listen_for_open_menu.system())
                     .with_system(handle_cursor_select.system()),
             );
     }

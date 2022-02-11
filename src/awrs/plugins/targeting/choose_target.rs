@@ -35,7 +35,7 @@ pub fn target_select(
             .get_unit(def_unit_id.0)
             .expect("Couldn't find defending unit.");
 
-        let is_enemy = def_unit.team != active_team.team.0;
+        let is_enemy = def_unit.team != active_team.team;
         if !is_enemy {
             continue;
         }

@@ -24,7 +24,7 @@ pub fn build_map(
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
     commands.insert_resource(ActiveTeam {
-        team: Team(scenario_state.active_team),
+        team: scenario_state.active_team,
     });
 
     commands
