@@ -25,7 +25,6 @@ impl Plugin for MoveUnitPlugin {
         )
         .add_system_set(
             SystemSet::on_update(GameState::MoveUnit)
-                .with_system(register_inputs.system())
                 .with_system(update_arrows.system().before("update"))
                 .with_system(update_movement_plan.system().label("update"))
                 .with_system(confirm_move.system().label("send action")),

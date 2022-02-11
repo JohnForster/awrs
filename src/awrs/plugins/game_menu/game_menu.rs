@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{app::Events, prelude::*};
 
 use crate::awrs::{
     engine::ScenarioState,
@@ -71,14 +71,16 @@ pub fn open_game_menu(
 }
 
 pub fn game_menu_input(
-    mut ev_input: EventReader<InputEvent>,
+    mut input_events: ResMut<Events<InputEvent>>,
     mut game_state: ResMut<State<GameState>>,
     units_query: Query<Entity, (With<Selected>, With<UnitId>)>,
     scenario_state: Res<ScenarioState>,
     mut active_team: ResMut<ActiveTeam>,
     mut commands: Commands,
 ) {
-    for ev in ev_input.iter() {
+    let mut reader = input_events.get_reader();
+    let mut should_clear = false;
+    for ev in reader.iter(&input_events) {
         match ev {
             InputEvent::EndTurn => {
                 info!("Ending Turn");
@@ -91,9 +93,13 @@ pub fn game_menu_input(
                 info!("Quitting menu");
 
                 game_state.pop();
+                should_clear = true;
             }
             _ => {}
         };
+    }
+    if should_clear {
+        input_events.clear();
     }
 }
 

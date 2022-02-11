@@ -46,13 +46,21 @@ pub fn browse_select(
 }
 
 pub fn listen_for_open_menu(
-    mut ev_game_menu: EventReader<InputEvent>,
+    mut ev_game_menu: ResMut<Events<InputEvent>>,
     mut game_state: ResMut<State<GameState>>,
 ) {
-    for ev in ev_game_menu.iter() {
+    let mut reader = ev_game_menu.get_reader();
+    let mut should_clear = false;
+    for ev in reader.iter(&ev_game_menu) {
         if matches!(ev, InputEvent::ToggleMenu) {
-            game_state.push(GameState::GameMenu);
+            game_state
+                .push(GameState::GameMenu)
+                .expect("Error changing state");
+            should_clear = true;
         }
+    }
+    if should_clear {
+        ev_game_menu.clear();
     }
 }
 

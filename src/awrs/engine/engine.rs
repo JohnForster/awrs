@@ -1,3 +1,5 @@
+use bevy::prelude::{debug, info};
+
 #[derive(Debug)]
 pub struct Tile {
     pub x: u32,
@@ -182,13 +184,18 @@ impl ScenarioState {
         //   Turn etc.
         //   Weapon type
 
-        let mut units_iterator = self.units.iter_mut();
-        let attacker = units_iterator
-            .find(|u| u.id == attacker_id)
-            .expect("Could not find attacker");
-        let defender = units_iterator
-            .find(|u| u.id == defender_id)
-            .expect("Could not find defender");
+        let mut maybe_attacker: Option<&mut Unit> = None;
+        let mut maybe_defender: Option<&mut Unit> = None;
+        for unit in self.units.iter_mut() {
+            if unit.id == attacker_id {
+                maybe_attacker = Some(unit);
+            } else if unit.id == defender_id {
+                maybe_defender = Some(unit);
+            }
+        }
+
+        let attacker = maybe_attacker.expect("No attacker found");
+        let defender = maybe_defender.expect("No defender found");
 
         // Calculate damage
         let (attacker_damage, defender_damage) = (2.0, 4.0);

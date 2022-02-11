@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use super::{
     plugins::*,
+    register_inputs::register_inputs,
     resources::state::{AppState, GameState},
 };
 
@@ -12,6 +13,7 @@ impl Plugin for AWRSPlugin {
         app.add_plugin(LoadAssets)
             .add_state(AppState::Loading)
             .add_state(GameState::None)
+            .add_system(register_inputs.system().label("inputs"))
             // Add plugins for each of the InGame states
             .add_plugin(SetupPlugin)
             .add_plugin(InterfacePlugin)
