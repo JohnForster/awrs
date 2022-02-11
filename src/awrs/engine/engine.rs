@@ -1,6 +1,6 @@
-use bevy::prelude::{debug, info};
+use bevy::prelude::{debug, info, EventWriter};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Tile {
     pub x: u32,
     pub y: u32,
@@ -76,6 +76,15 @@ impl Contains<i32> for ScenarioState {
     }
 }
 
+pub enum UnitAction {
+    Move,
+    Attack,
+    _Capture,
+    _Join,
+    _SelfDestruct,
+    _Resupply,
+}
+
 pub enum Command {
     Move {
         unit_id: UnitId,
@@ -135,6 +144,13 @@ impl ScenarioState {
         let mut unit = units_iterator
             .find(|u| u.id == id)
             .expect(format!("No unit found with id {}", id).as_str());
+
+        if unit.has_moved {
+            return CommandResult::Move {
+                status: CommandStatus::Err,
+                tiles: vec![unit.position],
+            };
+        }
 
         let mut successful_moves: Vec<Tile> = vec![];
         let mut status = CommandStatus::Err;
@@ -197,6 +213,16 @@ impl ScenarioState {
         let attacker = maybe_attacker.expect("No attacker found");
         let defender = maybe_defender.expect("No defender found");
 
+        if attacker.has_attacked {
+            return CommandResult::Attack {
+                status: CommandStatus::Err,
+                unit_hp: vec![
+                    (attacker.id, attacker.health),
+                    (defender.id, defender.health),
+                ],
+            };
+        }
+
         // Calculate damage
         let (attacker_damage, defender_damage) = (2.0, 4.0);
         attacker.health -= attacker_damage;
@@ -214,6 +240,7 @@ impl ScenarioState {
     }
 
     fn end_turn(&mut self) -> CommandResult {
+        info!("Ending turn");
         let new_active_team = (self.active_team + 1) % (self.teams.len() as u32);
         self.active_team = new_active_team;
         for mut unit in self.units.iter_mut() {
@@ -254,6 +281,22 @@ impl ScenarioState {
         return moveable_tiles;
     }
 
+    // Will later require knowing which weapon is being used.
+    pub fn get_targets_in_range(&self, attacker_id: UnitId) -> Vec<UnitId> {
+        let mut targets_in_range: Vec<UnitId> = vec![];
+        for unit in self.units.iter() {
+            if self.is_target_in_range(attacker_id, unit.id) {
+                targets_in_range.push(unit.id);
+            }
+        }
+        return targets_in_range;
+    }
+
+    pub fn is_target_in_range(&self, _attacker_id: UnitId, _defender_id: UnitId) -> bool {
+        // TODO complete this function
+        true
+    }
+
     pub fn is_tile_moveable(&self, unit_id: UnitId, x: i32, y: i32) -> bool {
         // Is tile within the map bounds?
         self.is_tile_within_bounds(x, y) &&
@@ -286,4 +329,9 @@ impl ScenarioState {
     pub fn get_movement_range(&self, _unit_id: &UnitId) -> u32 {
         return 3;
     }
+
+    // pub fn get_possible_actions(&self, unit_id: &UnitId) -> Vec<UnitAction> {
+    //     let actions: Vec<UnitAction> = vec![];
+    //     if
+    // }
 }

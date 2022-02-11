@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::game_menu::{exit_game_menu, game_menu_input, open_game_menu};
+use super::game_menu::{end_turn_result, exit_game_menu, game_menu_input, open_game_menu};
 
 use crate::awrs::resources::state::GameState;
 
@@ -12,7 +12,9 @@ impl Plugin for GameMenuPlugin {
             SystemSet::on_enter(GameState::GameMenu).with_system(open_game_menu.system()),
         )
         .add_system_set(
-            SystemSet::on_update(GameState::GameMenu).with_system(game_menu_input.system()),
+            SystemSet::on_update(GameState::GameMenu)
+                .with_system(game_menu_input.system())
+                .with_system(end_turn_result.system()),
         )
         .add_system_set(
             SystemSet::on_exit(GameState::GameMenu).with_system(exit_game_menu.system()),

@@ -4,6 +4,7 @@ use crate::awrs::{
     engine::ScenarioState,
     register_inputs::InputEvent,
     resources::{
+        action_event::{Action, ActionEvent, ActionResultEvent},
         cursor::{ChangeCursorEvent, CursorStyle},
         map::ActiveTeam,
         state::GameState,
@@ -72,7 +73,8 @@ pub fn open_game_menu(
 
 pub fn game_menu_input(
     mut input_events: ResMut<Events<InputEvent>>,
-    mut game_state: ResMut<State<GameState>>,
+    mut ev_action: EventWriter<ActionEvent>,
+    mut st_game: ResMut<State<GameState>>,
     units_query: Query<Entity, (With<Selected>, With<UnitId>)>,
     scenario_state: Res<ScenarioState>,
     mut active_team: ResMut<ActiveTeam>,
@@ -84,15 +86,12 @@ pub fn game_menu_input(
         match ev {
             InputEvent::EndTurn => {
                 info!("Ending Turn");
-                active_team.team = (active_team.team + 1) % scenario_state.teams.len() as u32;
-                game_state
-                    .set(GameState::Browsing)
-                    .expect("Should be able to return to Browsing gamestate");
+                ev_action.send(ActionEvent(Action::EndTurn));
             }
             InputEvent::ToggleMenu => {
                 info!("Quitting menu");
 
-                game_state.pop();
+                st_game.pop();
                 should_clear = true;
             }
             _ => {}
@@ -100,6 +99,21 @@ pub fn game_menu_input(
     }
     if should_clear {
         input_events.clear();
+    }
+}
+
+pub fn end_turn_result(
+    mut ev_action_result: EventReader<ActionResultEvent>,
+    mut active_team: ResMut<ActiveTeam>,
+    mut st_game: ResMut<State<GameState>>,
+) {
+    for action_result in ev_action_result.iter() {
+        if let ActionResultEvent::EndTurnResult(new_active_team) = action_result {
+            active_team.team = *new_active_team;
+            st_game
+                .set(GameState::Browsing)
+                .expect("Should be able to return to Browsing gamestate");
+        }
     }
 }
 

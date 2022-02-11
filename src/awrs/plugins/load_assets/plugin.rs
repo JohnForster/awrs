@@ -34,7 +34,7 @@ pub fn check_assets_ready(
     loading: ResMut<AssetsLoading>,
     asset_server: Res<AssetServer>,
     mut app_state: ResMut<State<AppState>>,
-    mut game_state: ResMut<State<GameState>>,
+    mut st_game: ResMut<State<GameState>>,
     mut commands: Commands,
 ) {
     match asset_server.get_group_load_state(loading.0.iter().map(|h| h.id)) {
@@ -45,7 +45,7 @@ pub fn check_assets_ready(
             // all assets are now ready
             commands.remove_resource::<AssetsLoading>();
             app_state.set(AppState::InGame).unwrap();
-            game_state.set(GameState::SetUp).unwrap();
+            st_game.set(GameState::SetUp).unwrap();
         }
         _ => {
             // NotLoaded/Loading: not fully ready yet

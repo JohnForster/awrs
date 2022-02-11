@@ -254,7 +254,7 @@ pub fn confirm_move(
 
 pub fn move_result(
     mut ev_move_result: EventReader<ActionResultEvent>,
-    mut game_state: ResMut<State<GameState>>,
+    mut st_game: ResMut<State<GameState>>,
     mut q: QuerySet<(
         Query<&mut Transform, With<Selected>>,
         Query<&mut Transform, With<Cursor>>,
@@ -274,9 +274,10 @@ pub fn move_result(
                 let mut cursor_transform = q.q1_mut().single_mut().expect("Couldn't find cursor?!");
                 cursor_transform.translation.x = location.x as f32 * TILE_SIZE;
                 cursor_transform.translation.y = location.y as f32 * TILE_SIZE;
+            } else {
             }
 
-            game_state
+            st_game
                 .set(GameState::Browsing)
                 .expect("Problem changing state");
         }

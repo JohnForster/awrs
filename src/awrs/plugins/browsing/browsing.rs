@@ -15,7 +15,7 @@ pub fn browse_select(
     mut ev_select: EventReader<SelectEvent>,
     mut commands: Commands,
     q_unit: Query<&UnitId>,
-    mut game_state: ResMut<State<GameState>>,
+    mut st_game: ResMut<State<GameState>>,
     active_team: Res<ActiveTeam>,
     scenario_state: Res<ScenarioState>,
 ) {
@@ -38,7 +38,7 @@ pub fn browse_select(
             commands.entity(*entity).insert(Selected);
 
             info!("Setting game state to UnitMenu");
-            game_state
+            st_game
                 .set(GameState::UnitMenu)
                 .expect("Problem changing state");
         }
@@ -47,13 +47,13 @@ pub fn browse_select(
 
 pub fn listen_for_open_menu(
     mut ev_game_menu: ResMut<Events<InputEvent>>,
-    mut game_state: ResMut<State<GameState>>,
+    mut st_game: ResMut<State<GameState>>,
 ) {
     let mut reader = ev_game_menu.get_reader();
     let mut should_clear = false;
     for ev in reader.iter(&ev_game_menu) {
         if matches!(ev, InputEvent::ToggleMenu) {
-            game_state
+            st_game
                 .push(GameState::GameMenu)
                 .expect("Error changing state");
             should_clear = true;
