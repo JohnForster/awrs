@@ -126,6 +126,7 @@ pub enum CommandResult {
     },
 }
 
+// Mutating
 impl ScenarioState {
     pub fn execute(&mut self, command: Command) -> CommandResult {
         match command {
@@ -252,7 +253,10 @@ impl ScenarioState {
             new_active_team,
         };
     }
+}
 
+// Non-mutating
+impl ScenarioState {
     pub fn get_unit(&self, unit_id: UnitId) -> Option<&Unit> {
         self.units.iter().find(|u| u.id == unit_id)
     }
@@ -330,8 +334,23 @@ impl ScenarioState {
         return 3;
     }
 
-    // pub fn get_possible_actions(&self, unit_id: &UnitId) -> Vec<UnitAction> {
-    //     let actions: Vec<UnitAction> = vec![];
-    //     if
-    // }
+    pub fn get_possible_actions(&self, unit_id: &UnitId) -> Vec<UnitAction> {
+        let mut actions: Vec<UnitAction> = vec![];
+        let unit = self
+            .get_unit(*unit_id)
+            .expect(&format!("Could not find unit with id {:?}", unit_id));
+        if unit.has_attacked {
+            return actions;
+        }
+        actions.push(UnitAction::Attack);
+
+        if !unit.has_moved {
+            actions.push(UnitAction::Move);
+        }
+        return actions;
+    }
+
+    pub fn unit_cannot_act(&self, unit_id: &UnitId) -> bool {
+        self.get_possible_actions(unit_id).len() == 0
+    }
 }

@@ -104,12 +104,18 @@ pub fn game_menu_input(
 
 pub fn end_turn_result(
     mut ev_action_result: EventReader<ActionResultEvent>,
+    mut q_units: Query<&mut TextureAtlasSprite, With<UnitId>>,
     mut active_team: ResMut<ActiveTeam>,
     mut st_game: ResMut<State<GameState>>,
 ) {
     for action_result in ev_action_result.iter() {
         if let ActionResultEvent::EndTurnResult(new_active_team) = action_result {
             active_team.team = *new_active_team;
+
+            for mut sprite in q_units.iter_mut() {
+                sprite.color = Color::WHITE;
+            }
+
             st_game
                 .set(GameState::Browsing)
                 .expect("Should be able to return to Browsing gamestate");

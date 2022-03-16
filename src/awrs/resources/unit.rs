@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::awrs::engine::ScenarioState;
+
 use super::action_event::ActionResultEvent;
 
 type UnitHealth = f32;
@@ -13,14 +15,15 @@ pub struct UnitId(pub u32);
 pub struct HealthIndicator;
 
 pub fn handle_attack_result(
-    mut q_units: Query<(Entity, &UnitId)>,
+    mut q_units: Query<(Entity, &UnitId, &mut TextureAtlasSprite)>,
     mut ev_action_result: EventReader<ActionResultEvent>,
     mut ev_damage: EventWriter<DamageEvent>,
+    scenario_state: Res<ScenarioState>,
 ) {
     for action_result in ev_action_result.iter() {
         if let ActionResultEvent::AttackResult(damaged_units) = action_result {
             for (id, hp) in damaged_units {
-                for (entity, unit_id) in q_units.iter_mut() {
+                for (entity, unit_id, _) in q_units.iter_mut() {
                     if unit_id.0 == id.0 {
                         info!("Sending DamageEvent");
                         ev_damage.send(DamageEvent {
@@ -29,6 +32,12 @@ pub fn handle_attack_result(
                         })
                     }
                 }
+            }
+        }
+
+        for (_, UnitId(unit_id), mut sprite) in q_units.iter_mut() {
+            if scenario_state.unit_cannot_act(unit_id) {
+                sprite.color = Color::GRAY;
             }
         }
     }

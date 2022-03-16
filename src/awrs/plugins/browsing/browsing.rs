@@ -22,6 +22,11 @@ pub fn browse_select(
     for SelectEvent(entity) in ev_select.iter() {
         info!("Executing browse_select");
         if let Ok(UnitId(unit_id)) = q_unit.get(*entity) {
+            if scenario_state.unit_cannot_act(unit_id) {
+                info!("Unit cannot act.");
+                continue;
+            }
+
             let unit = scenario_state
                 .get_unit(*unit_id)
                 .expect("Could not find unit in ScenarioState");
