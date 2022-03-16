@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use super::build_map::build_map;
+use super::create_idle_sprites::create_idle_sprites;
 use super::cursor::{create_cursor, handle_change_cursor};
 
 use crate::awrs::resources::cursor::SelectEvent;
@@ -20,6 +21,7 @@ impl Plugin for SetupPlugin {
             .add_system(handle_change_cursor.system())
             .add_system_set(
                 SystemSet::on_enter(GameState::SetUp)
+                    .with_system(create_idle_sprites.system())
                     .with_system(build_map.system().label("build map"))
                     .with_system(
                         create_cursor

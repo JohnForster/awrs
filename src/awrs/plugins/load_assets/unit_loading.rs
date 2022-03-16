@@ -65,7 +65,7 @@ pub fn load_units(
     mut loading: ResMut<AssetsLoading>,
 ) {
     info!("Loading Unit Data");
-    let handle = server.load("units/infantry.ron");
+    let handle = server.load("units/infantry.unit.ron");
     loading.0.push(handle.clone_untyped());
     info!("Unit data loading underway...");
     commands.insert_resource(UnitHandle { handle });

@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
-use crate::awrs::resources::atlases::{
-    ArrowAtlas, CursorAtlas, HealthAtlas, TerrainAtlas, UIAtlas, UnitAtlas,
+use crate::awrs::resources::{
+    atlases::{ArrowAtlas, CursorAtlas, HealthAtlas, TerrainAtlas, UIAtlas, UnitAtlas},
+    ron_data::UnitSpriteData,
 };
 
 use super::AssetsLoading;
@@ -78,6 +79,11 @@ pub fn create_ui_sprites(
     commands.insert_resource(UIAtlas {
         atlas_handle: ui_atlas_handle,
     });
+}
+
+pub fn load_spritesheet_data(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let handle = asset_server.load("spritesheets/spritesheet_data.unitsprite.ron");
+    commands.insert_resource(UnitSpriteData(handle));
 }
 
 pub fn create_unit_sprites(

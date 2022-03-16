@@ -26,3 +26,7 @@ pub struct UIAtlas {
 pub struct ArrowAtlas {
     pub atlas_handle: Handle<TextureAtlas>,
 }
+
+pub struct UnitAtlases {
+    pub handles: Vec<Handle<TextureAtlas>>,
+}

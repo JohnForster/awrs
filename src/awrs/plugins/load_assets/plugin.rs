@@ -2,6 +2,7 @@ use bevy::asset::LoadState;
 use bevy::prelude::*;
 use bevy_asset_ron::RonAssetPlugin;
 
+use crate::awrs::resources::ron_data::UnitSpriteDataList;
 use crate::awrs::resources::state::{AppState, GameState};
 
 use super::sprite_loading::*;
@@ -14,14 +15,18 @@ pub struct AssetsLoading(pub Vec<HandleUntyped>);
 impl Plugin for LoadAssets {
     fn build(&self, app: &mut AppBuilder) {
         app.insert_resource(AssetsLoading(vec![]))
-            .add_plugin(RonAssetPlugin::<UnitType>::new(&["ron"]))
+            .add_plugin(RonAssetPlugin::<UnitType>::new(&["unit.ron"]))
+            .add_plugin(RonAssetPlugin::<UnitSpriteDataList>::new(&[
+                "unitsprite.ron",
+            ]))
             .add_system_set(
                 SystemSet::on_enter(AppState::Loading)
                     .with_system(load_images.system())
-                    .with_system(create_terrain_sprites.system())
-                    .with_system(create_unit_sprites.system())
-                    .with_system(create_movement_arrow_sprites.system())
-                    .with_system(create_ui_sprites.system())
+                    .with_system(load_spritesheet_data.system()) // Move to setup
+                    .with_system(create_terrain_sprites.system()) // Move to setup
+                    .with_system(create_unit_sprites.system()) // Move to setup
+                    .with_system(create_movement_arrow_sprites.system()) // Move to setup
+                    .with_system(create_ui_sprites.system()) // Move to setup
                     .with_system(load_units.system()),
             )
             .add_system_set(

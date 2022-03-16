@@ -1,4 +1,4 @@
-fn animate_sprite_system(
+pub fn animate_sprite_system(
     time: Res<Time>,
     texture_atlases: Res<Assets<TextureAtlas>>,
     mut query: Query<(&mut Timer, &mut TextureAtlasSprite, &Handle<TextureAtlas>)>,

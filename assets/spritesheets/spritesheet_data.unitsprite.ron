@@ -1,0 +1,34 @@
+UnitSpriteDataList([
+  UnitSpriteDataAsset(
+    name: "infantry_idle",
+    unit_id: 0,
+    top_left: (3,14),
+    dimensions: (16,16),
+    frames: 3,
+    spacing: 1,
+  ),
+  UnitSpriteDataAsset(
+    name: "zergling_idle",
+    unit_id: 1,
+    top_left: (3,31),
+    dimensions: (16,16),
+    frames: 3,
+    spacing: 1,
+  ),
+  UnitSpriteDataAsset(
+    name: "baneling_idle",
+    unit_id: 2,
+    top_left: (3,48),
+    dimensions: (16,16),
+    frames: 3,
+    spacing: 1,
+  ),
+  UnitSpriteDataAsset(
+    name: "roach_idle",
+    unit_id: 3,
+    top_left: (3,65),
+    dimensions: (16,16),
+    frames: 3,
+    spacing: 1,
+  )
+])
