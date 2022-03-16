@@ -66,7 +66,7 @@ pub fn handle_action(
                         .collect(),
                 }
             }
-            Action::_EndTurn => Command::EndTurn,
+            Action::EndTurn => Command::EndTurn,
         };
 
         let result = scenario_state.execute(command);

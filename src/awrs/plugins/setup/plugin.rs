@@ -34,9 +34,9 @@ impl Plugin for SetupPlugin {
 }
 
 // Should probably listen for loading to be finished.
-fn transition_to_browsing(mut game_state: ResMut<State<GameState>>) {
+fn transition_to_browsing(mut st_game: ResMut<State<GameState>>) {
     info!("Done loading! Start Browsing!");
-    game_state
+    st_game
         .set(GameState::Browsing)
         .expect("Problem transitioning to browsing state")
 }

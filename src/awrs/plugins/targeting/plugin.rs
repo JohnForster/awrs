@@ -20,7 +20,6 @@ impl Plugin for TargetingPlugin {
         )
         .add_system_set(
             SystemSet::on_update(GameState::ChooseTarget)
-                .with_system(register_inputs.system().label("inputs"))
                 .with_system(handle_cursor_move.system().after("inputs"))
                 .with_system(handle_cursor_select.system().after("inputs"))
                 .with_system(target_select.system().after("inputs").label("send action")),

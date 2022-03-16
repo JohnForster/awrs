@@ -10,6 +10,7 @@ pub enum GameState {
     SetUp,
     Browsing,
     _Paused,
+    GameMenu,
     UnitMenu,
     _BuildingMenu,
     MoveUnit,

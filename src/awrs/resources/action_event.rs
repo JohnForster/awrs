@@ -10,7 +10,7 @@ pub struct ActionEvent(pub Action);
 pub enum Action {
     Attack(Entity, Entity),
     Move { entity: Entity, tiles: Vec<Tile> },
-    _EndTurn,
+    EndTurn,
 }
 
 // Will need to add more detail once its clear what is needed from these result events.

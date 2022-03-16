@@ -16,9 +16,9 @@ impl Plugin for BrowsingPlugin {
         app.add_system_set(SystemSet::on_enter(browsing).with_system(open_browse.system()))
             .add_system_set(
                 SystemSet::on_update(browsing)
-                    .with_system(register_inputs.system())
                     .with_system(browse_select.system())
                     .with_system(handle_cursor_move.system())
+                    .with_system(listen_for_open_menu.system())
                     .with_system(handle_cursor_select.system()),
             );
     }

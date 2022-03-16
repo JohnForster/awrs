@@ -15,7 +15,7 @@ pub fn open_target_selection(mut ev_change_cursor: EventWriter<ChangeCursorEvent
 }
 
 pub fn target_select(
-    mut game_state: ResMut<State<GameState>>,
+    mut st_game: ResMut<State<GameState>>,
     mut attacking_unit_query: Query<Entity, (With<Selected>, With<UnitId>)>,
     mut units_query: Query<(Entity, &UnitId), Without<Selected>>,
     mut commands: Commands,
@@ -35,7 +35,7 @@ pub fn target_select(
             .get_unit(def_unit_id.0)
             .expect("Couldn't find defending unit.");
 
-        let is_enemy = def_unit.team != active_team.team.0;
+        let is_enemy = def_unit.team != active_team.team;
         if !is_enemy {
             continue;
         }
@@ -53,7 +53,7 @@ pub fn target_select(
         info!("Clearing selected unit");
         commands.entity(attacker_entity).remove::<Selected>();
 
-        game_state
+        st_game
             .set(GameState::Browsing)
             .expect("Problem changing state");
     }

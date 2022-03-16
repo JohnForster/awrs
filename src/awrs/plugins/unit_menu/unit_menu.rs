@@ -72,20 +72,20 @@ pub fn open_unit_menu(
 
 pub fn unit_menu_input(
     keyboard_input: Res<Input<KeyCode>>,
-    mut game_state: ResMut<State<GameState>>,
+    mut st_game: ResMut<State<GameState>>,
     units_query: Query<Entity, (With<Selected>, With<UnitId>)>,
     mut commands: Commands,
 ) {
     if keyboard_input.just_pressed(KeyCode::M) {
         info!("Changing Game State to MoveUnit");
-        game_state
+        st_game
             .set(GameState::MoveUnit)
             .expect("Should be able to enter MoveUnit gamestate")
     }
     if keyboard_input.just_pressed(KeyCode::T) {
         info!("Performing Attack");
 
-        game_state
+        st_game
             .set(GameState::ChooseTarget)
             .expect("Should be able to return to browsing")
     }
@@ -98,7 +98,7 @@ pub fn unit_menu_input(
         info!("Clearing selected unit");
         commands.entity(unit_entity).remove::<Selected>();
 
-        game_state
+        st_game
             .set(GameState::Browsing)
             .expect("Should be able to return to browsing")
     }
