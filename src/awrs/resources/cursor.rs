@@ -17,6 +17,7 @@ pub enum CursorStyle {
 
 pub struct ChangeCursorEvent(pub CursorStyle);
 
+#[derive(Component)]
 pub struct Cursor;
 
 pub fn handle_cursor_move(
@@ -25,7 +26,7 @@ pub fn handle_cursor_move(
     scenario_state: Res<ScenarioState>,
 ) {
     for input_event in ev_input_event.iter() {
-        let mut transform = q_cursor.single_mut().expect("Should be one cursor.");
+        let mut transform = q_cursor.single_mut();
 
         let (dx, dy): (i32, i32) = match input_event {
             &InputEvent::Up => (0, 1),
@@ -57,7 +58,7 @@ pub fn handle_cursor_select(
     for input_event in ev_input_event.iter() {
         match input_event {
             &InputEvent::Select => {
-                let cursor_transform = q_cursor.single().expect("No Cursor found?!");
+                let cursor_transform = q_cursor.single();
                 let cursor_tile = Tile::from(*cursor_transform);
 
                 let maybe_unit = q_units

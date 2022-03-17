@@ -6,20 +6,17 @@ use crate::awrs::resources::{
     unit::{Selected, UnitId},
 };
 
+#[derive(Component)]
 pub struct UnitMenu;
 
 pub fn open_unit_menu(
     mut commands: Commands,
     units_query: Query<&UnitId, With<Selected>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     mut ev_change_cursor: EventWriter<ChangeCursorEvent>,
     asset_server: Res<AssetServer>,
 ) {
     ev_change_cursor.send(ChangeCursorEvent(CursorStyle::Browse));
     info!("Opening unit menu...");
-
-    // ui camera
-    commands.spawn_bundle(UiCameraBundle::default());
 
     for _id in units_query.iter() {
         info!("Found a unit, spawning node...");
@@ -36,7 +33,7 @@ pub fn open_unit_menu(
                     align_items: AlignItems::FlexEnd,
                     ..Default::default()
                 },
-                material: materials.add(Color::NONE.into()),
+                color: Color::NONE.into(),
                 ..Default::default()
             })
             .with_children(|parent| {
@@ -47,7 +44,7 @@ pub fn open_unit_menu(
                                 margin: Rect::all(Val::Px(5.0)),
                                 ..Default::default()
                             },
-                            material: materials.add(Color::NONE.into()),
+                            color: Color::NONE.into(),
                             ..Default::default()
                         })
                         .with_children(|parent| {
@@ -91,9 +88,7 @@ pub fn unit_menu_input(
     }
     if keyboard_input.just_pressed(KeyCode::C) {
         info!("Returning to Browse");
-        let unit_entity = units_query
-            .single()
-            .expect("Unit Menu is open but there is no unit selected?!");
+        let unit_entity = units_query.single();
 
         info!("Clearing selected unit");
         commands.entity(unit_entity).remove::<Selected>();
@@ -106,6 +101,6 @@ pub fn unit_menu_input(
 
 pub fn exit_unit_menu(mut commands: Commands, mut unit_menu_query: Query<Entity, With<UnitMenu>>) {
     info!("Exiting Unit Menu");
-    let unit_menu_entity = unit_menu_query.single_mut().unwrap();
+    let unit_menu_entity = unit_menu_query.single_mut();
     commands.entity(unit_menu_entity).despawn_recursive();
 }

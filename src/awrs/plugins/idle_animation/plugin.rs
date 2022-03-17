@@ -7,9 +7,9 @@ use super::idle_animation::animate_sprite_system;
 pub struct IdleAnimationPlugin;
 
 impl Plugin for IdleAnimationPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.add_system_set(
-            SystemSet::on_update(AppState::InGame).with_system(animate_sprite_system.system()),
+            SystemSet::on_update(AppState::InGame).with_system(animate_sprite_system),
         );
     }
 }

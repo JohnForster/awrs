@@ -9,11 +9,11 @@ use super::{
 pub struct AWRSPlugin;
 
 impl Plugin for AWRSPlugin {
-    fn build(&self, app: &mut AppBuilder) {
-        app.add_plugin(LoadAssets)
+    fn build(&self, app: &mut App) {
+        app.add_plugin(LoadAssetsPlugin)
             .add_state(AppState::Loading)
             .add_state(GameState::None)
-            .add_system(register_inputs.system().label("inputs"))
+            .add_system(register_inputs.label("inputs"))
             // Add plugins for each of the InGame states
             .add_plugin(SetupPlugin)
             .add_plugin(InterfacePlugin)

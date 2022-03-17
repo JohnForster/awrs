@@ -11,11 +11,11 @@ use crate::awrs::{
     },
 };
 
+#[derive(Component)]
 pub struct GameMenu;
 
 pub fn open_game_menu(
     mut commands: Commands,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     mut ev_change_cursor: EventWriter<ChangeCursorEvent>,
     asset_server: Res<AssetServer>,
 ) {
@@ -23,7 +23,6 @@ pub fn open_game_menu(
     info!("Opening game menu...");
 
     // ! Spawning ui camera on every time the menu is opened?
-    commands.spawn_bundle(UiCameraBundle::default());
 
     // TODO get unit menu options from selected unit.
     // eg. Move if hasn't moved yet. Attack if unit next to it etc.
@@ -37,7 +36,7 @@ pub fn open_game_menu(
                 align_items: AlignItems::FlexEnd,
                 ..Default::default()
             },
-            material: materials.add(Color::NONE.into()),
+            color: Color::NONE.into(),
             ..Default::default()
         })
         .with_children(|parent| {
@@ -48,7 +47,7 @@ pub fn open_game_menu(
                             margin: Rect::all(Val::Px(5.0)),
                             ..Default::default()
                         },
-                        material: materials.add(Color::NONE.into()),
+                        color: Color::NONE.into(),
                         ..Default::default()
                     })
                     .with_children(|parent| {
@@ -120,6 +119,6 @@ pub fn end_turn_result(
 
 pub fn exit_game_menu(mut commands: Commands, mut game_menu_query: Query<Entity, With<GameMenu>>) {
     info!("Exiting Game Menu");
-    let game_menu_entity = game_menu_query.single_mut().unwrap();
+    let game_menu_entity = game_menu_query.single_mut();
     commands.entity(game_menu_entity).despawn_recursive();
 }

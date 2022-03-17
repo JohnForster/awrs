@@ -8,8 +8,10 @@ type UnitHealth = f32;
 
 pub type Team = u32;
 
+#[derive(Component)]
 pub struct Selected;
 
+#[derive(Component)]
 pub struct UnitId(pub u32);
 
 #[derive(serde::Deserialize, serde::Serialize, Debug, PartialEq, Eq, Hash, Clone, Copy)]
@@ -31,6 +33,7 @@ impl From<EngineUnitType> for UnitType {
     }
 }
 
+#[derive(Component)]
 pub struct HealthIndicator;
 
 pub fn handle_attack_result(
@@ -72,7 +75,7 @@ pub fn handle_damage(
     mut ev_damage: EventReader<DamageEvent>,
     mut units_query: Query<(&UnitId, &Children)>,
     mut health_indicator_query: Query<
-        (&mut TextureAtlasSprite, &mut Visible),
+        (&mut TextureAtlasSprite, &mut Visibility),
         With<HealthIndicator>,
     >,
     mut commands: Commands,
@@ -84,14 +87,16 @@ pub fn handle_damage(
             .expect("Could not find unit to damage");
 
         for &child in children.iter() {
-            if let Ok((mut health_indicator, mut visible)) = health_indicator_query.get_mut(child) {
+            if let Ok((mut health_indicator, mut visibility)) =
+                health_indicator_query.get_mut(child)
+            {
                 info!("Updating health indicator");
-                let ceil_health = new_hp.ceil().max(0.0) as u32;
+                let ceil_health = new_hp.ceil().max(0.0) as usize;
                 info!("new_hp: {:?}, ceil_health: {:?}", new_hp, ceil_health);
                 if ceil_health == 0 {
                     commands.entity(*entity).despawn_recursive()
                 } else if ceil_health < 10 {
-                    visible.is_visible = true;
+                    visibility.is_visible = true;
                     health_indicator.index = ceil_health - 1;
                 }
             }

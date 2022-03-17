@@ -40,9 +40,7 @@ pub fn target_select(
             continue;
         }
 
-        let attacker_entity = attacking_unit_query
-            .single_mut()
-            .expect("Trying to attack a target without a unit selected!");
+        let attacker_entity = attacking_unit_query.single_mut();
 
         info!("Sending Attack Action Event");
         ev_action.send(ActionEvent(Action::Attack(

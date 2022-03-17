@@ -7,25 +7,25 @@ use crate::awrs::resources::state::{AppState, GameState};
 use super::sprite_loading::*;
 use super::unit_loading::*;
 
-pub struct LoadAssets;
+pub struct LoadAssetsPlugin;
 
 pub struct AssetsLoading(pub Vec<HandleUntyped>);
 
-impl Plugin for LoadAssets {
-    fn build(&self, app: &mut AppBuilder) {
+impl Plugin for LoadAssetsPlugin {
+    fn build(&self, app: &mut App) {
         app.insert_resource(AssetsLoading(vec![]))
             .add_plugin(RonAssetPlugin::<UnitStats>::new(&["unit.ron"]))
             .add_system_set(
                 SystemSet::on_enter(AppState::Loading)
-                    .with_system(load_images.system())
-                    .with_system(create_terrain_sprites.system()) // Move to setup
-                    .with_system(create_idle_sprites.system()) // Move to setup
-                    .with_system(create_movement_arrow_sprites.system()) // Move to setup
-                    .with_system(create_ui_sprites.system()) // Move to setup
-                    .with_system(load_units.system()),
+                    .with_system(load_images)
+                    .with_system(create_terrain_sprites) // Move to setup
+                    .with_system(create_idle_sprites) // Move to setup
+                    .with_system(create_movement_arrow_sprites) // Move to setup
+                    .with_system(create_ui_sprites) // Move to setup
+                    .with_system(load_units),
             )
             .add_system_set(
-                SystemSet::on_update(AppState::Loading).with_system(check_assets_ready.system()),
+                SystemSet::on_update(AppState::Loading).with_system(check_assets_ready),
             );
     }
 }

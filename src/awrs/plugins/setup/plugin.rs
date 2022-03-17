@@ -11,23 +11,18 @@ use crate::awrs::{register_inputs::InputEvent, resources::action_event::ActionEv
 pub struct SetupPlugin;
 
 impl Plugin for SetupPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.add_event::<ActionEvent>()
             .add_event::<DamageEvent>()
             .add_event::<ChangeCursorEvent>()
             .add_event::<SelectEvent>()
             .add_event::<InputEvent>()
-            .add_system(handle_change_cursor.system())
+            .add_system(handle_change_cursor)
             .add_system_set(
                 SystemSet::on_enter(GameState::SetUp)
-                    .with_system(build_map.system().label("build map"))
-                    .with_system(
-                        create_cursor
-                            .system()
-                            .after("build map")
-                            .label("create cursor"),
-                    )
-                    .with_system(transition_to_browsing.system().after("create cursor")),
+                    .with_system(build_map.label("build map"))
+                    .with_system(create_cursor.after("build map").label("create cursor"))
+                    .with_system(transition_to_browsing.after("create cursor")),
             )
             .add_system_set(SystemSet::on_update(GameState::SetUp));
     }

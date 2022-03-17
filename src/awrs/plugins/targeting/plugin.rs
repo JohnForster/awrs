@@ -10,16 +10,15 @@ use crate::awrs::resources::{
 pub struct TargetingPlugin;
 
 impl Plugin for TargetingPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.add_system_set(
-            SystemSet::on_enter(GameState::ChooseTarget)
-                .with_system(open_target_selection.system()),
+            SystemSet::on_enter(GameState::ChooseTarget).with_system(open_target_selection),
         )
         .add_system_set(
             SystemSet::on_update(GameState::ChooseTarget)
-                .with_system(handle_cursor_move.system().after("inputs"))
-                .with_system(handle_cursor_select.system().after("inputs"))
-                .with_system(target_select.system().after("inputs").label("send action")),
+                .with_system(handle_cursor_move.after("inputs"))
+                .with_system(handle_cursor_select.after("inputs"))
+                .with_system(target_select.after("inputs").label("send action")),
         );
     }
 }

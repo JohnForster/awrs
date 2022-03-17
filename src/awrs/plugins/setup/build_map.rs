@@ -22,7 +22,11 @@ pub fn build_map(
     let scenario_map = new_scenario_map();
     let scenario_state = new_scenario_state(scenario_map);
 
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    let mut camera_bundle = OrthographicCameraBundle::new_2d();
+    camera_bundle.orthographic_projection.scale /= 2.0;
+    commands.spawn_bundle(camera_bundle);
+
+    commands.spawn_bundle(UiCameraBundle::default());
 
     commands.insert_resource(ActiveTeam {
         team: scenario_state.active_team,
@@ -90,10 +94,7 @@ pub fn build_map(
                 unit.spawn_bundle(SpriteSheetBundle {
                     texture_atlas: health_atlas.atlas_handle.clone(),
                     sprite: TextureAtlasSprite::new(9),
-                    visible: Visible {
-                        is_visible: false,
-                        is_transparent: true,
-                    },
+                    visibility: Visibility { is_visible: false },
                     transform,
                     ..Default::default()
                 })
