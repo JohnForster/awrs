@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 use bevy::prelude::*;
 
-use crate::awrs::resources::atlases::{
-    ArrowAtlas, CursorAtlas, HealthAtlas, TerrainAtlas, UIAtlas, UnitAtlas,
+use crate::awrs::resources::{
+    atlases::{ArrowAtlas, CursorAtlas, HealthAtlas, TerrainAtlas, UIAtlas, UnitAtlases},
+    unit::UnitType,
 };
 
 use super::AssetsLoading;
@@ -11,6 +14,10 @@ pub fn load_images(asset_server: Res<AssetServer>, mut loading: ResMut<AssetsLoa
         "spritesheets/UISprites.png",
         "spritesheets/units.png",
         "spritesheets/unitSprites.png",
+        "spritesheets/infantry_idle.png",
+        "spritesheets/zergling_idle.png",
+        "spritesheets/baneling_idle.png",
+        "spritesheets/roach_idle.png",
     ];
 
     for &path in paths.iter() {
@@ -80,38 +87,36 @@ pub fn create_ui_sprites(
     });
 }
 
-pub fn create_unit_sprites(
+pub fn create_idle_sprites(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    info!("Loading Unit Sprites");
-    let texture_handle = asset_server.load("spritesheets/unitSprites.png");
+    let mut unit_atlas_handle_map: HashMap<UnitType, Handle<TextureAtlas>> = HashMap::new();
 
-    let mut texture_atlas =
-        TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(349.0, 111.0));
+    let units = [
+        (UnitType::Infantry, "spritesheets/infantry_idle.png"),
+        (UnitType::Zergling, "spritesheets/zergling_idle.png"),
+        (UnitType::Baneling, "spritesheets/baneling_idle.png"),
+        (UnitType::Roach, "spritesheets/roach_idle.png"),
+    ];
 
-    let inf_orange_sprite = bevy::sprite::Rect {
-        min: Vec2::new(23.0, 3.0),
-        max: Vec2::new(23.0 + 16.0, 3.0 + 16.0),
-    };
+    for (unit_type, idle_path) in units {
+        let image_handle = asset_server.load(idle_path);
+        let texture_atlas = TextureAtlas::from_grid_with_padding(
+            image_handle,
+            Vec2::new(16.0, 16.0),
+            4,
+            1,
+            Vec2::new(1.0, 0.0),
+        );
+        let texture_atlas_handle = texture_atlases.add(texture_atlas);
+        unit_atlas_handle_map.insert(unit_type, texture_atlas_handle);
+    }
 
-    let inf_blue_sprite = bevy::sprite::Rect {
-        min: Vec2::new(23.0, 21.0),
-        max: Vec2::new(23.0 + 16.0, 21.0 + 16.0),
-    };
-
-    let ling_purple_sprite = bevy::sprite::Rect {
-        min: Vec2::new(23.0, 93.0),
-        max: Vec2::new(23.0 + 16.0, 93.0 + 16.0),
-    };
-
-    texture_atlas.add_texture(inf_orange_sprite);
-    texture_atlas.add_texture(ling_purple_sprite);
-    texture_atlas.add_texture(inf_blue_sprite);
-    let atlas_handle = texture_atlases.add(texture_atlas);
-
-    commands.insert_resource(UnitAtlas { atlas_handle })
+    commands.insert_resource(UnitAtlases {
+        handle_map: unit_atlas_handle_map,
+    });
 }
 
 pub fn create_terrain_sprites(

@@ -1,5 +1,6 @@
 pub mod browsing;
 pub mod game_menu;
+pub mod idle_animation;
 pub mod interface;
 pub mod load_assets;
 pub mod move_unit;
@@ -9,6 +10,7 @@ pub mod unit_menu;
 
 pub use browsing::*;
 pub use game_menu::*;
+pub use idle_animation::*;
 pub use interface::*;
 pub use load_assets::*;
 pub use move_unit::*;

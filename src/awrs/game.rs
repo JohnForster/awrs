@@ -18,6 +18,7 @@ impl Plugin for AWRSPlugin {
             .add_plugin(SetupPlugin)
             .add_plugin(InterfacePlugin)
             .add_plugin(BrowsingPlugin)
+            .add_plugin(IdleAnimationPlugin)
             .add_plugin(UnitMenuPlugin)
             .add_plugin(GameMenuPlugin)
             .add_plugin(MoveUnitPlugin)

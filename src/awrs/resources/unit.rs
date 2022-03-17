@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::awrs::engine::ScenarioState;
+use crate::awrs::engine::{ScenarioState, UnitType as EngineUnitType};
 
 use super::action_event::ActionResultEvent;
 
@@ -11,6 +11,25 @@ pub type Team = u32;
 pub struct Selected;
 
 pub struct UnitId(pub u32);
+
+#[derive(serde::Deserialize, serde::Serialize, Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub enum UnitType {
+    Infantry,
+    Zergling,
+    Baneling,
+    Roach,
+}
+
+impl From<EngineUnitType> for UnitType {
+    fn from(unit_type: EngineUnitType) -> Self {
+        match unit_type {
+            EngineUnitType::Infantry => UnitType::Infantry,
+            EngineUnitType::Zergling => UnitType::Zergling,
+            EngineUnitType::Baneling => UnitType::Baneling,
+            EngineUnitType::Roach => UnitType::Roach,
+        }
+    }
+}
 
 pub struct HealthIndicator;
 

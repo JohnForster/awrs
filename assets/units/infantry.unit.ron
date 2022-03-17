@@ -1,4 +1,4 @@
-UnitType(
+UnitStats(
   id: 0,
   name: "Infantry",
   max_health: 10.0,
