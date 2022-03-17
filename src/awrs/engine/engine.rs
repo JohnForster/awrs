@@ -1,4 +1,4 @@
-use bevy::prelude::{debug, info, EventWriter};
+use bevy::prelude::info;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Tile {
@@ -15,6 +15,9 @@ impl PartialEq for Tile {
 #[derive(Clone, Copy, Debug)]
 pub enum UnitType {
     Infantry,
+    Zergling,
+    Baneling,
+    Roach,
 }
 
 pub type UnitId = u32;

@@ -43,7 +43,7 @@ pub struct Weapon {
 
 #[derive(Serialize, Deserialize, Debug, TypeUuid)]
 #[uuid = "67B15859-CC4B-4C35-AB9C-5856628833E4"]
-pub struct UnitType {
+pub struct UnitStats {
     pub id: usize,
     pub name: String,
     pub max_health: f32,
@@ -56,7 +56,7 @@ pub struct UnitType {
 }
 
 pub struct UnitHandle {
-    pub handle: Handle<UnitType>,
+    pub handle: Handle<UnitStats>,
 }
 
 pub fn load_units(

@@ -1,4 +1,8 @@
+use std::collections::HashMap;
+
 use bevy::prelude::*;
+
+use super::unit::UnitType;
 
 #[derive(Default)]
 pub struct TerrainAtlas {
@@ -28,5 +32,5 @@ pub struct ArrowAtlas {
 }
 
 pub struct UnitAtlases {
-    pub handles: Vec<Handle<TextureAtlas>>,
+    pub handle_map: HashMap<UnitType, Handle<TextureAtlas>>,
 }

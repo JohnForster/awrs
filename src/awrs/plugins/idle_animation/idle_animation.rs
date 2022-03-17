@@ -1,3 +1,5 @@
+use bevy::prelude::*;
+
 pub fn animate_sprite_system(
     time: Res<Time>,
     texture_atlases: Res<Assets<TextureAtlas>>,

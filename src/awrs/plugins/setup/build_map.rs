@@ -5,7 +5,7 @@ use crate::awrs::{
     dev_helpers::{new_scenario_map, new_scenario_state},
     engine::TerrainType,
     resources::{
-        atlases::{HealthAtlas, TerrainAtlas, UnitAtlas},
+        atlases::{HealthAtlas, TerrainAtlas, UnitAtlases},
         map::{ActiveTeam, GameMap},
         unit::*,
     },
@@ -15,9 +15,10 @@ use crate::awrs::{
 pub fn build_map(
     mut commands: Commands,
     terrain_atlas: Res<TerrainAtlas>,
-    unit_atlas: Res<UnitAtlas>,
+    unit_atlases: Res<UnitAtlases>,
     health_atlas: Res<HealthAtlas>,
 ) {
+    info!("Building map");
     let scenario_map = new_scenario_map();
     let scenario_state = new_scenario_state(scenario_map);
 
@@ -62,13 +63,21 @@ pub fn build_map(
     for unit in scenario_state.units.iter() {
         let x = unit.position.x;
         let y = unit.position.y;
-        let sprite_index = unit.team; // Only valid while there is only one unit type
+        let texture_atlas = unit_atlases
+            .handle_map
+            .get(&UnitType::from(unit.unit_type))
+            .unwrap();
+
+        let mut sprite = TextureAtlasSprite::new(1);
+        sprite.flip_x = unit.team % 2 == 0;
+
         commands
             .spawn()
             .insert(UnitId(unit.id))
+            .insert(Timer::from_seconds(0.8, true))
             .insert_bundle(SpriteSheetBundle {
-                texture_atlas: unit_atlas.atlas_handle.clone(),
-                sprite: TextureAtlasSprite::new(sprite_index),
+                texture_atlas: texture_atlas.clone(),
+                sprite,
                 transform: Transform::from_translation(Vec3::new(
                     x as f32 * TILE_SIZE,
                     y as f32 * TILE_SIZE,
@@ -78,7 +87,6 @@ pub fn build_map(
             })
             .with_children(|unit| {
                 let transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
-                // transform.scale = Vec3::new(0.7, 0.7, 1.0);
                 unit.spawn_bundle(SpriteSheetBundle {
                     texture_atlas: health_atlas.atlas_handle.clone(),
                     sprite: TextureAtlasSprite::new(9),
