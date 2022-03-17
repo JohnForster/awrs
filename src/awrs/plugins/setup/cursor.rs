@@ -37,20 +37,31 @@ pub fn create_cursor(mut commands: Commands, ui_atlas: Res<CursorAtlas>) {
 pub fn handle_change_cursor(
     mut ev_change_cursor: EventReader<ChangeCursorEvent>,
     mut q_cursor_children: Query<&mut Children, With<Cursor>>,
-    mut q_sprite: Query<&mut TextureAtlasSprite>,
+    mut q_sprite: Query<(&mut TextureAtlasSprite, &mut Visibility)>,
 ) {
     for ChangeCursorEvent(cursor_style) in ev_change_cursor.iter() {
         let sprite_index = match cursor_style {
             CursorStyle::Browse => 0,
             CursorStyle::Target => 1,
-            CursorStyle::None => 9,
+            CursorStyle::None => {
+                info!("Hiding cursor");
+                let cursor_children = q_cursor_children.single_mut();
+
+                for child in cursor_children.iter() {
+                    if let Ok((_, mut visibility)) = q_sprite.get_mut(*child) {
+                        visibility.is_visible = false;
+                    }
+                }
+                continue;
+            }
         };
         info!("Changing cursor sprite index to {:?}", sprite_index);
-        let cursor_children = q_cursor_children.single_mut().expect("No Cursor Found?!");
+        let cursor_children = q_cursor_children.single_mut();
 
         for child in cursor_children.iter() {
-            if let Ok(mut cursor_sprite) = q_sprite.get_mut(*child) {
+            if let Ok((mut cursor_sprite, mut visibility)) = q_sprite.get_mut(*child) {
                 cursor_sprite.index = sprite_index;
+                visibility.is_visible = true;
             }
         }
     }

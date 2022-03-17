@@ -10,24 +10,20 @@ use crate::awrs::resources::state::GameState;
 pub struct MoveUnitPlugin;
 
 impl Plugin for MoveUnitPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.insert_resource(UnitPlan {
             range: 0,
             steps: vec![],
         })
         .add_event::<PlanUpdateEvent>()
         .add_event::<ConfirmMoveEvent>()
-        .add_system_set(
-            SystemSet::on_enter(GameState::MoveUnit).with_system(begin_unit_plan.system()),
-        )
-        .add_system_set(
-            SystemSet::on_exit(GameState::MoveUnit).with_system(exit_movement_plan.system()),
-        )
+        .add_system_set(SystemSet::on_enter(GameState::MoveUnit).with_system(begin_unit_plan))
+        .add_system_set(SystemSet::on_exit(GameState::MoveUnit).with_system(exit_movement_plan))
         .add_system_set(
             SystemSet::on_update(GameState::MoveUnit)
-                .with_system(update_arrows.system().before("update"))
-                .with_system(update_movement_plan.system().label("update"))
-                .with_system(confirm_move.system().label("send action")),
+                .with_system(update_arrows.before("update"))
+                .with_system(update_movement_plan.label("update"))
+                .with_system(confirm_move.label("send action")),
         );
     }
 }

@@ -10,15 +10,15 @@ use crate::awrs::{
 pub struct BrowsingPlugin;
 
 impl Plugin for BrowsingPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         let browsing = GameState::Browsing;
-        app.add_system_set(SystemSet::on_enter(browsing).with_system(open_browse.system()))
+        app.add_system_set(SystemSet::on_enter(browsing).with_system(open_browse))
             .add_system_set(
                 SystemSet::on_update(browsing)
-                    .with_system(browse_select.system())
-                    .with_system(handle_cursor_move.system())
-                    .with_system(listen_for_open_menu.system())
-                    .with_system(handle_cursor_select.system()),
+                    .with_system(browse_select)
+                    .with_system(handle_cursor_move)
+                    .with_system(listen_for_open_menu)
+                    .with_system(handle_cursor_select),
             );
     }
 }

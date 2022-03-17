@@ -20,6 +20,7 @@ pub struct UnitPlan {
     pub steps: Vec<MoveStep>,
 }
 
+#[derive(Component)]
 pub struct MoveStepSprite;
 
 pub struct MoveStep {
@@ -46,10 +47,7 @@ pub fn begin_unit_plan(
 ) {
     ev_change_cursor.send(ChangeCursorEvent(CursorStyle::None));
 
-    let (UnitId(unit_id), transform) = q_selected_unit
-        .single_mut()
-        // Maybe allow this to fail gracefully, so that we don't error if there is Select -> Direction within same tick.
-        .expect("Should be one selected unit");
+    let (UnitId(unit_id), transform) = q_selected_unit.single_mut();
 
     let range = scenario_state.get_movement_range(&unit_id);
     unit_plan.range = range;
@@ -72,10 +70,7 @@ pub fn update_movement_plan(
 ) {
     'outer: for input_event in ev_input.iter() {
         info!("Executing update_movement_plan");
-        let (UnitId(unit_id), mut transform) = q_selected_unit
-            .single_mut()
-            // Maybe allow this to fail gracefully, so that we don't error if there is Select -> Direction within same tick.
-            .expect("Should be one selected unit");
+        let (UnitId(unit_id), mut transform) = q_selected_unit.single_mut();
 
         let (dx, dy): (i32, i32) = match input_event {
             &InputEvent::Up => (0, 1),
@@ -89,6 +84,8 @@ pub fn update_movement_plan(
             }
             _ => break, // Could add select here?
         };
+
+        info!("dx, dy: {:?} {:?}", dx, dy);
 
         // TODO Split by event here?
 
@@ -122,6 +119,7 @@ fn check_valid(
     unit_id: u32,
     (dx, dy): (i32, i32),
 ) -> Option<Tile> {
+    info!("checking valid");
     let unit_current_pos = Tile::from(*transform);
 
     let valid_tiles = scenario_state.get_moveable_tiles(unit_id);
@@ -132,11 +130,12 @@ fn check_valid(
                 && tile.y as i32 == unit_current_pos.y as i32 + dy
         })
         .map(|EngineTile { x, y }| Tile { x, y });
-
+    info!("validity checked");
     return maybe_tile;
 }
 
 fn check_plan(unit_plan: &ResMut<UnitPlan>, tile: Tile) -> PlanChange {
+    info!("checking plan");
     // Don't allow overlapping vision.
     // if let Some(index) = unit_plan
     //     .steps
@@ -144,12 +143,10 @@ fn check_plan(unit_plan: &ResMut<UnitPlan>, tile: Tile) -> PlanChange {
     //     .position(|move_step| move_step.tile == tile)
     // {
     // Allow overlapping vision
-    if unit_plan
-        .steps
-        .len()
-        .checked_sub(2)
-        .map_or(false, |i| unit_plan.steps[i].tile == tile)
-    {
+    if unit_plan.steps.len().checked_sub(2).map_or(false, |i| {
+        info!("i: {:?}", i);
+        unit_plan.steps[i].tile == tile
+    }) {
         return PlanChange::Remove(unit_plan.steps.len() - 2);
     } else if (unit_plan.steps.len() as u32) <= unit_plan.range {
         return PlanChange::Add(tile);
@@ -164,12 +161,14 @@ fn add_tile(
     arrow_atlas: &Res<ArrowAtlas>,
     commands: &mut Commands,
 ) {
-    let sprite = TextureAtlasSprite::new(24);
+    info!("adding tile");
+    let sprite = TextureAtlasSprite::new(0);
 
     let entity = commands
         .spawn_bundle(SpriteSheetBundle {
             texture_atlas: arrow_atlas.atlas_handle.clone(),
             sprite,
+            visibility: Visibility { is_visible: false },
             transform: Transform::from_translation(Vec3::new(
                 tile.x as f32 * TILE_SIZE,
                 tile.y as f32 * TILE_SIZE,
@@ -184,6 +183,7 @@ fn add_tile(
 }
 
 fn remove_tile(unit_plan: &mut ResMut<UnitPlan>, index: usize, commands: &mut Commands) {
+    info!("removing tile");
     while unit_plan.steps.iter().len() > index + 1 {
         let popped_move = unit_plan.steps.pop().unwrap();
         commands.entity(popped_move.entity).despawn_recursive();
@@ -204,7 +204,10 @@ pub struct PlanUpdateEvent;
 pub fn update_arrows(
     mut ev_plan_update: EventReader<PlanUpdateEvent>,
     unit_plan: Res<UnitPlan>,
-    mut q_texture_atlas_sprite: Query<&mut TextureAtlasSprite, With<MoveStepSprite>>,
+    mut q_texture_atlas_sprite: Query<
+        (&mut TextureAtlasSprite, &mut Visibility),
+        With<MoveStepSprite>,
+    >,
 ) {
     for _ in ev_plan_update.iter() {
         info!("Executing update_arrows");
@@ -223,11 +226,18 @@ pub fn update_arrows(
                 unit_plan.steps.get(i + 1).map(|step| step.tile)
             };
 
-            let sprite_index = get_index_from_tiles(before_tile, tile, after_tile);
+            let (mut move_step_sprite, mut visibility) =
+                q_texture_atlas_sprite.get_mut(entity).unwrap();
 
-            let mut move_step_sprite = q_texture_atlas_sprite.get_mut(entity).unwrap();
-
-            move_step_sprite.index = sprite_index as u32;
+            match get_index_from_tiles(before_tile, tile, after_tile) {
+                None => {
+                    visibility.is_visible = false;
+                }
+                Some(sprite_index) => {
+                    visibility.is_visible = true;
+                    move_step_sprite.index = sprite_index;
+                }
+            }
         }
     }
 }
@@ -241,9 +251,7 @@ pub fn confirm_move(
     for _ in ev_input.iter() {
         info!("Executing confirm_move");
 
-        let entity = q_selected_unit
-            .single()
-            .expect("More than one unit selected?!");
+        let entity = q_selected_unit.single();
         info!("Sending ActionEvent!");
         ev_action.send(ActionEvent(Action::Move {
             entity,
@@ -256,8 +264,8 @@ pub fn move_result(
     mut ev_move_result: EventReader<ActionResultEvent>,
     mut st_game: ResMut<State<GameState>>,
     mut q: QuerySet<(
-        Query<&mut Transform, With<Selected>>,
-        Query<&mut Transform, With<Cursor>>,
+        QueryState<&mut Transform, With<Selected>>,
+        QueryState<&mut Transform, With<Cursor>>,
     )>,
 ) {
     for action_result in ev_move_result.iter() {
@@ -266,12 +274,13 @@ pub fn move_result(
             if let Some(location) = tiles.last() {
                 info!("Moving unit...");
 
-                let mut unit_transform =
-                    q.q0_mut().single_mut().expect("No selected unit to move?!");
+                let mut unit_query = q.q0();
+                let mut unit_transform = unit_query.single_mut();
                 unit_transform.translation.x = location.x as f32 * TILE_SIZE;
                 unit_transform.translation.y = location.y as f32 * TILE_SIZE;
 
-                let mut cursor_transform = q.q1_mut().single_mut().expect("Couldn't find cursor?!");
+                let mut cursor_query = q.q1();
+                let mut cursor_transform = cursor_query.single_mut();
                 cursor_transform.translation.x = location.x as f32 * TILE_SIZE;
                 cursor_transform.translation.y = location.y as f32 * TILE_SIZE;
             } else {

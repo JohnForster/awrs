@@ -4,7 +4,7 @@ pub fn get_index_from_tiles(
     before_tile: Option<Tile>,
     tile: Tile,
     after_tile: Option<Tile>,
-) -> usize {
+) -> Option<usize> {
     let before_dir = before_tile.map_or(Dir::None, |before| get_direction(before, tile));
     let after_dir = after_tile.map_or(Dir::None, |after| get_direction(tile, after));
     return get_index_from_directions((before_dir, after_dir));
@@ -38,8 +38,8 @@ enum Dir {
     None,
 }
 
-fn get_index_from_directions((from, to): (Dir, Dir)) -> usize {
-    match (from, to) {
+fn get_index_from_directions((from, to): (Dir, Dir)) -> Option<usize> {
+    let index = match (from, to) {
         (Dir::Down, Dir::Down) => 11,
         (Dir::Down, Dir::Right) => 15,
         (Dir::Down, Dir::Left) => 14,
@@ -69,6 +69,9 @@ fn get_index_from_directions((from, to): (Dir, Dir)) -> usize {
         | (Dir::Left, Dir::Right)
         | (Dir::Up, Dir::Down)
         | (Dir::Down, Dir::Up)
-        | (Dir::None, Dir::None) => 24,
-    }
+        | (Dir::None, Dir::None) => {
+            return Option::None;
+        }
+    };
+    return Option::Some(index);
 }

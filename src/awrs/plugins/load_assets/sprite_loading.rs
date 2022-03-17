@@ -21,7 +21,7 @@ pub fn load_images(asset_server: Res<AssetServer>, mut loading: ResMut<AssetsLoa
     ];
 
     for &path in paths.iter() {
-        let texture_handle: Handle<Texture> = asset_server.load(path);
+        let texture_handle: Handle<Image> = asset_server.load(path);
         loading.0.push(texture_handle.clone_untyped());
     }
 }
@@ -56,7 +56,7 @@ pub fn create_ui_sprites(
     cursor_texture_atlas.add_texture(cursor_rect);
     cursor_texture_atlas.add_texture(attack_cursor_rect);
 
-    let icons_texture_handle: Handle<Texture> = asset_server.load("spritesheets/units.png");
+    let icons_texture_handle: Handle<Image> = asset_server.load("spritesheets/units.png");
     let icons_image_size = Vec2::new(680.0, 756.0);
     let mut health_texture_atlas =
         TextureAtlas::new_empty(icons_texture_handle.clone(), icons_image_size);

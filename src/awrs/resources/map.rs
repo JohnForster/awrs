@@ -2,12 +2,13 @@ use bevy::prelude::*;
 
 use super::unit::Team;
 
+#[derive(Component)]
 pub struct GameMap {
     pub width: usize,
     pub height: usize,
 }
 
-#[derive(Bundle)]
+#[derive(Component, Bundle)]
 struct GameMapBundle {
     game_map: GameMap,
     transform: Transform,
