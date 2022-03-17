@@ -1,14 +1,13 @@
 use bevy::{app::Events, prelude::*};
 
 use crate::awrs::{
-    engine::ScenarioState,
     register_inputs::InputEvent,
     resources::{
         action_event::{Action, ActionEvent, ActionResultEvent},
         cursor::{ChangeCursorEvent, CursorStyle},
         map::ActiveTeam,
         state::GameState,
-        unit::{Selected, UnitId},
+        unit::UnitId,
     },
 };
 
@@ -75,10 +74,6 @@ pub fn game_menu_input(
     mut input_events: ResMut<Events<InputEvent>>,
     mut ev_action: EventWriter<ActionEvent>,
     mut st_game: ResMut<State<GameState>>,
-    units_query: Query<Entity, (With<Selected>, With<UnitId>)>,
-    scenario_state: Res<ScenarioState>,
-    mut active_team: ResMut<ActiveTeam>,
-    mut commands: Commands,
 ) {
     let mut reader = input_events.get_reader();
     let mut should_clear = false;
@@ -91,7 +86,7 @@ pub fn game_menu_input(
             InputEvent::ToggleMenu => {
                 info!("Quitting menu");
 
-                st_game.pop();
+                st_game.pop().ok();
                 should_clear = true;
             }
             _ => {}

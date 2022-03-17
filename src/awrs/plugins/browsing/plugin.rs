@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use super::browsing::*;
 
 use crate::awrs::{
-    register_inputs::register_inputs,
     resources::cursor::{handle_cursor_move, handle_cursor_select},
     resources::state::GameState,
 };

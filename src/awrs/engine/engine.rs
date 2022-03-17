@@ -289,17 +289,17 @@ impl ScenarioState {
     }
 
     // Will later require knowing which weapon is being used.
-    pub fn get_targets_in_range(&self, attacker_id: UnitId) -> Vec<UnitId> {
+    pub fn _get_targets_in_range(&self, attacker_id: UnitId) -> Vec<UnitId> {
         let mut targets_in_range: Vec<UnitId> = vec![];
         for unit in self.units.iter() {
-            if self.is_target_in_range(attacker_id, unit.id) {
+            if self._is_target_in_range(attacker_id, unit.id) {
                 targets_in_range.push(unit.id);
             }
         }
         return targets_in_range;
     }
 
-    pub fn is_target_in_range(&self, _attacker_id: UnitId, _defender_id: UnitId) -> bool {
+    pub fn _is_target_in_range(&self, _attacker_id: UnitId, _defender_id: UnitId) -> bool {
         // TODO complete this function
         true
     }

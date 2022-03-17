@@ -5,7 +5,7 @@ use super::movement_plan::{
     ConfirmMoveEvent, PlanUpdateEvent, UnitPlan,
 };
 
-use crate::awrs::{register_inputs::register_inputs, resources::state::GameState};
+use crate::awrs::resources::state::GameState;
 
 pub struct MoveUnitPlugin;
 
