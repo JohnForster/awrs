@@ -5,7 +5,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.6", features = ["dynamic"] }
+bevy = { version = "0.6", features = ["dynamic", "filesystem_watcher"] }
 bevy_asset_ron = { version = "0.3" }
 serde = "*"
 
@@ -15,3 +15,8 @@ opt-level = 3
 # Maybe also enable only a small amount of optimization for our code:
 [profile.dev]
 opt-level = 1
+
+[dependencies.bevy_kira_audio]
+default-features = false
+# enable the features you care about
+features = ["wav", "flac", "mp3", "ogg"]
