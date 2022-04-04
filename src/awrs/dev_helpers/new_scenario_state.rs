@@ -22,7 +22,7 @@ pub fn new_scenario_state(scenario_map: ScenarioMap) -> ScenarioState {
                     y: location.1,
                 },
                 team,
-                health: 10.0,
+                health: unit_type.value().max_health,
                 has_moved: false,
                 has_attacked: false,
             }

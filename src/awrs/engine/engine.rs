@@ -320,6 +320,10 @@ impl ScenarioState {
         let new_defender_health = defender.health - attack_damage;
 
         let counter_attack_damage = if new_defender_health > 0.0 {
+            println!(
+                "{:?} attacking {:?} ",
+                defender.unit_type, attacker.unit_type
+            );
             self.get_attack_damage(defender, attacker, new_defender_health)
         } else {
             0.0
@@ -329,9 +333,14 @@ impl ScenarioState {
     }
 
     fn get_attack_damage(&self, attacker: &Unit, defender: &Unit, attacker_health: f32) -> f32 {
+        info!(
+            "{:?} attacking {:?} ",
+            attacker.unit_type, defender.unit_type
+        );
         let weapon = self.get_weapon(attacker);
         let full_damage = self.calculate_full_damage(&weapon, &defender.unit_type);
-        let weakness_scale = attacker_health / 100.0;
+        let attacker_max_health = attacker.unit_type.value().max_health;
+        let weakness_scale = attacker_health / attacker_max_health;
         let attack_damage = full_damage * weakness_scale;
         attack_damage
     }
@@ -343,9 +352,23 @@ impl ScenarioState {
             .expect("Trying to attack without a weapon")
     }
 
-    pub fn calculate_full_damage(&self, weapon: &Weapon, _defender: &UnitType) -> f32 {
-        // Check adjustments etc here.
-        weapon.base_damage
+    pub fn calculate_full_damage(&self, weapon: &Weapon, defender: &UnitType) -> f32 {
+        let defender_tags = defender.value().tags;
+        let mut bonus_damage = 0.0;
+        for bonus in weapon.bonuses.iter() {
+            if let Some(bonus) = bonus {
+                if defender_tags.iter().any(|maybe_tag| {
+                    if let Some(tag) = maybe_tag {
+                        *tag == bonus.tag
+                    } else {
+                        false
+                    }
+                }) {
+                    bonus_damage += bonus.additional_damage
+                }
+            };
+        }
+        weapon.base_damage + bonus_damage
     }
 
     // Will later require knowing which weapon is being used.

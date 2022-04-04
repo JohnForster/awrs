@@ -8,6 +8,7 @@ pub enum UnitType {
     Baneling,
 }
 
+#[derive(PartialEq)]
 pub enum UnitTag {
     Biological,
     Mechanical,
@@ -54,7 +55,7 @@ pub const ZERGLING: UnitStats = UnitStats {
     id: 1,
     race: Race::Zerg,
     name: "Zergling",
-    max_health: 10.0,
+    max_health: 35.0,
     max_ammo: -1.0,
     max_fuel: -1.0,
     tags: [Some(Ground), Some(Light), Some(Biological), None],
@@ -62,9 +63,34 @@ pub const ZERGLING: UnitStats = UnitStats {
     weapon_one: Some(ZERGLING_ATTACK),
     weapon_two: None,
 };
+
+pub const BANELING: UnitStats = UnitStats {
+    id: 1,
+    race: Race::Zerg,
+    name: "Baneling",
+    max_health: 30.0,
+    max_ammo: -1.0,
+    max_fuel: -1.0,
+    tags: [Some(Ground), Some(Light), Some(Biological), None],
+    base_armour: 0.0,
+    weapon_one: Some(BANELING_ATTACK),
+    weapon_two: None,
+};
+
+pub const MARINE: UnitStats = UnitStats {
+    id: 1,
+    race: Race::Terran,
+    name: "Marine",
+    max_health: 55.0,
+    max_ammo: -1.0,
+    max_fuel: -1.0,
+    tags: [Some(Ground), Some(Light), Some(Biological), None],
+    base_armour: 0.0,
+    weapon_one: Some(MARINE_ATTACK),
+    weapon_two: None,
+};
+
 pub const ROACH: UnitStats = ZERGLING;
-pub const MARINE: UnitStats = ZERGLING;
-pub const BANELING: UnitStats = ZERGLING;
 
 // pub const ROACH: UnitStats = UnitStats {
 //     id: 1,

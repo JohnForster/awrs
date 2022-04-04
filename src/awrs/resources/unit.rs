@@ -79,10 +79,11 @@ pub fn handle_damage(
         With<HealthIndicator>,
     >,
     mut commands: Commands,
+    scenario_state: Res<ScenarioState>,
 ) {
     for DamageEvent { entity, new_hp } in ev_damage.iter() {
         info!("Handling Damage Event");
-        let (mut _unit, children) = units_query
+        let (unit_id, children) = units_query
             .get_mut(*entity)
             .expect("Could not find unit to damage");
 
@@ -91,7 +92,15 @@ pub fn handle_damage(
                 health_indicator_query.get_mut(child)
             {
                 info!("Updating health indicator");
-                let ceil_health = new_hp.ceil().max(0.0) as usize;
+                let max_health = scenario_state
+                    .get_unit(unit_id.0)
+                    .expect("unwrap")
+                    .unit_type
+                    .value()
+                    .max_health;
+                println!("max_health: {:?}", max_health);
+                let health_percent = new_hp / max_health;
+                let ceil_health = (health_percent * 10.0).ceil().max(0.0) as usize;
                 info!("new_hp: {:?}, ceil_health: {:?}", new_hp, ceil_health);
                 if ceil_health == 0 {
                     commands.entity(*entity).despawn_recursive()

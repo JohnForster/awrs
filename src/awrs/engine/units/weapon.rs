@@ -21,8 +21,46 @@ pub struct Weapon {
 }
 
 pub const ZERGLING_ATTACK: Weapon = Weapon {
-    id: 0,
+    id: 1,
     name: "Zergling Claws",
+    directness: Directness::Melee,
+    base_damage: 10.0,
+    bonuses: [None, None, None, None],
+    num_of_attacks: 1,
+    applicable: [Some(Ground), None, None, None],
+};
+
+pub const BANELING_ATTACK: Weapon = Weapon {
+    id: 2,
+    name: "Acid Boom",
+    directness: Directness::Melee,
+    base_damage: 16.0,
+    bonuses: [
+        Some(Bonus {
+            tag: Light,
+            additional_damage: 19.0,
+        }),
+        None,
+        None,
+        None,
+    ],
+    num_of_attacks: 1,
+    applicable: [Some(Ground), None, None, None],
+};
+
+pub const MARINE_ATTACK: Weapon = Weapon {
+    id: 0,
+    name: "Machine Gun",
+    directness: Directness::Melee,
+    base_damage: 9.8,
+    bonuses: [None, None, None, None],
+    num_of_attacks: 1,
+    applicable: [Some(Ground), None, None, None],
+};
+
+pub const ROACH_ATTACK: Weapon = Weapon {
+    id: 3,
+    name: "Acid Boom",
     directness: Directness::Melee,
     base_damage: 50.0,
     bonuses: [None, None, None, None],
