@@ -1,0 +1,13 @@
+UnitStats(
+  id: 2,
+  race: Zerg,
+  name: "Baneling",
+  max_health: 10.0,
+  max_ammo: -1.0,
+  max_fuel: -1.0,
+  tags: [
+    Ground,
+    Biological
+  ]
+  base_armour: 0.0
+)

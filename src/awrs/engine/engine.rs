@@ -1,3 +1,4 @@
+use super::units::{units::*, weapon::Weapon};
 use bevy::prelude::info;
 
 #[derive(Debug, Clone, Copy)]
@@ -10,14 +11,6 @@ impl PartialEq for Tile {
     fn eq(&self, other: &Tile) -> bool {
         self.x == other.x && self.y == other.y
     }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub enum UnitType {
-    Infantry,
-    Zergling,
-    Baneling,
-    Roach,
 }
 
 pub type UnitId = u32;
@@ -204,19 +197,9 @@ impl ScenarioState {
         //   Turn etc.
         //   Weapon type
 
-        let mut maybe_attacker: Option<&mut Unit> = None;
-        let mut maybe_defender: Option<&mut Unit> = None;
-        for unit in self.units.iter_mut() {
-            if unit.id == attacker_id {
-                maybe_attacker = Some(unit);
-            } else if unit.id == defender_id {
-                maybe_defender = Some(unit);
-            }
-        }
+        let (attacker, defender) = self.get_two_units(attacker_id, defender_id).unwrap();
 
-        let attacker = maybe_attacker.expect("No attacker found");
-        let defender = maybe_defender.expect("No defender found");
-
+        // Return an Err result if not possible.
         if attacker.has_attacked {
             return CommandResult::Attack {
                 status: CommandStatus::Err,
@@ -228,7 +211,10 @@ impl ScenarioState {
         }
 
         // Calculate damage
-        let (attacker_damage, defender_damage) = (2.0, 4.0);
+        let (attacker_damage, defender_damage) = self.calculate_damage(attacker.id, defender.id);
+
+        let (attacker, defender) = self.get_two_units_mut(attacker_id, defender_id).unwrap();
+
         attacker.health -= attacker_damage;
         defender.health -= defender_damage;
 
@@ -255,6 +241,46 @@ impl ScenarioState {
             status: CommandStatus::Ok,
             new_active_team,
         };
+    }
+
+    pub fn get_two_units_mut(
+        &mut self,
+        attacker_id: UnitId,
+        defender_id: UnitId,
+    ) -> Option<(&mut Unit, &mut Unit)> {
+        let mut maybe_attacker: Option<&mut Unit> = None;
+        let mut maybe_defender: Option<&mut Unit> = None;
+        for unit in self.units.iter_mut() {
+            if unit.id == attacker_id {
+                maybe_attacker = Some(unit);
+            } else if unit.id == defender_id {
+                maybe_defender = Some(unit);
+            }
+        }
+        let attacker = maybe_attacker.expect("No attacker found");
+        let defender = maybe_defender.expect("No defender found");
+
+        return Some((attacker, defender));
+    }
+
+    pub fn get_two_units(
+        &self,
+        attacker_id: UnitId,
+        defender_id: UnitId,
+    ) -> Option<(&Unit, &Unit)> {
+        let mut maybe_attacker: Option<&Unit> = None;
+        let mut maybe_defender: Option<&Unit> = None;
+        for unit in self.units.iter() {
+            if unit.id == attacker_id {
+                maybe_attacker = Some(unit);
+            } else if unit.id == defender_id {
+                maybe_defender = Some(unit);
+            }
+        }
+        let attacker = maybe_attacker.expect("No attacker found");
+        let defender = maybe_defender.expect("No defender found");
+
+        return Some((attacker, defender));
     }
 }
 
@@ -286,6 +312,40 @@ impl ScenarioState {
         }
 
         return moveable_tiles;
+    }
+
+    pub fn calculate_damage(&self, attacker_id: UnitId, defender_id: UnitId) -> (f32, f32) {
+        let (attacker, defender) = self.get_two_units(attacker_id, defender_id).unwrap();
+        let attack_damage = self.get_attack_damage(attacker, defender, attacker.health);
+        let new_defender_health = defender.health - attack_damage;
+
+        let counter_attack_damage = if new_defender_health > 0.0 {
+            self.get_attack_damage(defender, attacker, new_defender_health)
+        } else {
+            0.0
+        };
+
+        return (counter_attack_damage, attack_damage);
+    }
+
+    fn get_attack_damage(&self, attacker: &Unit, defender: &Unit, attacker_health: f32) -> f32 {
+        let weapon = self.get_weapon(attacker);
+        let full_damage = self.calculate_full_damage(&weapon, &defender.unit_type);
+        let weakness_scale = attacker_health / 100.0;
+        let attack_damage = full_damage * weakness_scale;
+        attack_damage
+    }
+
+    pub fn get_weapon(&self, unit: &Unit) -> Weapon {
+        unit.unit_type
+            .value()
+            .weapon_one
+            .expect("Trying to attack without a weapon")
+    }
+
+    pub fn calculate_full_damage(&self, weapon: &Weapon, _defender: &UnitType) -> f32 {
+        // Check adjustments etc here.
+        weapon.base_damage
     }
 
     // Will later require knowing which weapon is being used.

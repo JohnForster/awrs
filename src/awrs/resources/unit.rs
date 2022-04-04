@@ -25,7 +25,7 @@ pub enum UnitType {
 impl From<EngineUnitType> for UnitType {
     fn from(unit_type: EngineUnitType) -> Self {
         match unit_type {
-            EngineUnitType::Infantry => UnitType::Infantry,
+            EngineUnitType::Marine => UnitType::Infantry,
             EngineUnitType::Zergling => UnitType::Zergling,
             EngineUnitType::Baneling => UnitType::Baneling,
             EngineUnitType::Roach => UnitType::Roach,

@@ -1,0 +1,14 @@
+UnitStats(
+  id: 3,
+  race: Zerg,
+  name: "Roach",
+  max_health: 10.0,
+  max_ammo: -1.0,
+  max_fuel: -1.0,
+  tags: [
+    Ground,
+    Armoured,
+    Biological
+  ]
+  base_armour: 1.0
+)
