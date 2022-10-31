@@ -13,6 +13,7 @@ pub enum UnitTag {
     Biological,
     Mechanical,
     Light,
+    Armoured,
     Ground,
     Air,
     Infantry,
@@ -65,7 +66,7 @@ pub const ZERGLING: UnitStats = UnitStats {
 };
 
 pub const BANELING: UnitStats = UnitStats {
-    id: 1,
+    id: 2,
     race: Race::Zerg,
     name: "Baneling",
     max_health: 30.0,
@@ -78,7 +79,7 @@ pub const BANELING: UnitStats = UnitStats {
 };
 
 pub const MARINE: UnitStats = UnitStats {
-    id: 1,
+    id: 0,
     race: Race::Terran,
     name: "Marine",
     max_health: 55.0,
@@ -90,19 +91,18 @@ pub const MARINE: UnitStats = UnitStats {
     weapon_two: None,
 };
 
-pub const ROACH: UnitStats = ZERGLING;
-
-// pub const ROACH: UnitStats = UnitStats {
-//     id: 1,
-//     race: Zerg,
-//     name: "Roach",
-//     max_health: 10.0,
-//     max_ammo: -1.0,
-//     max_fuel: -1.0,
-//     tags: [Ground, Armoured, Biological],
-//     base_armour: 0.0,
-//     primary_weapon: ZERGLING_ATTACK,
-// };
+pub const ROACH: UnitStats = UnitStats {
+    id: 4,
+    race: Race::Zerg,
+    name: "Roach",
+    max_health: 145.0,
+    max_ammo: -1.0,
+    max_fuel: -1.0,
+    tags: [Some(Ground), Some(Armoured), Some(Biological), None],
+    base_armour: 1.0,
+    weapon_one: Some(ROACH_ATTACK),
+    weapon_two: None,
+};
 
 // pub const MARINE: UnitStats = UnitStats {
 //     id: 1,

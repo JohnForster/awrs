@@ -1,3 +1,5 @@
+use crate::awrs::engine::Tile;
+
 use super::units::{UnitTag, UnitTag::*};
 
 pub struct Bonus {
@@ -8,6 +10,18 @@ pub struct Bonus {
 pub enum Directness {
     Melee,
     Ranged(f32, f32), // Min, Max
+    _Splash(Splash),
+    // _Shaped
+}
+
+pub enum AdditionalEffect {
+    Suicide,
+}
+
+pub struct Splash {
+    pub range: (f32, f32),
+    pub radius: f32,
+    pub _dropoff: f32, // Dropoff per unit range.
 }
 
 pub struct Weapon {
@@ -18,6 +32,7 @@ pub struct Weapon {
     pub num_of_attacks: u32,
     pub bonuses: [Option<Bonus>; 4],
     pub applicable: [Option<UnitTag>; 4],
+    pub additional_effects: [Option<AdditionalEffect>; 4],
 }
 
 pub const ZERGLING_ATTACK: Weapon = Weapon {
@@ -28,6 +43,7 @@ pub const ZERGLING_ATTACK: Weapon = Weapon {
     bonuses: [None, None, None, None],
     num_of_attacks: 1,
     applicable: [Some(Ground), None, None, None],
+    additional_effects: [None, None, None, None],
 };
 
 pub const BANELING_ATTACK: Weapon = Weapon {
@@ -46,6 +62,7 @@ pub const BANELING_ATTACK: Weapon = Weapon {
     ],
     num_of_attacks: 1,
     applicable: [Some(Ground), None, None, None],
+    additional_effects: [Some(AdditionalEffect::Suicide), None, None, None],
 };
 
 pub const MARINE_ATTACK: Weapon = Weapon {
@@ -56,14 +73,16 @@ pub const MARINE_ATTACK: Weapon = Weapon {
     bonuses: [None, None, None, None],
     num_of_attacks: 1,
     applicable: [Some(Ground), None, None, None],
+    additional_effects: [None, None, None, None],
 };
 
 pub const ROACH_ATTACK: Weapon = Weapon {
     id: 3,
-    name: "Acid Boom",
-    directness: Directness::Melee,
-    base_damage: 50.0,
+    name: "Acid Saliva",
+    directness: Directness::Ranged(0.0, 1.0),
+    base_damage: 11.2,
     bonuses: [None, None, None, None],
     num_of_attacks: 1,
     applicable: [Some(Ground), None, None, None],
+    additional_effects: [None, None, None, None],
 };
