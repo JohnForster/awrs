@@ -10,8 +10,7 @@ pub struct Bonus {
 pub enum Directness {
     Melee,
     Ranged(f32, f32), // Min, Max
-    _Splash(Splash),
-    // _Shaped
+    Splash(Splash),
 }
 
 pub enum AdditionalEffect {
@@ -21,7 +20,8 @@ pub enum AdditionalEffect {
 pub struct Splash {
     pub range: (f32, f32),
     pub radius: f32,
-    pub _dropoff: f32, // Dropoff per unit range.
+    pub friendly: bool,
+    // pub _dropoff: f32, // Dropoff per unit range.
 }
 
 pub struct Weapon {
@@ -49,7 +49,11 @@ pub const ZERGLING_ATTACK: Weapon = Weapon {
 pub const BANELING_ATTACK: Weapon = Weapon {
     id: 2,
     name: "Acid Boom",
-    directness: Directness::Melee,
+    directness: Directness::Splash(Splash {
+        range: (0.0, 0.0),
+        radius: 1.5,
+        friendly: false,
+    }),
     base_damage: 16.0,
     bonuses: [
         Some(Bonus {

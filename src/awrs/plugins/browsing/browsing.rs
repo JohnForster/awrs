@@ -19,33 +19,40 @@ pub fn browse_select(
     active_team: Res<ActiveTeam>,
     scenario_state: Res<ScenarioState>,
 ) {
-    for SelectEvent(entity) in ev_select.iter() {
+    for select_event in ev_select.iter() {
         info!("Executing browse_select");
-        if let Ok(UnitId(unit_id)) = q_unit.get(*entity) {
-            if scenario_state.unit_cannot_act(unit_id) {
-                info!("Unit cannot act.");
-                continue;
+        match select_event {
+            SelectEvent::Entity(entity) => {
+                if let Ok(UnitId(unit_id)) = q_unit.get(*entity) {
+                    if scenario_state.unit_cannot_act(unit_id) {
+                        info!("Unit cannot act.");
+                        continue;
+                    }
+
+                    let unit = scenario_state
+                        .get_unit(*unit_id)
+                        .expect("Could not find unit in ScenarioState");
+
+                    // Cannot select enemy units
+                    let is_enemy = unit.team != active_team.team;
+                    if is_enemy {
+                        continue;
+                    }
+
+                    // Potential alternatives to this:
+                    // A resource that stores an optional handle to a unit (therefore can force only one unit selected at a time)
+                    // A field on the Unit struct that says whether or not the unit is selected. (Doesn't feel very ECS?)
+                    commands.entity(*entity).insert(Selected);
+
+                    info!("Setting game state to UnitMenu");
+                    st_game
+                        .set(GameState::UnitMenu)
+                        .expect("Problem changing state");
+                }
             }
-
-            let unit = scenario_state
-                .get_unit(*unit_id)
-                .expect("Could not find unit in ScenarioState");
-
-            // Cannot select enemy units
-            let is_enemy = unit.team != active_team.team;
-            if is_enemy {
-                continue;
+            SelectEvent::Tile(tile) => {
+                // Fire open menu event
             }
-
-            // Potential alternatives to this:
-            // A resource that stores an optional handle to a unit (therefore can force only one unit selected at a time)
-            // A field on the Unit struct that says whether or not the unit is selected. (Doesn't feel very ECS?)
-            commands.entity(*entity).insert(Selected);
-
-            info!("Setting game state to UnitMenu");
-            st_game
-                .set(GameState::UnitMenu)
-                .expect("Problem changing state");
         }
     }
 }

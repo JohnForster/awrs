@@ -1,4 +1,9 @@
-use super::units::{units::*, weapon::Weapon};
+use std::collections::HashMap;
+
+use super::{
+    units::{units::*, weapon::Weapon},
+    weapon::Directness,
+};
 use bevy::prelude::info;
 
 #[derive(Debug, Clone, Copy)]
@@ -10,6 +15,14 @@ pub struct Tile {
 impl PartialEq for Tile {
     fn eq(&self, other: &Tile) -> bool {
         self.x == other.x && self.y == other.y
+    }
+}
+
+impl Tile {
+    pub fn distance_to(&self, other: &Tile) -> f32 {
+        let dx = self.x as f32 - other.x as f32;
+        let dy = self.y as f32 - other.y as f32;
+        return f32::sqrt(dx.powi(2) + dy.powi(2));
     }
 }
 
@@ -90,6 +103,10 @@ pub enum Command {
         attacker_id: UnitId,
         defender_id: UnitId,
     },
+    AttackGround {
+        attacker_id: UnitId,
+        tile: Tile,
+    },
     EndTurn,
 }
 
@@ -112,9 +129,13 @@ pub enum CommandResult {
         status: CommandStatus,
         tiles: Vec<Tile>,
     },
+    AttackGround {
+        status: CommandStatus,
+        unit_hp_changes: Vec<(UnitId, UnitHp)>,
+    },
     Attack {
         status: CommandStatus,
-        unit_hp: Vec<(UnitId, UnitHp)>,
+        unit_hp_changes: Vec<(UnitId, UnitHp)>,
     },
     EndTurn {
         status: CommandStatus,
@@ -131,6 +152,7 @@ impl ScenarioState {
                 attacker_id,
                 defender_id,
             } => self.attack(attacker_id, defender_id),
+            Command::AttackGround { attacker_id, tile } => self.attack_ground(attacker_id, tile),
             Command::EndTurn => self.end_turn(),
         }
     }
@@ -199,16 +221,30 @@ impl ScenarioState {
 
         let (attacker, defender) = self.get_two_units(attacker_id, defender_id).unwrap();
 
-        // Return an Err result if not possible.
+        // Attacker is able to attack
         if attacker.has_attacked {
             return CommandResult::Attack {
                 status: CommandStatus::Err,
-                unit_hp: vec![
+                unit_hp_changes: vec![
                     (attacker.id, attacker.health),
                     (defender.id, defender.health),
                 ],
             };
         }
+
+        // Choose Weapon
+        let in_range = check_range(attacker, defender);
+
+        if !in_range {
+            return CommandResult::Attack {
+                status: CommandStatus::Err,
+                unit_hp_changes: vec![
+                    (attacker.id, attacker.health),
+                    (defender.id, defender.health),
+                ],
+            };
+        }
+        // Check Ammo
 
         // Calculate damage
         let (attacker_damage, defender_damage) = self.calculate_damage(attacker.id, defender.id);
@@ -222,11 +258,52 @@ impl ScenarioState {
 
         return CommandResult::Attack {
             status: CommandStatus::Ok,
-            unit_hp: vec![
+            unit_hp_changes: vec![
                 (attacker.id, attacker.health),
                 (defender.id, defender.health),
             ],
         };
+    }
+
+    fn attack_ground(&mut self, attacker_id: UnitId, tile: Tile) -> CommandResult {
+        let attacker = self.get_unit(attacker_id).unwrap();
+        let weapon = attacker.unit_type.value().weapon_one.unwrap();
+        match weapon.directness {
+            Directness::Splash(splash) => {
+                let units_in_range = self.get_units_within_radius(tile, splash.radius);
+
+                let mut damaged_units = HashMap::new();
+                for unit in units_in_range.iter() {
+                    let same_team = unit.team == attacker.team;
+                    if same_team && !splash.friendly {
+                        continue;
+                    }
+
+                    let damage = self.calculate_damage(attacker_id, unit.id).1;
+                    damaged_units.insert(unit.id, damage);
+                }
+
+                let mut unit_hp_changes = vec![];
+                for unit in self.units.iter_mut() {
+                    match damaged_units.get(&unit.id) {
+                        Some(damage) => {
+                            unit.health -= damage;
+                            unit_hp_changes.push((unit.id, unit.health));
+                        }
+                        None => continue,
+                    }
+                }
+
+                CommandResult::AttackGround {
+                    status: CommandStatus::Ok,
+                    unit_hp_changes,
+                }
+            }
+            _ => CommandResult::AttackGround {
+                status: CommandStatus::Err,
+                unit_hp_changes: vec![],
+            },
+        }
     }
 
     fn end_turn(&mut self) -> CommandResult {
@@ -282,6 +359,23 @@ impl ScenarioState {
 
         return Some((attacker, defender));
     }
+}
+
+fn check_range(attacker: &Unit, defender: &Unit) -> bool {
+    let attacker_weapon = attacker
+        .unit_type
+        .value()
+        .weapon_one
+        .expect("No weapon found");
+
+    let (min, max) = match attacker_weapon.directness {
+        Directness::Melee => (1.0, 1.0),
+        Directness::Ranged(min, max) => (min, max),
+        _ => (1.0, 1.0),
+    };
+    let distance_between_units = attacker.position.distance_to(&defender.position);
+    let in_range = distance_between_units >= min && distance_between_units <= max;
+    in_range
 }
 
 // Non-mutating
@@ -438,5 +532,25 @@ impl ScenarioState {
 
     pub fn unit_cannot_act(&self, unit_id: &UnitId) -> bool {
         self.get_possible_actions(unit_id).len() == 0
+    }
+
+    pub fn get_units_within_radius(&self, tile: Tile, radius: f32) -> Vec<&Unit> {
+        let mut units: Vec<&Unit> = vec![];
+        for unit in self.units.iter() {
+            if unit.position.distance_to(&tile) <= radius {
+                units.push(unit)
+            }
+        }
+        return units;
+    }
+
+    pub fn get_units_within_radius_mut(&mut self, tile: Tile, radius: f32) -> Vec<&mut Unit> {
+        let mut units: Vec<&mut Unit> = vec![];
+        for unit in self.units.iter_mut() {
+            if unit.position.distance_to(&tile) <= radius {
+                units.push(unit)
+            }
+        }
+        return units;
     }
 }

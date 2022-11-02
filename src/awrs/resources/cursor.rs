@@ -47,7 +47,10 @@ pub fn handle_cursor_move(
 }
 
 // ? Do we need this select event, or could this be bundled into handle_cursor_select?
-pub struct SelectEvent(pub Entity);
+pub enum SelectEvent {
+    Entity(Entity),
+    Tile(Tile),
+}
 
 pub fn handle_cursor_select(
     mut ev_input_event: EventReader<InputEvent>,
@@ -65,10 +68,13 @@ pub fn handle_cursor_select(
                     .iter()
                     .find(|(_, transform)| Tile::from(**transform) == cursor_tile);
 
-                if let Some(tuple) = maybe_unit {
-                    let entity = tuple.0;
+                match maybe_unit {
+                    Some(tuple) => {
+                        let entity = tuple.0;
 
-                    ev_select.send(SelectEvent(entity));
+                        ev_select.send(SelectEvent::Entity(entity));
+                    }
+                    None => ev_select.send(SelectEvent::Tile(cursor_tile)),
                 }
             }
 

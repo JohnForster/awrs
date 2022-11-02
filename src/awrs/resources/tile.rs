@@ -1,3 +1,4 @@
+use crate::awrs::engine::Tile as EngineTile;
 use bevy::prelude::Transform;
 
 #[derive(Clone, Copy, Debug)]
@@ -13,6 +14,15 @@ impl From<Transform> for Tile {
         Tile {
             x: (transform.translation.x / TILE_SIZE).round() as u32,
             y: (transform.translation.y / TILE_SIZE).round() as u32,
+        }
+    }
+}
+
+impl From<EngineTile> for Tile {
+    fn from(engine_tile: EngineTile) -> Tile {
+        Tile {
+            x: engine_tile.x,
+            y: engine_tile.y,
         }
     }
 }

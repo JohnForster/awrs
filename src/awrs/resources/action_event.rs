@@ -8,9 +8,26 @@ use crate::awrs::engine::UnitHp;
 pub struct ActionEvent(pub Action);
 
 pub enum Action {
-    Attack(Entity, Entity),
+    Attack(Attack),
     Move { entity: Entity, tiles: Vec<Tile> },
     EndTurn,
+}
+
+impl From<(Entity, Tile)> for Attack {
+    fn from((entity, tile): (Entity, Tile)) -> Attack {
+        Attack::Ground(entity, tile)
+    }
+}
+
+impl From<(Entity, Entity)> for Attack {
+    fn from((attacker, defender): (Entity, Entity)) -> Attack {
+        Attack::Unit(attacker, defender)
+    }
+}
+
+pub enum Attack {
+    Unit(Entity, Entity),
+    Ground(Entity, Tile),
 }
 
 // Will need to add more detail once its clear what is needed from these result events.

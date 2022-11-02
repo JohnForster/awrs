@@ -3,6 +3,7 @@ use crate::awrs::engine::{ScenarioMap, ScenarioState, Tile, Unit, UnitId, UnitTy
 pub fn new_scenario_state(scenario_map: ScenarioMap) -> ScenarioState {
     let unit_data = vec![
         (UnitType::Marine, (1, 2), 0),
+        (UnitType::Marine, (2, 3), 0),
         (UnitType::Zergling, (3, 3), 1),
         (UnitType::Baneling, (4, 2), 1),
         (UnitType::Roach, (3, 1), 1),
