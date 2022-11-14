@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::{
     units::{units::*, weapon::Weapon},
-    weapon::Directness,
+    weapon::{AdditionalEffect, Directness},
 };
 use bevy::prelude::info;
 
@@ -85,6 +85,12 @@ impl Contains<i32> for ScenarioState {
     }
 }
 
+pub enum Moveable {
+    Through,
+    Stop,
+    Blocked,
+}
+
 pub enum UnitAction {
     Move,
     Attack,
@@ -118,12 +124,23 @@ pub struct ScenarioState {
     pub teams: Vec<u32>,
 }
 
+#[derive(Debug)]
 pub enum CommandStatus {
     Ok,
     Partial,
-    Err,
+    Err(CommandErr),
 }
 
+#[derive(Debug)]
+pub enum CommandErr {
+    AlreadyMoved,
+    AlreadyAttacked,
+    NotImplemented,
+    OutOfRange,
+    UnknownErr,
+}
+
+#[derive(Debug)]
 pub enum CommandResult {
     Move {
         status: CommandStatus,
@@ -166,13 +183,13 @@ impl ScenarioState {
 
         if unit.has_moved {
             return CommandResult::Move {
-                status: CommandStatus::Err,
+                status: CommandStatus::Err(CommandErr::AlreadyMoved),
                 tiles: vec![unit.position],
             };
         }
 
         let mut successful_moves: Vec<Tile> = vec![];
-        let mut status = CommandStatus::Err;
+        let mut status = CommandStatus::Err(CommandErr::UnknownErr);
 
         for Tile { x, y } in tiles {
             // TODO - Check valid
@@ -224,7 +241,7 @@ impl ScenarioState {
         // Attacker is able to attack
         if attacker.has_attacked {
             return CommandResult::Attack {
-                status: CommandStatus::Err,
+                status: CommandStatus::Err(CommandErr::AlreadyAttacked),
                 unit_hp_changes: vec![
                     (attacker.id, attacker.health),
                     (defender.id, defender.health),
@@ -237,7 +254,7 @@ impl ScenarioState {
 
         if !in_range {
             return CommandResult::Attack {
-                status: CommandStatus::Err,
+                status: CommandStatus::Err(CommandErr::OutOfRange),
                 unit_hp_changes: vec![
                     (attacker.id, attacker.health),
                     (defender.id, defender.health),
@@ -270,6 +287,15 @@ impl ScenarioState {
         let weapon = attacker.unit_type.value().weapon_one.unwrap();
         match weapon.directness {
             Directness::Splash(splash) => {
+                let tile_in_range = check_range_to_tile(attacker, &tile);
+                info!("{:?}", tile_in_range);
+                if !tile_in_range {
+                    return CommandResult::AttackGround {
+                        status: CommandStatus::Err(CommandErr::OutOfRange),
+                        unit_hp_changes: vec![],
+                    };
+                }
+
                 let units_in_range = self.get_units_within_radius(tile, splash.radius);
 
                 let mut damaged_units = HashMap::new();
@@ -294,13 +320,19 @@ impl ScenarioState {
                     }
                 }
 
+                let is_suicide = weapon.has_effect(AdditionalEffect::Suicide);
+
+                if is_suicide {
+                    unit_hp_changes.push((attacker_id, 0.0));
+                }
+
                 CommandResult::AttackGround {
                     status: CommandStatus::Ok,
                     unit_hp_changes,
                 }
             }
             _ => CommandResult::AttackGround {
-                status: CommandStatus::Err,
+                status: CommandStatus::Err(CommandErr::NotImplemented),
                 unit_hp_changes: vec![],
             },
         }
@@ -378,7 +410,24 @@ fn check_range(attacker: &Unit, defender: &Unit) -> bool {
     in_range
 }
 
-// Non-mutating
+fn check_range_to_tile(attacker: &Unit, tile: &Tile) -> bool {
+    let attacker_weapon = attacker
+        .unit_type
+        .value()
+        .weapon_one
+        .expect("No weapon found");
+
+    let (min, max) = match attacker_weapon.directness {
+        Directness::Melee => (1.0, 1.0),
+        Directness::Ranged(min, max) => (min, max),
+        Directness::Splash(splash) => (splash.range.0, splash.range.1),
+        _ => (1.0, 1.0),
+    };
+    let distance_to_tile = attacker.position.distance_to(tile);
+    let in_range = distance_to_tile >= min && distance_to_tile <= max;
+    in_range
+}
+
 impl ScenarioState {
     pub fn get_unit(&self, unit_id: UnitId) -> Option<&Unit> {
         self.units.iter().find(|u| u.id == unit_id)
@@ -484,9 +533,9 @@ impl ScenarioState {
     pub fn is_tile_moveable(&self, unit_id: UnitId, x: i32, y: i32) -> bool {
         // Is tile within the map bounds?
         self.is_tile_within_bounds(x, y) &&
-        // Can this unit move over this terrain?
-        // Are there any other units already here?
-        !self.is_tile_occupied(unit_id, x as u32, y as u32)
+      // Can this unit move over this terrain?
+      // Are there any other units already here?
+      !self.is_tile_occupied(unit_id, x as u32, y as u32)
         // Is this blocked by enemy units? (Might require pathfinding?)
     }
 
@@ -544,7 +593,7 @@ impl ScenarioState {
         return units;
     }
 
-    pub fn get_units_within_radius_mut(&mut self, tile: Tile, radius: f32) -> Vec<&mut Unit> {
+    pub fn _get_units_within_radius_mut(&mut self, tile: Tile, radius: f32) -> Vec<&mut Unit> {
         let mut units: Vec<&mut Unit> = vec![];
         for unit in self.units.iter_mut() {
             if unit.position.distance_to(&tile) <= radius {

@@ -1,5 +1,3 @@
-use crate::awrs::engine::Tile;
-
 use super::units::{UnitTag, UnitTag::*};
 
 pub struct Bonus {
@@ -13,10 +11,12 @@ pub enum Directness {
     Splash(Splash),
 }
 
+#[derive(PartialEq)]
 pub enum AdditionalEffect {
     Suicide,
 }
 
+#[derive(Clone, Copy)]
 pub struct Splash {
     pub range: (f32, f32),
     pub radius: f32,
@@ -33,6 +33,17 @@ pub struct Weapon {
     pub bonuses: [Option<Bonus>; 4],
     pub applicable: [Option<UnitTag>; 4],
     pub additional_effects: [Option<AdditionalEffect>; 4],
+}
+
+impl Weapon {
+    pub fn has_effect(&self, additional_effect: AdditionalEffect) -> bool {
+        self.additional_effects
+            .iter()
+            .any(|maybe_effect| match maybe_effect {
+                Some(effect) => *effect == additional_effect,
+                _ => false,
+            })
+    }
 }
 
 pub const ZERGLING_ATTACK: Weapon = Weapon {
@@ -83,7 +94,7 @@ pub const MARINE_ATTACK: Weapon = Weapon {
 pub const ROACH_ATTACK: Weapon = Weapon {
     id: 3,
     name: "Acid Saliva",
-    directness: Directness::Ranged(0.0, 1.0),
+    directness: Directness::Ranged(1.0, 2.0),
     base_damage: 11.2,
     bonuses: [None, None, None, None],
     num_of_attacks: 1,

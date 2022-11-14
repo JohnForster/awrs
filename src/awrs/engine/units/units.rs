@@ -11,12 +11,12 @@ pub enum UnitType {
 #[derive(PartialEq)]
 pub enum UnitTag {
     Biological,
-    Mechanical,
+    _Mechanical,
     Light,
     Armoured,
     Ground,
-    Air,
-    Infantry,
+    _Air,
+    _Infantry,
 }
 
 pub struct UnitStats {
