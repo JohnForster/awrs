@@ -189,6 +189,7 @@ impl ScenarioState {
         }
 
         let mut successful_moves: Vec<Tile> = vec![];
+        let mut pending_moves: Vec<Tile> = vec![];
         let mut status = CommandStatus::Err(CommandErr::UnknownErr);
 
         for Tile { x, y } in tiles {
@@ -202,10 +203,17 @@ impl ScenarioState {
                 units_iterator.find(|u| u.position.x == x && u.position.y == y);
 
             match maybe_blocking_unit {
-                None => {}
-                Some(_unit) => {
+                None => {
+                    successful_moves.append(&mut pending_moves);
+                }
+                Some(other_unit) => {
                     status = CommandStatus::Partial;
-                    break;
+                    if other_unit.team == unit.team {
+                        pending_moves.push(Tile { x, y });
+                        continue;
+                    } else {
+                        break;
+                    }
                 }
             }
 
