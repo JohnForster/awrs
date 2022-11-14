@@ -1,3 +1,5 @@
+use std::f32::consts::E;
+
 use bevy::prelude::*;
 
 use super::arrows::get_index_from_tiles;
@@ -47,13 +49,13 @@ pub fn begin_unit_plan(
 ) {
     ev_change_cursor.send(ChangeCursorEvent(CursorStyle::None));
 
-    let (UnitId(unit_id), transform) = q_selected_unit.single_mut();
+    let (UnitId(unit_id), unit_transform) = q_selected_unit.single_mut();
 
     let range = scenario_state.get_movement_range(&unit_id);
     unit_plan.range = range;
     unit_plan.steps = vec![];
 
-    if let Some(tile) = check_valid(&transform, &scenario_state, *unit_id, (0, 0)) {
+    if let Some(tile) = check_valid(&unit_transform, &scenario_state, *unit_id, (0, 0)) {
         add_tile(tile, &mut unit_plan, &arrow_atlas, &mut commands)
     };
 }
@@ -78,8 +80,19 @@ pub fn update_movement_plan(
             &InputEvent::Left => (-1, 0),
             &InputEvent::Right => (1, 0),
             &InputEvent::Select => {
-                info!("Sending confirm move event!");
-                ev_confirm_move.send(ConfirmMoveEvent);
+                match unit_plan.steps.last() {
+                    Some(last_step) => {
+                        if !scenario_state.is_tile_occupied(
+                            *unit_id,
+                            last_step.tile.x,
+                            last_step.tile.y,
+                        ) {
+                            info!("Sending confirm move event!");
+                            ev_confirm_move.send(ConfirmMoveEvent);
+                        }
+                    }
+                    None => {}
+                }
                 break 'outer;
             }
             _ => break, // Could add select here?
@@ -114,13 +127,13 @@ pub fn update_movement_plan(
 }
 
 fn check_valid(
-    transform: &Transform,
+    unit_transform: &Transform,
     scenario_state: &ScenarioState,
     unit_id: u32,
     (dx, dy): (i32, i32),
 ) -> Option<Tile> {
     info!("checking valid");
-    let unit_current_pos = Tile::from(*transform);
+    let unit_current_pos = Tile::from(*unit_transform);
 
     let valid_tiles = scenario_state.get_moveable_tiles(unit_id);
     let maybe_tile = valid_tiles
@@ -245,6 +258,7 @@ pub fn update_arrows(
 pub fn confirm_move(
     mut ev_input: EventReader<ConfirmMoveEvent>,
     mut ev_action: EventWriter<ActionEvent>,
+    scenario_state: Res<ScenarioState>,
     q_selected_unit: Query<Entity, (With<Selected>, With<UnitId>)>,
     unit_plan: Res<UnitPlan>,
 ) {

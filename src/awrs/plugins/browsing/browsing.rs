@@ -54,7 +54,7 @@ pub fn browse_select(
                     // A field on the Unit struct that says whether or not the unit is selected. (Doesn't feel very ECS?)
                 }
             }
-            SelectEvent::Tile(tile) => {
+            SelectEvent::Tile(_tile) => {
                 // Fire open menu event
             }
         }

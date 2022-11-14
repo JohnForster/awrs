@@ -85,7 +85,7 @@ impl Contains<i32> for ScenarioState {
     }
 }
 
-pub enum Moveable {
+pub enum _Moveable {
     Through,
     Stop,
     Blocked,
@@ -420,8 +420,7 @@ fn check_range_to_tile(attacker: &Unit, tile: &Tile) -> bool {
     let (min, max) = match attacker_weapon.directness {
         Directness::Melee => (1.0, 1.0),
         Directness::Ranged(min, max) => (min, max),
-        Directness::Splash(splash) => (splash.range.0, splash.range.1),
-        _ => (1.0, 1.0),
+        Directness::Splash(splash) => splash.range,
     };
     let distance_to_tile = attacker.position.distance_to(tile);
     let in_range = distance_to_tile >= min && distance_to_tile <= max;
@@ -531,11 +530,21 @@ impl ScenarioState {
     }
 
     pub fn is_tile_moveable(&self, unit_id: UnitId, x: i32, y: i32) -> bool {
-        // Is tile within the map bounds?
-        self.is_tile_within_bounds(x, y) &&
-      // Can this unit move over this terrain?
-      // Are there any other units already here?
-      !self.is_tile_occupied(unit_id, x as u32, y as u32)
+        match self.get_unit(unit_id) {
+            Some(unit) => {
+                if let Ok((x, y)) = self.is_tile_within_bounds(x, y) {
+                    let move_through = self
+                        .get_unit_at(x, y)
+                        .map_or(true, |unit_2| unit_2.team == unit.team);
+                    return move_through;
+                };
+                return false;
+            }
+            None => false,
+        }
+        // Is tile within the map bounds?s
+        // Can this unit move over this terrain?
+        // Are there any other units already here?
         // Is this blocked by enemy units? (Might require pathfinding?)
     }
 
@@ -552,11 +561,14 @@ impl ScenarioState {
             .find(|unit| unit.position.x == x && unit.position.y == y)
     }
 
-    pub fn is_tile_within_bounds(&self, x: i32, y: i32) -> bool {
+    pub fn is_tile_within_bounds(&self, x: i32, y: i32) -> Result<(u32, u32), ()> {
         let x_is_valid = x >= 0 && x < self.map.width() as i32;
         let y_is_valid = y >= 0 && y < self.map.height() as i32;
-
-        return x_is_valid && y_is_valid;
+        if x_is_valid && y_is_valid {
+            return Result::Ok((x as u32, y as u32));
+        } else {
+            return Result::Err(());
+        }
     }
 
     pub fn get_movement_range(&self, _unit_id: &UnitId) -> u32 {
