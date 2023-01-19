@@ -103,6 +103,16 @@ pub const ROACH: UnitStats = UnitStats {
     weapon_one: Some(ROACH_ATTACK),
     weapon_two: None,
 };
+//    Unit     Range     Speed
+// Marine      5 => 2    3.2 => 3
+// Marauder    5 => 2    3.2 => 3
+// Hellion     5 => 2    6.0 => 5
+// Zergling    M => M    6.6 => 6
+// Baneling    M => M    4.1 => 4
+// Roach       5 => 2    3.2 => 3
+// Zealot      M => M    3.2 => 3
+// Stalker     6 => 2    4.1 => 4
+// Immortal    6 => 2    3.2 => 3
 
 // pub const MARINE: UnitStats = UnitStats {
 //     id: 1,

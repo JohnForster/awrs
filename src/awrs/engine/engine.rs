@@ -328,7 +328,7 @@ impl ScenarioState {
                     }
                 }
 
-                let is_suicide = weapon.has_effect(AdditionalEffect::Suicide);
+                let is_suicide = weapon.has_effect(&AdditionalEffect::Suicide);
 
                 if is_suicide {
                     unit_hp_changes.push((attacker_id, 0.0));

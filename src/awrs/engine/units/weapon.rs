@@ -36,13 +36,14 @@ pub struct Weapon {
 }
 
 impl Weapon {
-    pub fn has_effect(&self, additional_effect: AdditionalEffect) -> bool {
-        self.additional_effects
-            .iter()
-            .any(|maybe_effect| match maybe_effect {
-                Some(effect) => *effect == additional_effect,
-                _ => false,
-            })
+    pub fn has_effect(&self, additional_effect: &AdditionalEffect) -> bool {
+        self.additional_effects.iter().any(|maybe_effect| {
+            if let Some(effect) = maybe_effect {
+                effect == additional_effect
+            } else {
+                false
+            }
+        })
     }
 }
 

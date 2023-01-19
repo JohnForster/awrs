@@ -80,18 +80,15 @@ pub fn update_movement_plan(
             &InputEvent::Left => (-1, 0),
             &InputEvent::Right => (1, 0),
             &InputEvent::Select => {
-                match unit_plan.steps.last() {
-                    Some(last_step) => {
-                        if !scenario_state.is_tile_occupied(
-                            *unit_id,
-                            last_step.tile.x,
-                            last_step.tile.y,
-                        ) {
-                            info!("Sending confirm move event!");
-                            ev_confirm_move.send(ConfirmMoveEvent);
-                        }
+                if let Some(last_step) = unit_plan.steps.last() {
+                    if !scenario_state.is_tile_occupied(
+                        *unit_id,
+                        last_step.tile.x,
+                        last_step.tile.y,
+                    ) {
+                        info!("Sending confirm move event!");
+                        ev_confirm_move.send(ConfirmMoveEvent);
                     }
-                    None => {}
                 }
                 break 'outer;
             }
