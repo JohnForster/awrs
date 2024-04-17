@@ -22,32 +22,34 @@ pub fn build_map(
     let scenario_map = new_scenario_map();
     let scenario_state = new_scenario_state(scenario_map);
 
-    let mut camera_bundle = OrthographicCameraBundle::new_2d();
+    let mut camera_bundle = Camera2dBundle::default();
     camera_bundle.orthographic_projection.scale /= 2.0;
-    commands.spawn_bundle(camera_bundle);
+    commands.spawn(camera_bundle);
 
-    commands.spawn_bundle(UiCameraBundle::default());
+    // DEPRECATED?
+    // commands.spawn_bundle(UiCameraBundle::default());
 
     commands.insert_resource(ActiveTeam {
         team: scenario_state.active_team,
     });
 
     commands
-        .spawn()
-        .insert(GameMap {
-            height: scenario_state.map.len(),
-            width: scenario_state.map[0].len(),
-        })
-        .insert(Transform {
-            ..Default::default()
-        })
-        .insert(GlobalTransform {
-            ..Default::default()
-        })
+        .spawn((
+            GameMap {
+                height: scenario_state.map.len(),
+                width: scenario_state.map[0].len(),
+            },
+            Transform {
+                ..Default::default()
+            },
+            GlobalTransform {
+                ..Default::default()
+            },
+        ))
         .with_children(|parent| {
             for (y, row) in scenario_state.map.iter().rev().enumerate() {
                 for (x, terrain_type) in row.iter().enumerate() {
-                    parent.spawn_bundle(SpriteSheetBundle {
+                    parent.spawn(SpriteSheetBundle {
                         texture_atlas: terrain_atlas.atlas_handle.clone(),
                         sprite: TextureAtlasSprite::new(match terrain_type {
                             TerrainType::Water => 0,
@@ -76,29 +78,32 @@ pub fn build_map(
         sprite.flip_x = unit.team % 2 == 0;
 
         commands
-            .spawn()
-            .insert(UnitId(unit.id))
-            .insert(Timer::from_seconds(0.8, true))
-            .insert_bundle(SpriteSheetBundle {
-                texture_atlas: texture_atlas.clone(),
-                sprite,
-                transform: Transform::from_translation(Vec3::new(
-                    x as f32 * TILE_SIZE,
-                    y as f32 * TILE_SIZE,
-                    1.0,
-                )),
-                ..Default::default()
-            })
+            .spawn((
+                UnitId(unit.id),
+                Timer::from_seconds(0.8, TimerMode::Repeating),
+                SpriteSheetBundle {
+                    texture_atlas: texture_atlas.clone(),
+                    sprite,
+                    transform: Transform::from_translation(Vec3::new(
+                        x as f32 * TILE_SIZE,
+                        y as f32 * TILE_SIZE,
+                        1.0,
+                    )),
+                    ..Default::default()
+                },
+            ))
             .with_children(|unit| {
                 let transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
-                unit.spawn_bundle(SpriteSheetBundle {
-                    texture_atlas: health_atlas.atlas_handle.clone(),
-                    sprite: TextureAtlasSprite::new(9),
-                    visibility: Visibility { is_visible: false },
-                    transform,
-                    ..Default::default()
-                })
-                .insert(HealthIndicator);
+                unit.spawn((
+                    HealthIndicator,
+                    SpriteSheetBundle {
+                        texture_atlas: health_atlas.atlas_handle.clone(),
+                        sprite: TextureAtlasSprite::new(9),
+                        visibility: Visibility { is_visible: false },
+                        transform,
+                        ..Default::default()
+                    },
+                ))
             });
     }
     commands.insert_resource(scenario_state);

@@ -1,4 +1,5 @@
-use bevy::{app::Events, prelude::*};
+use bevy::ecs::event::*;
+use bevy::prelude::*;
 
 use crate::awrs::{
     engine::ScenarioState,
@@ -15,11 +16,11 @@ pub fn browse_select(
     mut ev_select: EventReader<SelectEvent>,
     mut commands: Commands,
     q_unit: Query<&UnitId>,
-    mut st_game: ResMut<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
     active_team: Res<ActiveTeam>,
     scenario_state: Res<ScenarioState>,
 ) {
-    for select_event in ev_select.iter() {
+    for select_event in ev_select.read() {
         info!("Executing browse_select");
         match select_event {
             SelectEvent::Entity(entity) => {
@@ -39,15 +40,9 @@ pub fn browse_select(
                         continue;
                     }
 
-                    match st_game.set(GameState::UnitMenu) {
-                        Ok(_) => {
-                            info!("Setting game state to UnitMenu");
-                            commands.entity(*entity).insert(Selected);
-                        }
-                        Err(msg) => {
-                            debug!("Error changing state: {:?}", msg);
-                        }
-                    }
+                    next_state.set(GameState::UnitMenu);
+                    info!("Setting game state to UnitMenu");
+                    commands.entity(*entity).insert(Selected);
 
                     // Potential alternatives to this:
                     // A resource that stores an optional handle to a unit (therefore can force only one unit selected at a time)
@@ -63,15 +58,13 @@ pub fn browse_select(
 
 pub fn listen_for_open_menu(
     mut ev_game_menu: ResMut<Events<InputEvent>>,
-    mut st_game: ResMut<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
 ) {
     let mut reader = ev_game_menu.get_reader();
     let mut should_clear = false;
-    for ev in reader.iter(&ev_game_menu) {
+    for ev in reader.read(&ev_game_menu) {
         if matches!(ev, InputEvent::ToggleMenu) {
-            st_game
-                .push(GameState::GameMenu)
-                .expect("Error changing state");
+            next_state.set(GameState::GameMenu);
             should_clear = true;
         }
     }

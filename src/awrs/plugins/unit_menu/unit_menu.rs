@@ -26,29 +26,31 @@ pub fn open_unit_menu(
         let options = vec!["M - Move", "T - Attack", "C - Cancel"];
 
         commands
-            .spawn_bundle(NodeBundle {
-                style: Style {
-                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::FlexEnd,
+            .spawn((
+                UnitMenu,
+                NodeBundle {
+                    style: Style {
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::FlexStart,
+                        ..Default::default()
+                    },
                     ..Default::default()
                 },
-                color: Color::NONE.into(),
-                ..Default::default()
-            })
+            ))
             .with_children(|parent| {
                 for text in options.into_iter() {
                     parent
-                        .spawn_bundle(NodeBundle {
+                        .spawn(NodeBundle {
                             style: Style {
                                 margin: Rect::all(Val::Px(5.0)),
                                 ..Default::default()
                             },
-                            color: Color::NONE.into(),
                             ..Default::default()
                         })
                         .with_children(|parent| {
-                            parent.spawn_bundle(TextBundle {
+                            parent.spawn(TextBundle {
                                 text: Text::with_section(
                                     text,
                                     TextStyle {
@@ -62,13 +64,12 @@ pub fn open_unit_menu(
                             });
                         });
                 }
-            })
-            .insert(UnitMenu);
+            });
     }
 }
 
 pub fn unit_menu_input(
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     mut st_game: ResMut<State<GameState>>,
     units_query: Query<Entity, (With<Selected>, With<UnitId>)>,
     mut commands: Commands,

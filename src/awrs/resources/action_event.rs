@@ -5,6 +5,7 @@ use super::{tile::Tile, unit::UnitId};
 use crate::awrs::engine::UnitHp;
 
 // Do we _need_ a wrapper here? Can the event be the enum?
+#[derive(Event)]
 pub struct ActionEvent(pub Action);
 
 pub enum Action {
@@ -31,6 +32,7 @@ pub enum Attack {
 }
 
 // Will need to add more detail once its clear what is needed from these result events.
+#[derive(Event)]
 pub enum ActionResultEvent {
     AttackResult(Vec<(UnitId, UnitHp)>), // Include ammo in this struct?
     MoveResult(Vec<Tile>),

@@ -15,6 +15,7 @@ struct GameMapBundle {
     global_transform: GlobalTransform,
 }
 
+#[derive(Resource)]
 pub struct ActiveTeam {
     pub team: Team,
 }

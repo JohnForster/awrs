@@ -17,20 +17,21 @@ pub fn create_cursor(mut commands: Commands, ui_atlas: Res<CursorAtlas>) {
 
     // Combine these into the Cursor struct?
     commands
-        .spawn()
-        .insert(Cursor)
-        .insert(GlobalTransform::default())
-        .insert(Transform::from_translation(starting_position))
+        .spawn((
+            Cursor,
+            GlobalTransform::default(),
+            Transform::from_translation(starting_position),
+        ))
         .with_children(|parent| {
-            parent
-                .spawn()
-                .insert(GlobalTransform::default())
-                .insert_bundle(SpriteSheetBundle {
+            parent.spawn((
+                GlobalTransform::default(),
+                SpriteSheetBundle {
                     texture_atlas: ui_atlas.atlas_handle.clone(),
                     sprite: TextureAtlasSprite::new(0),
                     transform: Transform::from_translation(adjustment),
                     ..Default::default()
-                });
+                },
+            ))
         });
 }
 

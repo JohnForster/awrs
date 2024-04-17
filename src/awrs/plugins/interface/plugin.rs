@@ -13,6 +13,9 @@ use crate::awrs::{
 
 pub struct InterfacePlugin;
 
+#[derive(Debug, PartialEq, Eq, Hash, Clone, SystemSet)]
+struct InputSet;
+
 impl Plugin for InterfacePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ActionEvent>()
@@ -20,10 +23,10 @@ impl Plugin for InterfacePlugin {
             // ! There has to be a better way! Split AppState & GameState?
             .add_system_set(
                 SystemSet::on_update(AppState::InGame)
-                    .with_system(handle_action.label("input").after("send action"))
-                    .with_system(handle_attack_result.after("input"))
-                    .with_system(handle_damage.after("input"))
-                    .with_system(move_result.after("input")),
+                    .with_system(handle_action.in_set(InputSet).after("send action"))
+                    .with_system(handle_attack_result.after(InputSet))
+                    .with_system(handle_damage.after(InputSet))
+                    .with_system(move_result.after(InputSet)),
             );
     }
 }

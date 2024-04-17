@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::resources::tile::Tile;
 
-#[derive(Debug)]
+#[derive(Debug, Event)]
 pub enum InputEvent {
     Left,
     Right,
@@ -18,7 +18,10 @@ pub enum InputEvent {
     EndTurn,
 }
 
-pub fn register_inputs(keyboard_input: Res<Input<KeyCode>>, mut ev_input: EventWriter<InputEvent>) {
+pub fn register_inputs(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut ev_input: EventWriter<InputEvent>,
+) {
     if keyboard_input.just_pressed(KeyCode::W) {
         return ev_input.send(InputEvent::Up);
     }

@@ -8,21 +8,26 @@ use super::{
 
 pub struct AWRSPlugin;
 
+#[derive(Debug, PartialEq, Eq, Hash, Clone, SystemSet)]
+struct InputSet;
+
 impl Plugin for AWRSPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(LoadAssetsPlugin)
-            .add_state(AppState::Loading)
-            .add_state(GameState::None)
-            .add_system(register_inputs.label("inputs"))
+        app.add_plugins(LoadAssetsPlugin)
+            .insert_state(AppState::Loading)
+            .insert_state(GameState::None)
+            .add_systems(Update, register_inputs)
             // Add plugins for each of the InGame states
-            .add_plugin(SetupPlugin)
-            .add_plugin(InterfacePlugin)
-            .add_plugin(BrowsingPlugin)
-            .add_plugin(IdleAnimationPlugin)
-            .add_plugin(UnitMenuPlugin)
-            .add_plugin(GameMenuPlugin)
-            .add_plugin(MoveUnitPlugin)
-            .add_plugin(TargetingPlugin);
+            .add_plugins((
+                SetupPlugin,
+                InterfacePlugin,
+                BrowsingPlugin,
+                IdleAnimationPlugin,
+                UnitMenuPlugin,
+                GameMenuPlugin,
+                MoveUnitPlugin,
+                TargetingPlugin,
+            ));
         // Add events
     }
 }

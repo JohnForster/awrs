@@ -17,6 +17,7 @@ use crate::awrs::{
     },
 };
 
+#[derive(Resource)]
 pub struct UnitPlan {
     pub range: u32,
     pub steps: Vec<MoveStep>,
@@ -175,19 +176,21 @@ fn add_tile(
     let sprite = TextureAtlasSprite::new(0);
 
     let entity = commands
-        .spawn_bundle(SpriteSheetBundle {
-            texture_atlas: arrow_atlas.atlas_handle.clone(),
-            sprite,
-            visibility: Visibility { is_visible: false },
-            transform: Transform::from_translation(Vec3::new(
-                tile.x as f32 * TILE_SIZE,
-                tile.y as f32 * TILE_SIZE,
-                5.0,
-            )),
-            ..Default::default()
-        })
-        .insert(MoveStepSprite)
-        .id();
+        .spawn((
+            MoveStepSprite,
+            SpriteSheetBundle {
+                texture_atlas: arrow_atlas.atlas_handle.clone(),
+                sprite,
+                visibility: Visibility { is_visible: false },
+                transform: Transform::from_translation(Vec3::new(
+                    tile.x as f32 * TILE_SIZE,
+                    tile.y as f32 * TILE_SIZE,
+                    5.0,
+                )),
+                ..Default::default()
+            },
+        ))
+        .index();
 
     unit_plan.steps.push(MoveStep { tile, entity });
 }
@@ -274,9 +277,9 @@ pub fn confirm_move(
 pub fn move_result(
     mut ev_move_result: EventReader<ActionResultEvent>,
     mut st_game: ResMut<State<GameState>>,
-    mut q: QuerySet<(
-        QueryState<&mut Transform, With<Selected>>,
-        QueryState<&mut Transform, With<Cursor>>,
+    mut q: ParamSet<(
+        Query<&mut Transform, With<Selected>>,
+        Query<&mut Transform, With<Cursor>>,
     )>,
 ) {
     for action_result in ev_move_result.iter() {

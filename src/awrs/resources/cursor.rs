@@ -15,6 +15,7 @@ pub enum CursorStyle {
     None,
 }
 
+#[derive(Event)]
 pub struct ChangeCursorEvent(pub CursorStyle);
 
 #[derive(Component)]
@@ -47,6 +48,7 @@ pub fn handle_cursor_move(
 }
 
 // ? Do we need this select event, or could this be bundled into handle_cursor_select?
+#[derive(Event)]
 pub enum SelectEvent {
     Entity(Entity),
     Tile(Tile),

@@ -38,17 +38,17 @@ pub fn create_ui_sprites(
     let mut cursor_texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), image_size);
     let mut ui_texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), image_size);
 
-    let cursor_rect = bevy::sprite::Rect {
+    let cursor_rect = bevy::math::Rect {
         min: Vec2::new(44.0, 5.0),
         max: Vec2::new(44.0 + 29.0, 6.0 + 32.0),
     };
 
-    let attack_cursor_rect = bevy::sprite::Rect {
+    let attack_cursor_rect = bevy::math::Rect {
         min: Vec2::new(75.0, 5.0),
         max: Vec2::new(75.0 + 29.0, 5.0 + 32.0),
     };
 
-    let movement_overlay_rect = bevy::sprite::Rect {
+    let movement_overlay_rect = bevy::math::Rect {
         min: Vec2::new(7.0, 10.0),
         max: Vec2::new(7.0 + 16.0, 10.0 + 16.0),
     };
@@ -63,7 +63,7 @@ pub fn create_ui_sprites(
 
     for n in 0..10 {
         let min = Vec2::new(384.0 + 9.0 * n as f32, 25.0);
-        let number_rect = bevy::sprite::Rect {
+        let number_rect = bevy::math::Rect {
             min,
             max: min + Vec2::new(8.0, 8.0),
         };
@@ -103,12 +103,13 @@ pub fn create_idle_sprites(
 
     for (unit_type, idle_path) in units {
         let image_handle = asset_server.load(idle_path);
-        let texture_atlas = TextureAtlas::from_grid_with_padding(
+        let texture_atlas = TextureAtlas::from_grid(
             image_handle,
             Vec2::new(16.0, 16.0),
             4,
             1,
-            Vec2::new(1.0, 0.0),
+            Some(Vec2::new(1.0, 0.0)),
+            None,
         );
         let texture_atlas_handle = texture_atlases.add(texture_atlas);
         unit_atlas_handle_map.insert(unit_type, texture_atlas_handle);
@@ -131,11 +132,11 @@ pub fn create_terrain_sprites(
     let mut texture_atlas =
         TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(1215.0, 1744.0));
 
-    let grass_rect = bevy::sprite::Rect {
+    let grass_rect = bevy::math::Rect {
         min: Vec2::new(217.0, 1567.0),
         max: Vec2::new(217.0 + 16.0, 1567.0 + 16.0),
     };
-    let sea_rect = bevy::sprite::Rect {
+    let sea_rect = bevy::math::Rect {
         min: Vec2::new(340.0, 1567.0),
         max: Vec2::new(340.0 + 16.0, 1567.0 + 16.0),
     };
@@ -163,7 +164,7 @@ pub fn create_movement_arrow_sprites(
     for n in 0..24 {
         let min = top_left + Vec2::new(17.0 * (n % 6) as f32, 17.0 * (n / 6) as f32);
         let max = min + Vec2::new(16.0, 16.0);
-        let rect = bevy::sprite::Rect { min, max };
+        let rect = bevy::math::Rect { min, max };
         texture_atlas.add_texture(rect);
     }
 

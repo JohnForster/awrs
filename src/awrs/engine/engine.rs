@@ -4,7 +4,7 @@ use super::{
     units::{units::*, weapon::Weapon},
     weapon::{AdditionalEffect, Directness},
 };
-use bevy::prelude::info;
+use bevy::{ecs::system::Resource, prelude::info};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Tile {
@@ -116,7 +116,7 @@ pub enum Command {
     EndTurn,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Resource)]
 pub struct ScenarioState {
     pub map: ScenarioMap,
     pub units: Vec<Unit>,

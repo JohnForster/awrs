@@ -9,11 +9,8 @@ use awrs::game::AWRSPlugin;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(AudioPlugin)
-        .add_plugin(AWRSPlugin)
-        .add_startup_system(start_background_audio)
-        .add_startup_system(enable_hot_reload)
+        .add_plugins((DefaultPlugins, AudioPlugin, AWRSPlugin))
+        .add_systems(Startup, (enable_hot_reload, start_background_audio))
         .run();
 }
 

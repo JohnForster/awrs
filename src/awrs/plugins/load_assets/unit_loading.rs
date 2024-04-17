@@ -55,6 +55,7 @@ pub struct UnitStats {
     // pub weapon_two: Option<Weapon>,
 }
 
+#[derive(Resource)]
 pub struct UnitHandle {
     pub handle: Handle<UnitStats>,
 }

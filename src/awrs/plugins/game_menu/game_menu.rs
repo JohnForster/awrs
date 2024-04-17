@@ -1,4 +1,5 @@
-use bevy::{app::Events, prelude::*};
+use bevy::ecs::event::*;
+use bevy::prelude::*;
 
 use crate::awrs::{
     register_inputs::InputEvent,
@@ -13,6 +14,12 @@ use crate::awrs::{
 
 #[derive(Component)]
 pub struct GameMenu;
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, States)]
+pub enum MenuState {
+    Open,
+    Closed,
+}
 
 pub fn open_game_menu(
     mut commands: Commands,
@@ -29,63 +36,64 @@ pub fn open_game_menu(
     let options = vec!["E - End Turn", "Enter - Return to game"];
 
     commands
-        .spawn_bundle(NodeBundle {
-            style: Style {
-                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::FlexEnd,
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    height: Val::Percent(100.0),
+                    width: Val::Percent(100.0),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::FlexStart,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
-            color: Color::NONE.into(),
-            ..Default::default()
-        })
+            GameMenu,
+        ))
         .with_children(|parent| {
             for text in options.into_iter() {
                 parent
-                    .spawn_bundle(NodeBundle {
+                    .spawn(NodeBundle {
                         style: Style {
-                            margin: Rect::all(Val::Px(5.0)),
+                            margin: UiRect::all(Val::Px(5.0)),
                             ..Default::default()
                         },
-                        color: Color::NONE.into(),
                         ..Default::default()
                     })
                     .with_children(|parent| {
-                        parent.spawn_bundle(TextBundle {
-                            text: Text::with_section(
+                        parent.spawn(TextBundle {
+                            text: Text::from_section(
                                 text,
                                 TextStyle {
                                     font: asset_server.load("fonts/aw2-gba.otf"),
                                     font_size: 20.0,
                                     color: Color::rgb(0.9, 0.9, 0.9),
                                 },
-                                Default::default(),
                             ),
                             ..Default::default()
                         });
                     });
             }
-        })
-        .insert(GameMenu);
+        });
 }
 
 pub fn game_menu_input(
     mut input_events: ResMut<Events<InputEvent>>,
     mut ev_action: EventWriter<ActionEvent>,
-    mut st_game: ResMut<State<GameState>>,
+    mut next_state: ResMut<NextState<MenuState>>,
 ) {
     let mut reader = input_events.get_reader();
     let mut should_clear = false;
-    for ev in reader.iter(&input_events) {
+    for ev in reader.read(&input_events) {
         match ev {
             InputEvent::EndTurn => {
                 info!("Ending Turn");
                 ev_action.send(ActionEvent(Action::EndTurn));
+                next_state.set(MenuState::Closed);
             }
             InputEvent::ToggleMenu => {
                 info!("Quitting menu");
 
-                st_game.pop().ok();
+                next_state.set(MenuState::Closed);
                 should_clear = true;
             }
             _ => {}
@@ -98,11 +106,11 @@ pub fn game_menu_input(
 
 pub fn end_turn_result(
     mut ev_action_result: EventReader<ActionResultEvent>,
-    mut q_units: Query<&mut TextureAtlasSprite, With<UnitId>>,
+    mut q_units: Query<&mut Sprite, With<UnitId>>,
     mut active_team: ResMut<ActiveTeam>,
-    mut st_game: ResMut<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
 ) {
-    for action_result in ev_action_result.iter() {
+    for action_result in ev_action_result.read() {
         if let ActionResultEvent::EndTurnResult(new_active_team) = action_result {
             active_team.team = *new_active_team;
 
@@ -110,9 +118,7 @@ pub fn end_turn_result(
                 sprite.color = Color::WHITE;
             }
 
-            st_game
-                .set(GameState::Browsing)
-                .expect("Should be able to return to Browsing gamestate");
+            next_state.set(GameState::Browsing);
         }
     }
 }
