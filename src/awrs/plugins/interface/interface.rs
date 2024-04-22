@@ -53,7 +53,7 @@ pub fn handle_action(
     mut scenario_state: ResMut<ScenarioState>,
     q_units: Query<&UnitId>,
 ) {
-    for ActionEvent(action) in ev_action.iter() {
+    for ActionEvent(action) in ev_action.read() {
         info!("Action event fired!");
         let command = match action {
             Action::Attack(attack) => match attack {
@@ -95,6 +95,6 @@ pub fn handle_action(
         let result = scenario_state.execute(command);
         info!("Sending Action Result Event!");
         info!("{:?}", result);
-        ev_action_result.send(ActionResultEvent::from(result))
+        ev_action_result.send(ActionResultEvent::from(result));
     }
 }

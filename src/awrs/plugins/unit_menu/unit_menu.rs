@@ -44,21 +44,20 @@ pub fn open_unit_menu(
                     parent
                         .spawn(NodeBundle {
                             style: Style {
-                                margin: Rect::all(Val::Px(5.0)),
+                                margin: UiRect::all(Val::Px(5.0)),
                                 ..Default::default()
                             },
                             ..Default::default()
                         })
                         .with_children(|parent| {
                             parent.spawn(TextBundle {
-                                text: Text::with_section(
+                                text: Text::from_section(
                                     text,
                                     TextStyle {
                                         font: asset_server.load("fonts/aw2-gba.otf"),
                                         font_size: 20.0,
                                         color: Color::rgb(0.9, 0.9, 0.9),
                                     },
-                                    Default::default(),
                                 ),
                                 ..Default::default()
                             });
@@ -70,33 +69,27 @@ pub fn open_unit_menu(
 
 pub fn unit_menu_input(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut st_game: ResMut<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
     units_query: Query<Entity, (With<Selected>, With<UnitId>)>,
     mut commands: Commands,
 ) {
-    if keyboard_input.just_pressed(KeyCode::M) {
+    if keyboard_input.just_pressed(KeyCode::KeyM) {
         info!("Changing Game State to MoveUnit");
-        st_game
-            .set(GameState::MoveUnit)
-            .expect("Should be able to enter MoveUnit gamestate")
+        next_state.set(GameState::MoveUnit);
     }
-    if keyboard_input.just_pressed(KeyCode::T) {
+    if keyboard_input.just_pressed(KeyCode::KeyT) {
         info!("Performing Attack");
 
-        st_game
-            .set(GameState::ChooseTarget)
-            .expect("Should be able to return to browsing")
+        next_state.set(GameState::ChooseTarget);
     }
-    if keyboard_input.just_pressed(KeyCode::C) {
+    if keyboard_input.just_pressed(KeyCode::KeyC) {
         info!("Returning to Browse");
         let unit_entity = units_query.single();
 
         info!("Clearing selected unit");
         commands.entity(unit_entity).remove::<Selected>();
 
-        st_game
-            .set(GameState::Browsing)
-            .expect("Should be able to return to browsing")
+        next_state.set(GameState::Browsing);
     }
 }
 

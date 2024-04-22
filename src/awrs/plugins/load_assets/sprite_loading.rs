@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use bevy::prelude::*;
 
 use crate::awrs::resources::{
-    atlases::{ArrowAtlas, CursorAtlas, HealthAtlas, TerrainAtlas, UIAtlas, UnitAtlases},
+    atlases::{
+        ArrowAtlas, CursorAtlas, HealthAtlas, TerrainAtlas, UIAtlas, UnitAtlas, UnitAtlases,
+    },
     unit::UnitType,
 };
 
@@ -22,21 +24,21 @@ pub fn load_images(asset_server: Res<AssetServer>, mut loading: ResMut<AssetsLoa
 
     for &path in paths.iter() {
         let texture_handle: Handle<Image> = asset_server.load(path);
-        loading.0.push(texture_handle.clone_untyped());
+        loading.0.push(texture_handle.clone());
     }
 }
 
 pub fn create_ui_sprites(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     info!("Loading UI Sprites");
-    let texture_handle = asset_server.load("spritesheets/UISprites.png");
-
+    let ui_texture = asset_server.load("spritesheets/UISprites.png");
     let image_size = Vec2::new(143.0, 64.0);
-    let mut cursor_texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), image_size);
-    let mut ui_texture_atlas = TextureAtlas::new_empty(texture_handle.clone(), image_size);
+
+    // Set up Cursor
+    let mut cursor_layout = TextureAtlasLayout::new_empty(image_size);
 
     let cursor_rect = bevy::math::Rect {
         min: Vec2::new(44.0, 5.0),
@@ -48,18 +50,22 @@ pub fn create_ui_sprites(
         max: Vec2::new(75.0 + 29.0, 5.0 + 32.0),
     };
 
+    cursor_layout.add_texture(cursor_rect);
+    cursor_layout.add_texture(attack_cursor_rect);
+
+    // Set up other UI sprites
+    let mut ui_layout = TextureAtlasLayout::new_empty(image_size);
+
     let movement_overlay_rect = bevy::math::Rect {
         min: Vec2::new(7.0, 10.0),
         max: Vec2::new(7.0 + 16.0, 10.0 + 16.0),
     };
 
-    cursor_texture_atlas.add_texture(cursor_rect);
-    cursor_texture_atlas.add_texture(attack_cursor_rect);
+    ui_layout.add_texture(movement_overlay_rect);
 
-    let icons_texture_handle: Handle<Image> = asset_server.load("spritesheets/units.png");
+    let icons_texture: Handle<Image> = asset_server.load("spritesheets/units.png");
     let icons_image_size = Vec2::new(680.0, 756.0);
-    let mut health_texture_atlas =
-        TextureAtlas::new_empty(icons_texture_handle.clone(), icons_image_size);
+    let mut health_layout = TextureAtlasLayout::new_empty(icons_image_size);
 
     for n in 0..10 {
         let min = Vec2::new(384.0 + 9.0 * n as f32, 25.0);
@@ -67,32 +73,33 @@ pub fn create_ui_sprites(
             min,
             max: min + Vec2::new(8.0, 8.0),
         };
-        health_texture_atlas.add_texture(number_rect);
+        health_layout.add_texture(number_rect);
     }
 
-    ui_texture_atlas.add_texture(movement_overlay_rect);
-
-    let cursor_atlas_handle = texture_atlases.add(cursor_texture_atlas);
-    let health_atlas_handle = texture_atlases.add(health_texture_atlas);
-    let ui_atlas_handle = texture_atlases.add(ui_texture_atlas);
+    let cursor_layout_handle = texture_atlases.add(cursor_layout);
+    let health_layout_handle = texture_atlases.add(health_layout);
+    let ui_layout_handle = texture_atlases.add(ui_layout);
 
     commands.insert_resource(CursorAtlas {
-        atlas_handle: cursor_atlas_handle,
+        texture: ui_texture.clone(),
+        layout: cursor_layout_handle,
     });
     commands.insert_resource(HealthAtlas {
-        atlas_handle: health_atlas_handle,
+        texture: icons_texture,
+        layout: health_layout_handle,
     });
     commands.insert_resource(UIAtlas {
-        atlas_handle: ui_atlas_handle,
+        texture: ui_texture.clone(),
+        layout: ui_layout_handle,
     });
 }
 
 pub fn create_idle_sprites(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let mut unit_atlas_handle_map: HashMap<UnitType, Handle<TextureAtlas>> = HashMap::new();
+    let mut unit_atlas_handle_map: HashMap<UnitType, UnitAtlas> = HashMap::new();
 
     let units = [
         (UnitType::Infantry, "spritesheets/infantry_idle.png"),
@@ -103,34 +110,38 @@ pub fn create_idle_sprites(
 
     for (unit_type, idle_path) in units {
         let image_handle = asset_server.load(idle_path);
-        let texture_atlas = TextureAtlas::from_grid(
-            image_handle,
+        let layout = TextureAtlasLayout::from_grid(
             Vec2::new(16.0, 16.0),
             4,
             1,
             Some(Vec2::new(1.0, 0.0)),
             None,
         );
-        let texture_atlas_handle = texture_atlases.add(texture_atlas);
-        unit_atlas_handle_map.insert(unit_type, texture_atlas_handle);
+        let layout_handle = atlases.add(layout);
+        unit_atlas_handle_map.insert(
+            unit_type,
+            UnitAtlas {
+                texture: image_handle,
+                layout: layout_handle,
+            },
+        );
     }
 
     commands.insert_resource(UnitAtlases {
-        handle_map: unit_atlas_handle_map,
+        atlas_map: unit_atlas_handle_map,
     });
 }
 
 pub fn create_terrain_sprites(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     info!("Loading Terrain Sprites");
     // Terrain Sprites
     let texture_handle = asset_server.load("spritesheets/sprites.png");
 
-    let mut texture_atlas =
-        TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(1215.0, 1744.0));
+    let mut layout = TextureAtlasLayout::new_empty(Vec2::new(1215.0, 1744.0));
 
     let grass_rect = bevy::math::Rect {
         min: Vec2::new(217.0, 1567.0),
@@ -141,23 +152,25 @@ pub fn create_terrain_sprites(
         max: Vec2::new(340.0 + 16.0, 1567.0 + 16.0),
     };
 
-    texture_atlas.add_texture(sea_rect);
-    texture_atlas.add_texture(grass_rect);
+    layout.add_texture(sea_rect);
+    layout.add_texture(grass_rect);
 
-    let atlas_handle = texture_atlases.add(texture_atlas);
+    let layout_handle = atlases.add(layout);
 
-    commands.insert_resource(TerrainAtlas { atlas_handle })
+    commands.insert_resource(TerrainAtlas {
+        texture: texture_handle,
+        layout: layout_handle,
+    })
 }
 
 pub fn create_movement_arrow_sprites(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let texture_handle = asset_server.load("spritesheets/units.png");
 
-    let mut texture_atlas =
-        TextureAtlas::new_empty(texture_handle.clone(), Vec2::new(680.0, 756.0));
+    let mut layout = TextureAtlasLayout::new_empty(Vec2::new(680.0, 756.0));
 
     let top_left = Vec2::new(576.0, 139.0);
 
@@ -165,9 +178,12 @@ pub fn create_movement_arrow_sprites(
         let min = top_left + Vec2::new(17.0 * (n % 6) as f32, 17.0 * (n / 6) as f32);
         let max = min + Vec2::new(16.0, 16.0);
         let rect = bevy::math::Rect { min, max };
-        texture_atlas.add_texture(rect);
+        layout.add_texture(rect);
     }
 
-    let atlas_handle = texture_atlases.add(texture_atlas);
-    commands.insert_resource(ArrowAtlas { atlas_handle })
+    let layout_handle = texture_atlases.add(layout);
+    commands.insert_resource(ArrowAtlas {
+        texture: texture_handle,
+        layout: layout_handle,
+    })
 }

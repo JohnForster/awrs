@@ -38,6 +38,7 @@ enum PlanChange {
     Invalid,
 }
 
+#[derive(Event)]
 pub struct ConfirmMoveEvent;
 
 pub fn begin_unit_plan(
@@ -71,7 +72,7 @@ pub fn update_movement_plan(
     mut ev_plan_update: EventWriter<PlanUpdateEvent>,
     mut ev_confirm_move: EventWriter<ConfirmMoveEvent>,
 ) {
-    'outer: for input_event in ev_input.iter() {
+    'outer: for input_event in ev_input.read() {
         info!("Executing update_movement_plan");
         let (UnitId(unit_id), mut transform) = q_selected_unit.single_mut();
 
@@ -173,15 +174,21 @@ fn add_tile(
     commands: &mut Commands,
 ) {
     info!("adding tile");
-    let sprite = TextureAtlasSprite::new(0);
+    let sprite = Sprite {
+        ..Default::default()
+    };
 
     let entity = commands
         .spawn((
             MoveStepSprite,
             SpriteSheetBundle {
-                texture_atlas: arrow_atlas.atlas_handle.clone(),
+                texture: arrow_atlas.texture.clone(),
+                atlas: TextureAtlas {
+                    layout: arrow_atlas.layout.clone(),
+                    index: 0,
+                },
                 sprite,
-                visibility: Visibility { is_visible: false },
+                visibility: Visibility::Visible,
                 transform: Transform::from_translation(Vec3::new(
                     tile.x as f32 * TILE_SIZE,
                     tile.y as f32 * TILE_SIZE,
@@ -190,7 +197,7 @@ fn add_tile(
                 ..Default::default()
             },
         ))
-        .index();
+        .id();
 
     unit_plan.steps.push(MoveStep { tile, entity });
 }
@@ -212,17 +219,15 @@ fn update_transform(transform: &mut Transform, (dx, dy): (i32, i32)) {
     );
 }
 
+#[derive(Event)]
 pub struct PlanUpdateEvent;
 
 pub fn update_arrows(
     mut ev_plan_update: EventReader<PlanUpdateEvent>,
     unit_plan: Res<UnitPlan>,
-    mut q_texture_atlas_sprite: Query<
-        (&mut TextureAtlasSprite, &mut Visibility),
-        With<MoveStepSprite>,
-    >,
+    mut q_texture_atlas_sprite: Query<(&mut Visibility, &mut TextureAtlas), With<MoveStepSprite>>,
 ) {
-    for _ in ev_plan_update.iter() {
+    for _ in ev_plan_update.read() {
         info!("Executing update_arrows");
         let len = unit_plan.steps.len();
         for i in 0..len {
@@ -239,16 +244,13 @@ pub fn update_arrows(
                 unit_plan.steps.get(i + 1).map(|step| step.tile)
             };
 
-            let (mut move_step_sprite, mut visibility) =
-                q_texture_atlas_sprite.get_mut(entity).unwrap();
+            let (mut visibility, mut atlas) = q_texture_atlas_sprite.get_mut(entity).unwrap();
 
             match get_index_from_tiles(before_tile, tile, after_tile) {
-                None => {
-                    visibility.is_visible = false;
-                }
-                Some(sprite_index) => {
-                    visibility.is_visible = true;
-                    move_step_sprite.index = sprite_index;
+                None => *visibility = Visibility::Hidden,
+                Some(atlas_index) => {
+                    *visibility = Visibility::Visible;
+                    atlas.index = atlas_index;
                 }
             }
         }
@@ -262,7 +264,7 @@ pub fn confirm_move(
     q_selected_unit: Query<Entity, (With<Selected>, With<UnitId>)>,
     unit_plan: Res<UnitPlan>,
 ) {
-    for _ in ev_input.iter() {
+    for _ in ev_input.read() {
         info!("Executing confirm_move");
 
         let entity = q_selected_unit.single();
@@ -270,39 +272,37 @@ pub fn confirm_move(
         ev_action.send(ActionEvent(Action::Move {
             entity,
             tiles: unit_plan.steps.iter().map(|step| step.tile).collect(),
-        }))
+        }));
     }
 }
 
 pub fn move_result(
     mut ev_move_result: EventReader<ActionResultEvent>,
-    mut st_game: ResMut<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
     mut q: ParamSet<(
         Query<&mut Transform, With<Selected>>,
         Query<&mut Transform, With<Cursor>>,
     )>,
 ) {
-    for action_result in ev_move_result.iter() {
+    for action_result in ev_move_result.read() {
         info!("Executing move_result");
         if let ActionResultEvent::MoveResult(tiles) = action_result {
             if let Some(location) = tiles.last() {
                 info!("Moving unit...");
 
-                let mut unit_query = q.q0();
+                let mut unit_query = q.p0();
                 let mut unit_transform = unit_query.single_mut();
                 unit_transform.translation.x = location.x as f32 * TILE_SIZE;
                 unit_transform.translation.y = location.y as f32 * TILE_SIZE;
 
-                let mut cursor_query = q.q1();
+                let mut cursor_query = q.p1();
                 let mut cursor_transform = cursor_query.single_mut();
                 cursor_transform.translation.x = location.x as f32 * TILE_SIZE;
                 cursor_transform.translation.y = location.y as f32 * TILE_SIZE;
             } else {
             }
 
-            st_game
-                .set(GameState::Browsing)
-                .expect("Problem changing state");
+            next_state.set(GameState::Browsing);
         }
     }
 }

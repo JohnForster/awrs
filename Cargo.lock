@@ -436,6 +436,7 @@ checksum = "17516cc66d8c00ea3fdba144d518c20f1a8d8c5a7d14af3642dc2488e4bdb3a6"
 dependencies = [
  "anyhow",
  "bevy",
+ "ron",
  "serde",
  "thiserror",
 ]

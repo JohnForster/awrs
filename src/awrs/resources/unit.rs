@@ -37,12 +37,12 @@ impl From<EngineUnitType> for UnitType {
 pub struct HealthIndicator;
 
 pub fn handle_attack_result(
-    mut q_units: Query<(Entity, &UnitId, &mut TextureAtlasSprite)>,
+    mut q_units: Query<(Entity, &UnitId, &mut Sprite)>,
     mut ev_action_result: EventReader<ActionResultEvent>,
     mut ev_damage: EventWriter<DamageEvent>,
     scenario_state: Res<ScenarioState>,
 ) {
-    for action_result in ev_action_result.iter() {
+    for action_result in ev_action_result.read() {
         if let ActionResultEvent::AttackResult(damaged_units) = action_result {
             for (id, hp) in damaged_units {
                 for (entity, unit_id, _) in q_units.iter_mut() {
@@ -51,7 +51,7 @@ pub fn handle_attack_result(
                         ev_damage.send(DamageEvent {
                             entity,
                             new_hp: *hp,
-                        })
+                        });
                     }
                 }
             }
@@ -65,6 +65,7 @@ pub fn handle_attack_result(
     }
 }
 
+#[derive(Event)]
 pub struct DamageEvent {
     entity: Entity,
     new_hp: UnitHealth,
@@ -74,14 +75,11 @@ pub struct DamageEvent {
 pub fn handle_damage(
     mut ev_damage: EventReader<DamageEvent>,
     mut units_query: Query<(&UnitId, &Children)>,
-    mut health_indicator_query: Query<
-        (&mut TextureAtlasSprite, &mut Visibility),
-        With<HealthIndicator>,
-    >,
+    mut health_indicator_query: Query<(&mut TextureAtlas, &mut Visibility), With<HealthIndicator>>,
     mut commands: Commands,
     scenario_state: Res<ScenarioState>,
 ) {
-    for DamageEvent { entity, new_hp } in ev_damage.iter() {
+    for DamageEvent { entity, new_hp } in ev_damage.read() {
         info!("Handling Damage Event");
         let (unit_id, children) = units_query
             .get_mut(*entity)
@@ -105,7 +103,7 @@ pub fn handle_damage(
                 if ceil_health == 0 {
                     commands.entity(*entity).despawn_recursive()
                 } else if ceil_health < 10 {
-                    visibility.is_visible = true;
+                    // visibility.is_visible = true;
                     health_indicator.index = ceil_health - 1;
                 }
             }

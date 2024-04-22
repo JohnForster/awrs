@@ -26,7 +26,7 @@ pub fn handle_cursor_move(
     mut q_cursor: Query<&mut Transform, With<Cursor>>,
     scenario_state: Res<ScenarioState>,
 ) {
-    for input_event in ev_input_event.iter() {
+    for input_event in ev_input_event.read() {
         let mut transform = q_cursor.single_mut();
 
         let (dx, dy): (i32, i32) = match input_event {
@@ -60,7 +60,7 @@ pub fn handle_cursor_select(
     q_units: Query<(Entity, &Transform), With<UnitId>>,
     mut ev_select: EventWriter<SelectEvent>,
 ) {
-    for input_event in ev_input_event.iter() {
+    for input_event in ev_input_event.read() {
         match input_event {
             &InputEvent::Select => {
                 let cursor_transform = q_cursor.single();
@@ -74,7 +74,7 @@ pub fn handle_cursor_select(
                     Some(tuple) => {
                         let entity = tuple.0;
 
-                        ev_select.send(SelectEvent::Entity(entity));
+                        ev_select.send(SelectEvent::Entity(entity))
                     }
                     None => ev_select.send(SelectEvent::Tile(cursor_tile)),
                 }

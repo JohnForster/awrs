@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Component, Deref, DerefMut)]
-struct AnimationTimer(Timer);
+pub struct AnimationTimer(Timer);
 
 #[derive(Component)]
 pub struct AnimationIndices {

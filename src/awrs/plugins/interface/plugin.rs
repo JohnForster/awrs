@@ -20,13 +20,21 @@ impl Plugin for InterfacePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ActionEvent>()
             .add_event::<ActionResultEvent>()
-            // ! There has to be a better way! Split AppState & GameState?
-            .add_system_set(
-                SystemSet::on_update(AppState::InGame)
-                    .with_system(handle_action.in_set(InputSet).after("send action"))
-                    .with_system(handle_attack_result.after(InputSet))
-                    .with_system(handle_damage.after(InputSet))
-                    .with_system(move_result.after(InputSet)),
+            .configure_sets(Update, InputSet.run_if(in_state(AppState::InGame)))
+            .add_systems(Update, (handle_action.in_set(InputSet),))
+            .add_systems(
+                Update,
+                (handle_attack_result, handle_damage, move_result)
+                    .in_set(InputSet)
+                    .after(handle_action),
             );
+        // ! There has to be a better way! Split AppState & GameState?
+        // .add_system_set(
+        //     SystemSet::on_update(AppState::InGame)
+        //         .with_system(handle_action.in_set(InputSet).after("send action"))
+        //         .with_system(handle_attack_result.after(InputSet))
+        //         .with_system(handle_damage.after(InputSet))
+        //         .with_system(move_result.after(InputSet)),
+        // );
     }
 }

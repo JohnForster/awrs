@@ -1,6 +1,6 @@
 use bevy::asset::LoadState;
 use bevy::prelude::*;
-use bevy_asset_ron::RonAssetPlugin;
+use bevy_common_assets::ron::RonAssetPlugin;
 
 use crate::awrs::resources::state::{AppState, GameState};
 
@@ -9,46 +9,50 @@ use super::unit_loading::*;
 
 pub struct LoadAssetsPlugin;
 
-pub struct AssetsLoading(pub Vec<HandleUntyped>);
+#[derive(bevy::prelude::Resource)]
+pub struct AssetsLoading(pub Vec<Handle<Image>>);
+
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+struct LoadingSet;
 
 impl Plugin for LoadAssetsPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(AssetsLoading(vec![]))
-            .add_plugin(RonAssetPlugin::<UnitStats>::new(&["unit.ron"]))
-            .add_system_set(
-                SystemSet::on_enter(AppState::Loading)
-                    .with_system(load_images)
-                    .with_system(create_terrain_sprites) // Move to setup
-                    .with_system(create_idle_sprites) // Move to setup
-                    .with_system(create_movement_arrow_sprites) // Move to setup
-                    .with_system(create_ui_sprites) // Move to setup
-                    .with_system(load_units),
+            .add_plugins(RonAssetPlugin::<UnitStats>::new(&["unit.ron"]))
+            .configure_sets(Update, LoadingSet.run_if(in_state(AppState::Loading)))
+            .add_systems(
+                OnEnter(AppState::Loading),
+                (
+                    load_images,
+                    // create_terrain_sprites,        // Move to setup
+                    // create_idle_sprites,           // Move to setup
+                    // create_movement_arrow_sprites, // Move to setup
+                    // create_ui_sprites,             // Move to setup
+                    // load_units,
+                ),
             )
-            .add_system_set(
-                SystemSet::on_update(AppState::Loading).with_system(check_assets_ready),
-            );
+            .add_systems(Update, check_assets_ready.in_set(LoadingSet));
     }
 }
 
 pub fn check_assets_ready(
     loading: ResMut<AssetsLoading>,
     asset_server: Res<AssetServer>,
-    mut app_state: ResMut<State<AppState>>,
-    mut st_game: ResMut<State<GameState>>,
+    mut next_app_state: ResMut<NextState<AppState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
     mut commands: Commands,
 ) {
-    match asset_server.get_group_load_state(loading.0.iter().map(|h| h.id)) {
-        LoadState::Failed => {
-            // one of our assets had an error
-        }
-        LoadState::Loaded => {
-            // all assets are now ready
-            commands.remove_resource::<AssetsLoading>();
-            app_state.set(AppState::InGame).unwrap();
-            st_game.set(GameState::SetUp).unwrap();
-        }
-        _ => {
-            // NotLoaded/Loading: not fully ready yet
-        }
+    let mut loading_states = loading
+        .0
+        .iter()
+        .map(|h| asset_server.get_load_state(h.id()));
+
+    let all_complete = loading_states.all(|opt| opt.is_some());
+
+    if all_complete {
+        // all loading is complete (it is possible loading failed)
+        commands.remove_resource::<AssetsLoading>();
+        next_app_state.set(AppState::InGame);
+        next_game_state.set(GameState::SetUp);
     }
 }

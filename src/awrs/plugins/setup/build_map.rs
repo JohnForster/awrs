@@ -11,6 +11,10 @@ use crate::awrs::{
     },
 };
 
+struct AnimationTimer {
+    pub timer: Timer,
+}
+
 // TODO: should probably move the part for instantiating units elsewhere?
 pub fn build_map(
     mut commands: Commands,
@@ -23,7 +27,7 @@ pub fn build_map(
     let scenario_state = new_scenario_state(scenario_map);
 
     let mut camera_bundle = Camera2dBundle::default();
-    camera_bundle.orthographic_projection.scale /= 2.0;
+    camera_bundle.projection.scale /= 2.0;
     commands.spawn(camera_bundle);
 
     // DEPRECATED?
@@ -42,19 +46,20 @@ pub fn build_map(
             Transform {
                 ..Default::default()
             },
-            GlobalTransform {
-                ..Default::default()
-            },
         ))
         .with_children(|parent| {
             for (y, row) in scenario_state.map.iter().rev().enumerate() {
                 for (x, terrain_type) in row.iter().enumerate() {
-                    parent.spawn(SpriteSheetBundle {
-                        texture_atlas: terrain_atlas.atlas_handle.clone(),
-                        sprite: TextureAtlasSprite::new(match terrain_type {
+                    let atlas = TextureAtlas {
+                        layout: terrain_atlas.layout.clone(),
+                        index: match terrain_type {
                             TerrainType::Water => 0,
                             TerrainType::Grass => 1,
-                        }),
+                        },
+                    };
+                    parent.spawn(SpriteSheetBundle {
+                        texture: terrain_atlas.texture.clone(),
+                        atlas,
                         transform: Transform::from_translation(Vec3::new(
                             x as f32 * TILE_SIZE,
                             y as f32 * TILE_SIZE,
@@ -70,19 +75,26 @@ pub fn build_map(
         let x = unit.position.x;
         let y = unit.position.y;
         let texture_atlas = unit_atlases
-            .handle_map
+            .atlas_map
             .get(&UnitType::from(unit.unit_type))
             .unwrap();
 
-        let mut sprite = TextureAtlasSprite::new(1);
-        sprite.flip_x = unit.team % 2 == 0;
+        let mut sprite = Sprite {
+            flip_x: unit.team % 2 == 0,
+            ..Default::default()
+        };
+
+        let timer = Timer::from_seconds(0.8, TimerMode::Repeating);
 
         commands
             .spawn((
                 UnitId(unit.id),
-                Timer::from_seconds(0.8, TimerMode::Repeating),
                 SpriteSheetBundle {
-                    texture_atlas: texture_atlas.clone(),
+                    texture: texture_atlas.texture.clone(),
+                    atlas: TextureAtlas {
+                        layout: texture_atlas.layout.clone(),
+                        index: 0,
+                    },
                     sprite,
                     transform: Transform::from_translation(Vec3::new(
                         x as f32 * TILE_SIZE,
@@ -94,16 +106,21 @@ pub fn build_map(
             ))
             .with_children(|unit| {
                 let transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
+                let atlas = TextureAtlas {
+                    layout: health_atlas.layout.clone(),
+                    index: 9,
+                };
                 unit.spawn((
                     HealthIndicator,
                     SpriteSheetBundle {
-                        texture_atlas: health_atlas.atlas_handle.clone(),
-                        sprite: TextureAtlasSprite::new(9),
-                        visibility: Visibility { is_visible: false },
+                        atlas,
+                        texture: health_atlas.texture.clone(),
+                        sprite: Sprite::default(),
+                        visibility: Visibility::Hidden,
                         transform,
                         ..Default::default()
                     },
-                ))
+                ));
             });
     }
     commands.insert_resource(scenario_state);

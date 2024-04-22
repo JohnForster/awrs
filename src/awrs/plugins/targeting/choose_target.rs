@@ -17,7 +17,7 @@ pub fn open_target_selection(mut ev_change_cursor: EventWriter<ChangeCursorEvent
 }
 
 pub fn target_select(
-    mut st_game: ResMut<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
     mut attacking_unit_query: Query<(Entity, &UnitId), With<Selected>>,
     mut units_query: Query<(Entity, &UnitId), Without<Selected>>,
     mut commands: Commands,
@@ -26,7 +26,7 @@ pub fn target_select(
     mut ev_action: EventWriter<ActionEvent>,
     mut ev_select: EventReader<SelectEvent>,
 ) {
-    for select_event in ev_select.iter() {
+    for select_event in ev_select.read() {
         let (attacker_entity, attacker_id) = attacking_unit_query.single_mut();
         match select_event {
             SelectEvent::Entity(defender_entity) => {
@@ -56,19 +56,17 @@ pub fn target_select(
                 send_attack_ground_event(&mut attacking_unit_query, tile, &mut ev_action);
             }
         }
-        clear_selected_and_reset(&mut commands, attacker_entity, &mut st_game);
+        clear_selected_and_reset(&mut commands, attacker_entity, &mut next_state);
     }
 }
 
 fn clear_selected_and_reset(
     commands: &mut Commands,
     attacker_entity: Entity,
-    st_game: &mut ResMut<State<GameState>>,
+    next_state: &mut ResMut<NextState<GameState>>,
 ) {
     commands.entity(attacker_entity).remove::<Selected>();
-    st_game
-        .set(GameState::Browsing)
-        .expect("Problem changing state");
+    next_state.set(GameState::Browsing);
 }
 
 fn send_attack_ground_event(
@@ -79,7 +77,7 @@ fn send_attack_ground_event(
     let attacker_entity = attacking_unit_query.single_mut().0;
     let action = Action::Attack(Attack::Ground(attacker_entity, *tile));
     info!("Sending Attack Ground Action Event");
-    ev_action.send(ActionEvent(action))
+    ev_action.send(ActionEvent(action));
 }
 
 fn get_unit<'a>(scenario_state: &'a Res<ScenarioState>, unit_id: &UnitId) -> &'a Unit {

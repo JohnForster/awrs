@@ -1,11 +1,10 @@
-use bevy::{prelude::*, reflect::TypeUuid};
+use bevy::prelude::*;
 use serde::*;
 
 use super::AssetsLoading;
 
 // TODO Move Into Engine
-#[derive(Serialize, Deserialize, Debug, TypeUuid)]
-#[uuid = "5386B529-81CC-405A-9600-CB51B83F8CC9"]
+#[derive(Serialize, Deserialize, Debug, Asset, bevy::reflect::TypePath)]
 pub enum UnitTag {
     Biological,
     Mechanical,
@@ -15,22 +14,19 @@ pub enum UnitTag {
     Infantry,
 }
 
-#[derive(Serialize, Deserialize, Debug, TypeUuid)]
-#[uuid = "534753A6-C796-4792-885E-A52C7D7CBF07"]
+#[derive(Serialize, Deserialize, Debug, Asset, bevy::reflect::TypePath)]
 pub struct Bonus {
     pub tag: UnitTag,
     pub additional_damage: f32,
 }
 
-#[derive(Serialize, Deserialize, Debug, TypeUuid)]
-#[uuid = "76D0BCF9-21FD-451F-8C1F-D0E600A58D0A"]
+#[derive(Serialize, Deserialize, Debug, Asset, bevy::reflect::TypePath)]
 pub enum Directness {
     Melee,
     Ranged(f32, f32), // Min, Max
 }
 
-#[derive(Serialize, Deserialize, Debug, TypeUuid)]
-#[uuid = "21CD8CEB-ED1B-4D20-921D-B775C4E31DBF"]
+#[derive(Serialize, Deserialize, Debug, Asset, bevy::reflect::TypePath)]
 pub struct Weapon {
     pub id: usize,
     pub name: String,
@@ -41,8 +37,7 @@ pub struct Weapon {
     pub applicable: Vec<UnitTag>,
 }
 
-#[derive(Serialize, Deserialize, Debug, TypeUuid)]
-#[uuid = "67B15859-CC4B-4C35-AB9C-5856628833E4"]
+#[derive(Serialize, Deserialize, Debug, Asset, bevy::reflect::TypePath)]
 pub struct UnitStats {
     pub id: usize,
     pub name: String,
@@ -55,19 +50,8 @@ pub struct UnitStats {
     // pub weapon_two: Option<Weapon>,
 }
 
-#[derive(Resource)]
-pub struct UnitHandle {
-    pub handle: Handle<UnitStats>,
-}
-
-pub fn load_units(
-    server: Res<AssetServer>,
-    mut commands: Commands,
-    mut loading: ResMut<AssetsLoading>,
-) {
+pub fn load_units(server: Res<AssetServer>, mut loading: ResMut<AssetsLoading>) {
     info!("Loading Unit Data");
     let handle = server.load("units/infantry.unit.ron");
-    loading.0.push(handle.clone_untyped());
-    info!("Unit data loading underway...");
-    commands.insert_resource(UnitHandle { handle });
+    loading.0.push(handle.clone());
 }

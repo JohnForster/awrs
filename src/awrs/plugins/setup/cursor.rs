@@ -26,21 +26,24 @@ pub fn create_cursor(mut commands: Commands, ui_atlas: Res<CursorAtlas>) {
             parent.spawn((
                 GlobalTransform::default(),
                 SpriteSheetBundle {
-                    texture_atlas: ui_atlas.atlas_handle.clone(),
-                    sprite: TextureAtlasSprite::new(0),
+                    texture: ui_atlas.texture.clone(),
+                    atlas: TextureAtlas {
+                        layout: ui_atlas.layout.clone(),
+                        index: 0,
+                    },
                     transform: Transform::from_translation(adjustment),
                     ..Default::default()
                 },
-            ))
+            ));
         });
 }
 
 pub fn handle_change_cursor(
     mut ev_change_cursor: EventReader<ChangeCursorEvent>,
     mut q_cursor_children: Query<&mut Children, With<Cursor>>,
-    mut q_sprite: Query<(&mut TextureAtlasSprite, &mut Visibility)>,
+    mut q_sprite: Query<(&mut TextureAtlas, &mut Visibility)>,
 ) {
-    for ChangeCursorEvent(cursor_style) in ev_change_cursor.iter() {
+    for ChangeCursorEvent(cursor_style) in ev_change_cursor.read() {
         let sprite_index = match cursor_style {
             CursorStyle::Browse => 0,
             CursorStyle::Target => 1,
@@ -50,7 +53,7 @@ pub fn handle_change_cursor(
 
                 for child in cursor_children.iter() {
                     if let Ok((_, mut visibility)) = q_sprite.get_mut(*child) {
-                        visibility.is_visible = false;
+                        *visibility = Visibility::Hidden;
                     }
                 }
                 continue;
@@ -60,9 +63,9 @@ pub fn handle_change_cursor(
         let cursor_children = q_cursor_children.single_mut();
 
         for child in cursor_children.iter() {
-            if let Ok((mut cursor_sprite, mut visibility)) = q_sprite.get_mut(*child) {
-                cursor_sprite.index = sprite_index;
-                visibility.is_visible = true;
+            if let Ok((mut atlas, mut visibility)) = q_sprite.get_mut(*child) {
+                atlas.index = sprite_index;
+                *visibility = Visibility::Visible;
             }
         }
     }

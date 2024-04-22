@@ -8,7 +8,7 @@ pub struct GameMap {
     pub height: usize,
 }
 
-#[derive(Component, Bundle)]
+#[derive(Bundle)]
 struct GameMapBundle {
     game_map: GameMap,
     transform: Transform,
