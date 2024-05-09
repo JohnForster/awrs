@@ -10,9 +10,6 @@ use crate::awrs::{register_inputs::InputEvent, resources::action_event::ActionEv
 
 pub struct SetupPlugin;
 
-#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
-struct SetupSet;
-
 impl Plugin for SetupPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ActionEvent>()

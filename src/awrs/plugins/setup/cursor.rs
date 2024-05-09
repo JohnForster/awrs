@@ -19,22 +19,21 @@ pub fn create_cursor(mut commands: Commands, ui_atlas: Res<CursorAtlas>) {
     commands
         .spawn((
             Cursor,
-            GlobalTransform::default(),
-            Transform::from_translation(starting_position),
+            SpatialBundle {
+                transform: Transform::from_translation(starting_position),
+                ..Default::default()
+            },
         ))
         .with_children(|parent| {
-            parent.spawn((
-                GlobalTransform::default(),
-                SpriteSheetBundle {
-                    texture: ui_atlas.texture.clone(),
-                    atlas: TextureAtlas {
-                        layout: ui_atlas.layout.clone(),
-                        index: 0,
-                    },
-                    transform: Transform::from_translation(adjustment),
-                    ..Default::default()
+            parent.spawn((SpriteSheetBundle {
+                texture: ui_atlas.texture.clone(),
+                atlas: TextureAtlas {
+                    layout: ui_atlas.layout.clone(),
+                    index: 0,
                 },
-            ));
+                transform: Transform::from_translation(adjustment),
+                ..Default::default()
+            },));
         });
 }
 

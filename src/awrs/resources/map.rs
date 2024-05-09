@@ -13,6 +13,7 @@ struct GameMapBundle {
     game_map: GameMap,
     transform: Transform,
     global_transform: GlobalTransform,
+    inherited_visibility: InheritedVisibility,
 }
 
 #[derive(Resource)]

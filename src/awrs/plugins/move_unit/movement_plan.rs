@@ -1,5 +1,3 @@
-use std::f32::consts::E;
-
 use bevy::prelude::*;
 
 use super::arrows::get_index_from_tiles;
@@ -260,7 +258,6 @@ pub fn update_arrows(
 pub fn confirm_move(
     mut ev_input: EventReader<ConfirmMoveEvent>,
     mut ev_action: EventWriter<ActionEvent>,
-    scenario_state: Res<ScenarioState>,
     q_selected_unit: Query<Entity, (With<Selected>, With<UnitId>)>,
     unit_plan: Res<UnitPlan>,
 ) {
@@ -285,8 +282,8 @@ pub fn move_result(
     )>,
 ) {
     for action_result in ev_move_result.read() {
-        info!("Executing move_result");
         if let ActionResultEvent::MoveResult(tiles) = action_result {
+            info!("Executing move_result");
             if let Some(location) = tiles.last() {
                 info!("Moving unit...");
 

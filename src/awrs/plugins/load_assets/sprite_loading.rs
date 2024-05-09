@@ -24,7 +24,7 @@ pub fn load_images(asset_server: Res<AssetServer>, mut loading: ResMut<AssetsLoa
 
     for &path in paths.iter() {
         let texture_handle: Handle<Image> = asset_server.load(path);
-        loading.0.push(texture_handle.clone());
+        loading.0.push(UntypedHandle::from(texture_handle));
     }
 }
 

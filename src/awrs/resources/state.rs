@@ -20,3 +20,9 @@ pub enum GameState {
     _EnemyTurn,
     None,
 }
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, States)]
+pub enum MenuState {
+    Open,
+    Closed,
+}

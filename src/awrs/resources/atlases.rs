@@ -5,22 +5,40 @@ use bevy::prelude::*;
 use super::unit::UnitType;
 
 #[derive(Resource)]
-pub struct AtlasResource {
+pub struct TerrainAtlas {
     pub layout: Handle<TextureAtlasLayout>,
     pub texture: Handle<Image>,
 }
 
-pub type TerrainAtlas = AtlasResource;
+#[derive(Resource)]
+pub struct CursorAtlas {
+    pub layout: Handle<TextureAtlasLayout>,
+    pub texture: Handle<Image>,
+}
 
-pub type CursorAtlas = AtlasResource;
+#[derive(Resource)]
+pub struct UnitAtlas {
+    pub layout: Handle<TextureAtlasLayout>,
+    pub texture: Handle<Image>,
+}
 
-pub type UnitAtlas = AtlasResource;
+#[derive(Resource)]
+pub struct HealthAtlas {
+    pub layout: Handle<TextureAtlasLayout>,
+    pub texture: Handle<Image>,
+}
 
-pub type HealthAtlas = AtlasResource;
+#[derive(Resource)]
+pub struct UIAtlas {
+    pub layout: Handle<TextureAtlasLayout>,
+    pub texture: Handle<Image>,
+}
 
-pub type UIAtlas = AtlasResource;
-
-pub type ArrowAtlas = AtlasResource;
+#[derive(Resource)]
+pub struct ArrowAtlas {
+    pub layout: Handle<TextureAtlasLayout>,
+    pub texture: Handle<Image>,
+}
 
 #[derive(Resource)]
 pub struct UnitAtlases {

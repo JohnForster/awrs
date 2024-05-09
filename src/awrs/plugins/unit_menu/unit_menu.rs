@@ -95,6 +95,7 @@ pub fn unit_menu_input(
 
 pub fn exit_unit_menu(mut commands: Commands, mut unit_menu_query: Query<Entity, With<UnitMenu>>) {
     info!("Exiting Unit Menu");
-    let unit_menu_entity = unit_menu_query.single_mut();
-    commands.entity(unit_menu_entity).despawn_recursive();
+    for unit_menu_entity in unit_menu_query.iter_mut() {
+        commands.entity(unit_menu_entity).despawn_recursive();
+    }
 }

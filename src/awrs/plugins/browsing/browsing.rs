@@ -7,7 +7,7 @@ use crate::awrs::{
     resources::{
         cursor::{ChangeCursorEvent, CursorStyle, SelectEvent},
         map::ActiveTeam,
-        state::GameState,
+        state::{GameState, MenuState},
         unit::{Selected, UnitId},
     },
 };
@@ -16,7 +16,8 @@ pub fn browse_select(
     mut ev_select: EventReader<SelectEvent>,
     mut commands: Commands,
     q_unit: Query<&UnitId>,
-    mut next_state: ResMut<NextState<GameState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_menu_state: ResMut<NextState<MenuState>>,
     active_team: Res<ActiveTeam>,
     scenario_state: Res<ScenarioState>,
 ) {
@@ -40,7 +41,7 @@ pub fn browse_select(
                         continue;
                     }
 
-                    next_state.set(GameState::UnitMenu);
+                    next_game_state.set(GameState::UnitMenu);
                     info!("Setting game state to UnitMenu");
                     commands.entity(*entity).insert(Selected);
 
@@ -51,6 +52,8 @@ pub fn browse_select(
             }
             SelectEvent::Tile(_tile) => {
                 // Fire open menu event
+                next_game_state.set(GameState::GameMenu);
+                next_menu_state.set(MenuState::Open);
             }
         }
     }
@@ -73,6 +76,16 @@ pub fn listen_for_open_menu(
     }
 }
 
-pub fn open_browse(mut ev_change_cursor: EventWriter<ChangeCursorEvent>) {
+pub fn open_browse(
+    mut commands: Commands,
+    mut ev_change_cursor: EventWriter<ChangeCursorEvent>,
+    mut q_selected: Query<Entity, With<Selected>>,
+) {
+    // Change to Browse Cursor
     ev_change_cursor.send(ChangeCursorEvent(CursorStyle::Browse));
+
+    // Deselect all units
+    for selected_unit_entity in q_selected.iter_mut() {
+        commands.entity(selected_unit_entity).remove::<Selected>();
+    }
 }

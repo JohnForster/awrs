@@ -26,7 +26,9 @@ impl Plugin for MoveUnitPlugin {
         .add_systems(OnEnter(GameState::MoveUnit), begin_unit_plan)
         .add_systems(
             Update,
-            (update_arrows, update_movement_plan, confirm_move).chain(),
+            (update_arrows, update_movement_plan, confirm_move)
+                .in_set(MoveUnitSet)
+                .chain(),
         )
         .add_systems(OnExit(GameState::MoveUnit), exit_movement_plan);
 

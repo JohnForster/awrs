@@ -103,7 +103,7 @@ pub fn handle_damage(
                 if ceil_health == 0 {
                     commands.entity(*entity).despawn_recursive()
                 } else if ceil_health < 10 {
-                    // visibility.is_visible = true;
+                    *visibility = Visibility::Visible;
                     health_indicator.index = ceil_health - 1;
                 }
             }

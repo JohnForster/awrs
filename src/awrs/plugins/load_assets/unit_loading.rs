@@ -52,6 +52,6 @@ pub struct UnitStats {
 
 pub fn load_units(server: Res<AssetServer>, mut loading: ResMut<AssetsLoading>) {
     info!("Loading Unit Data");
-    let handle = server.load("units/infantry.unit.ron");
-    loading.0.push(handle.clone());
+    let handle: Handle<UnitStats> = server.load("units/infantry.unit.ron");
+    loading.0.push(UntypedHandle::from(handle));
 }

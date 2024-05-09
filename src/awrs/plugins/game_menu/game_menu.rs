@@ -7,19 +7,13 @@ use crate::awrs::{
         action_event::{Action, ActionEvent, ActionResultEvent},
         cursor::{ChangeCursorEvent, CursorStyle},
         map::ActiveTeam,
-        state::GameState,
+        state::{GameState, MenuState},
         unit::UnitId,
     },
 };
 
 #[derive(Component)]
 pub struct GameMenu;
-
-#[derive(Debug, Hash, PartialEq, Eq, Clone, States)]
-pub enum MenuState {
-    Open,
-    Closed,
-}
 
 pub fn open_game_menu(
     mut commands: Commands,
@@ -88,7 +82,6 @@ pub fn game_menu_input(
             InputEvent::EndTurn => {
                 info!("Ending Turn");
                 ev_action.send(ActionEvent(Action::EndTurn));
-                next_state.set(MenuState::Closed);
             }
             InputEvent::ToggleMenu => {
                 info!("Quitting menu");
@@ -108,17 +101,20 @@ pub fn end_turn_result(
     mut ev_action_result: EventReader<ActionResultEvent>,
     mut q_units: Query<&mut Sprite, With<UnitId>>,
     mut active_team: ResMut<ActiveTeam>,
-    mut next_state: ResMut<NextState<GameState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_menu_state: ResMut<NextState<MenuState>>,
 ) {
     for action_result in ev_action_result.read() {
         if let ActionResultEvent::EndTurnResult(new_active_team) = action_result {
+            info!("Handling end turn action result");
             active_team.team = *new_active_team;
 
             for mut sprite in q_units.iter_mut() {
                 sprite.color = Color::WHITE;
             }
 
-            next_state.set(GameState::Browsing);
+            next_game_state.set(GameState::Browsing);
+            next_menu_state.set(MenuState::Closed);
         }
     }
 }

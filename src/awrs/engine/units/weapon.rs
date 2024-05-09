@@ -11,7 +11,7 @@ pub enum Directness {
     Splash(Splash),
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum AdditionalEffect {
     Suicide,
 }
@@ -37,13 +37,16 @@ pub struct Weapon {
 
 impl Weapon {
     pub fn has_effect(&self, additional_effect: &AdditionalEffect) -> bool {
-        self.additional_effects.iter().any(|maybe_effect| {
-            if let Some(effect) = maybe_effect {
-                effect == additional_effect
-            } else {
-                false
-            }
-        })
+        self.additional_effects
+            .contains(&Some(additional_effect.clone()))
+
+        // self.additional_effects.iter().any(|maybe_effect| {
+        //     if let Some(effect) = maybe_effect {
+        //         effect == additional_effect
+        //     } else {
+        //         false
+        //     }
+        // })
     }
 }
 

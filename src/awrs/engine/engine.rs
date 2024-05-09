@@ -100,6 +100,7 @@ pub enum UnitAction {
     _Resupply,
 }
 
+#[derive(Debug)]
 pub enum Command {
     Move {
         unit_id: UnitId,
@@ -177,7 +178,7 @@ impl ScenarioState {
     fn unit_move(&mut self, id: UnitId, tiles: Vec<Tile>) -> CommandResult {
         let mut units_iterator = self.units.iter_mut();
 
-        let mut unit = units_iterator
+        let unit = units_iterator
             .find(|u| u.id == id)
             .expect(format!("No unit found with id {}", id).as_str());
 
@@ -350,7 +351,7 @@ impl ScenarioState {
         info!("Ending turn");
         let new_active_team = (self.active_team + 1) % (self.teams.len() as u32);
         self.active_team = new_active_team;
-        for mut unit in self.units.iter_mut() {
+        for unit in self.units.iter_mut() {
             unit.has_attacked = false;
             unit.has_moved = false;
         }
@@ -435,6 +436,7 @@ fn check_range_to_tile(attacker: &Unit, tile: &Tile) -> bool {
     in_range
 }
 
+// Non mutating
 impl ScenarioState {
     pub fn get_unit(&self, unit_id: UnitId) -> Option<&Unit> {
         self.units.iter().find(|u| u.id == unit_id)

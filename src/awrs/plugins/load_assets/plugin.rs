@@ -1,4 +1,3 @@
-use bevy::asset::LoadState;
 use bevy::prelude::*;
 use bevy_common_assets::ron::RonAssetPlugin;
 
@@ -10,7 +9,7 @@ use super::unit_loading::*;
 pub struct LoadAssetsPlugin;
 
 #[derive(bevy::prelude::Resource)]
-pub struct AssetsLoading(pub Vec<Handle<Image>>);
+pub struct AssetsLoading(pub Vec<UntypedHandle>);
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 struct LoadingSet;
@@ -24,11 +23,11 @@ impl Plugin for LoadAssetsPlugin {
                 OnEnter(AppState::Loading),
                 (
                     load_images,
-                    // create_terrain_sprites,        // Move to setup
-                    // create_idle_sprites,           // Move to setup
-                    // create_movement_arrow_sprites, // Move to setup
-                    // create_ui_sprites,             // Move to setup
-                    // load_units,
+                    create_terrain_sprites,        // Move to setup
+                    create_idle_sprites,           // Move to setup
+                    create_movement_arrow_sprites, // Move to setup
+                    create_ui_sprites,             // Move to setup
+                    load_units,
                 ),
             )
             .add_systems(Update, check_assets_ready.in_set(LoadingSet));
