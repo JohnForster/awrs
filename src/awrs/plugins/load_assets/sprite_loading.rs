@@ -4,7 +4,8 @@ use bevy::prelude::*;
 
 use crate::awrs::resources::{
     atlases::{
-        ArrowAtlas, CursorAtlas, HealthAtlas, TerrainAtlas, UIAtlas, UnitAtlas, UnitAtlases,
+        ArrowAtlas, CreepAtlas, CursorAtlas, HealthAtlas, TerrainAtlas, UIAtlas, UnitAtlas,
+        UnitAtlases,
     },
     unit::UnitType,
 };
@@ -102,10 +103,11 @@ pub fn create_idle_sprites(
     let mut unit_atlas_handle_map: HashMap<UnitType, UnitAtlas> = HashMap::new();
 
     let units = [
-        (UnitType::Infantry, "spritesheets/infantry_idle.png"),
+        (UnitType::Infantry, "spritesheets/marine_idle.png"),
         (UnitType::Zergling, "spritesheets/zergling_idle.png"),
         (UnitType::Baneling, "spritesheets/baneling_idle.png"),
         (UnitType::Roach, "spritesheets/roach_idle.png"),
+        (UnitType::SiegeTank, "spritesheets/tank_idle.png"),
     ];
 
     for (unit_type, idle_path) in units {
@@ -158,6 +160,47 @@ pub fn create_terrain_sprites(
     let layout_handle = atlases.add(layout);
 
     commands.insert_resource(TerrainAtlas {
+        texture: texture_handle,
+        layout: layout_handle,
+    })
+}
+
+pub fn create_creep_sprites(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut atlases: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    info!("Loading Terrain Sprites");
+    // Terrain Sprites
+    let texture_handle = asset_server.load("spritesheets/creep.png");
+
+    let mut layout = TextureAtlasLayout::new_empty(Vec2::new(96.0, 48.0));
+    const SPRITE_SIZE: f32 = 16.0;
+
+    info!("Loading creep sprites");
+    for y in 0..3 {
+        for x in 0..3 {
+            // let y = 2 - y;
+            let min_x = x as f32 * SPRITE_SIZE;
+            let min_y = y as f32 * SPRITE_SIZE;
+            let max_x = min_x + SPRITE_SIZE;
+            let max_y = min_y + SPRITE_SIZE;
+            info!(
+                "{}-{} min:({} {}) max:({} {})",
+                x, y, min_x, min_y, max_x, max_y
+            );
+            let rect = bevy::math::Rect {
+                min: Vec2::new(min_x, min_y),
+                max: Vec2::new(max_x, max_y),
+            };
+
+            layout.add_texture(rect);
+        }
+    }
+
+    let layout_handle = atlases.add(layout);
+
+    commands.insert_resource(CreepAtlas {
         texture: texture_handle,
         layout: layout_handle,
     })

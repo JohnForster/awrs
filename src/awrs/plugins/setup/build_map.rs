@@ -3,10 +3,10 @@ use bevy::prelude::*;
 use crate::awrs::{
     constants::*,
     dev_helpers::{new_scenario_map, new_scenario_state},
-    engine::TerrainType,
+    engine::{ScenarioMap, TerrainType},
     resources::{
         animation::AnimationConfig,
-        atlases::{HealthAtlas, TerrainAtlas, UnitAtlases},
+        atlases::{CreepAtlas, HealthAtlas, TerrainAtlas, UnitAtlases},
         map::{ActiveTeam, GameMap},
         unit::*,
     },
@@ -18,6 +18,7 @@ pub fn build_map(
     terrain_atlas: Res<TerrainAtlas>,
     unit_atlases: Res<UnitAtlases>,
     health_atlas: Res<HealthAtlas>,
+    creep_atlas: Res<CreepAtlas>,
 ) {
     info!("Building map");
     let scenario_map = new_scenario_map();
@@ -34,6 +35,58 @@ pub fn build_map(
         team: scenario_state.active_team,
     });
 
+    spawn_tiles(&mut commands, &scenario_state, &terrain_atlas);
+    spawn_creep(&mut commands, &scenario_state, &creep_atlas);
+
+    for unit in scenario_state.units.iter() {
+        spawn_unit(&mut commands, unit, &unit_atlases, &health_atlas);
+    }
+    commands.insert_resource(scenario_state);
+}
+
+#[derive(Component)]
+struct Creep;
+
+fn spawn_creep(
+    commands: &mut Commands,
+    scenario_state: &crate::awrs::engine::ScenarioState,
+    creep_atlas: &Res<CreepAtlas>,
+) {
+    commands
+        .spawn((SpatialBundle::default(), Creep))
+        .with_children(|parent| {
+            for id in scenario_state.teams.iter() {
+                if let Some(creep_map) = scenario_state.creep.0.get(&id) {
+                    for (y, row) in creep_map.iter().enumerate() {
+                        for (x, &has_creep) in row.iter().enumerate() {
+                            if has_creep {
+                                let atlas = TextureAtlas {
+                                    layout: creep_atlas.layout.clone(),
+                                    index: get_creep_sprite(creep_map, x, y),
+                                };
+                                parent.spawn(SpriteSheetBundle {
+                                    texture: creep_atlas.texture.clone(),
+                                    atlas,
+                                    transform: Transform::from_translation(Vec3::new(
+                                        x as f32 * TILE_SIZE,
+                                        y as f32 * TILE_SIZE,
+                                        0.0,
+                                    )),
+                                    ..Default::default()
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        });
+}
+
+fn spawn_tiles(
+    commands: &mut Commands,
+    scenario_state: &crate::awrs::engine::ScenarioState,
+    terrain_atlas: &Res<TerrainAtlas>,
+) {
     commands
         .spawn((
             GameMap {
@@ -65,11 +118,6 @@ pub fn build_map(
                 }
             }
         });
-
-    for unit in scenario_state.units.iter() {
-        spawn_unit(&mut commands, unit, &unit_atlases, &health_atlas);
-    }
-    commands.insert_resource(scenario_state);
 }
 
 fn spawn_unit(
@@ -129,4 +177,52 @@ fn spawn_unit(
                 },
             ));
         });
+}
+
+struct Coord {
+    x: i32,
+    y: i32,
+}
+
+impl Coord {
+    fn new(x: i32, y: i32) -> Self {
+        Coord { x, y }
+    }
+}
+
+fn get_creep_sprite(creep_map: &Vec<Vec<bool>>, x: usize, y: usize) -> usize {
+    let x = x as i32;
+    let y = y as i32;
+    let up = Coord::new(x, y + 1);
+    let down = Coord::new(x, y - 1);
+    let left = Coord::new(x - 1, y);
+    let right = Coord::new(x + 1, y);
+
+    let u_d_l_r = [up, down, left, right].map(|Coord { x, y }| {
+        if x < 0 || y < 0 {
+            return false;
+        }
+
+        let (x, y) = (x as usize, y as usize);
+
+        if let Some(row) = creep_map.get(y) {
+            if let Some(has_creep) = row.get(x) {
+                return *has_creep;
+            }
+        }
+        return false;
+    });
+
+    match u_d_l_r {
+        [false, true, false, true] => 0,
+        [false, true, true, true] => 1,
+        [false, true, true, false] => 2,
+        [true, true, false, true] => 3,
+        [true, true, true, true] => 4,
+        [true, true, true, false] => 5,
+        [true, false, false, true] => 6,
+        [true, false, true, true] => 7,
+        [true, false, true, false] => 8,
+        _ => 4,
+    }
 }

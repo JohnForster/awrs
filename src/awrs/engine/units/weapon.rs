@@ -5,7 +5,7 @@ pub struct Bonus {
     pub additional_damage: f32,
 }
 
-pub enum Directness {
+pub enum Delivery {
     Melee,
     Ranged(f32, f32), // Min, Max
     Splash(Splash),
@@ -27,7 +27,7 @@ pub struct Splash {
 pub struct Weapon {
     pub id: usize,
     pub name: &'static str,
-    pub directness: Directness, // TODO Come up with better name
+    pub directness: Delivery, // TODO Come up with better name
     pub base_damage: f32,
     pub num_of_attacks: u32,
     pub bonuses: [Option<Bonus>; 4],
@@ -53,7 +53,7 @@ impl Weapon {
 pub const ZERGLING_ATTACK: Weapon = Weapon {
     id: 1,
     name: "Zergling Claws",
-    directness: Directness::Melee,
+    directness: Delivery::Melee,
     base_damage: 10.0,
     bonuses: [None, None, None, None],
     num_of_attacks: 1,
@@ -64,7 +64,7 @@ pub const ZERGLING_ATTACK: Weapon = Weapon {
 pub const BANELING_ATTACK: Weapon = Weapon {
     id: 2,
     name: "Acid Boom",
-    directness: Directness::Splash(Splash {
+    directness: Delivery::Splash(Splash {
         range: (0.0, 0.0),
         radius: 1.5,
         friendly: false,
@@ -87,7 +87,7 @@ pub const BANELING_ATTACK: Weapon = Weapon {
 pub const MARINE_ATTACK: Weapon = Weapon {
     id: 0,
     name: "Machine Gun",
-    directness: Directness::Melee,
+    directness: Delivery::Melee,
     base_damage: 9.8,
     bonuses: [None, None, None, None],
     num_of_attacks: 1,
@@ -98,9 +98,32 @@ pub const MARINE_ATTACK: Weapon = Weapon {
 pub const ROACH_ATTACK: Weapon = Weapon {
     id: 3,
     name: "Acid Saliva",
-    directness: Directness::Ranged(1.0, 2.0),
+    directness: Delivery::Ranged(1.0, 2.0),
     base_damage: 11.2,
     bonuses: [None, None, None, None],
+    num_of_attacks: 1,
+    applicable: [Some(Ground), None, None, None],
+    additional_effects: [None, None, None, None],
+};
+
+pub const SIEGED_ATTACK: Weapon = Weapon {
+    id: 4,
+    name: "Crucio Shock Cannon",
+    directness: Delivery::Splash(Splash {
+        range: (1.0, 3.0),
+        radius: 1.5,
+        friendly: true,
+    }),
+    base_damage: 18.9,
+    bonuses: [
+        Some(Bonus {
+            tag: Armoured,
+            additional_damage: 14.0,
+        }),
+        None,
+        None,
+        None,
+    ],
     num_of_attacks: 1,
     applicable: [Some(Ground), None, None, None],
     additional_effects: [None, None, None, None],

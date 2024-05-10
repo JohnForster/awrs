@@ -20,6 +20,7 @@ pub enum UnitType {
     Zergling,
     Baneling,
     Roach,
+    SiegeTank,
 }
 
 impl From<EngineUnitType> for UnitType {
@@ -29,6 +30,7 @@ impl From<EngineUnitType> for UnitType {
             EngineUnitType::Zergling => UnitType::Zergling,
             EngineUnitType::Baneling => UnitType::Baneling,
             EngineUnitType::Roach => UnitType::Roach,
+            EngineUnitType::SiegeTank => UnitType::SiegeTank,
         }
     }
 }

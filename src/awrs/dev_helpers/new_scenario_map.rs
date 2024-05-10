@@ -2,11 +2,12 @@ use crate::awrs::engine::{ScenarioMap, TerrainType};
 
 pub fn new_scenario_map() -> ScenarioMap {
     let mut number_terrain_map = vec![
-        vec![0, 1, 1, 1, 1],
-        vec![1, 1, 1, 1, 1],
-        vec![1, 1, 1, 1, 1],
-        vec![1, 1, 1, 1, 1],
-        vec![1, 1, 1, 1, 0],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1],
     ];
     number_terrain_map.reverse();
 

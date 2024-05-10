@@ -1,8 +1,9 @@
+use core::num;
 use std::collections::HashMap;
 
 use super::{
     units::{units::*, weapon::Weapon},
-    weapon::{AdditionalEffect, Directness},
+    weapon::{AdditionalEffect, Delivery},
 };
 use bevy::{ecs::system::Resource, prelude::info};
 
@@ -40,6 +41,12 @@ pub struct Unit {
     pub has_moved: bool,
     pub has_attacked: bool,
 }
+
+// pub struct Building {
+//     pub id: BuildingId,
+//     pub building_type: BuildingType,
+//     pub position
+// }
 
 #[derive(Debug)]
 pub enum TerrainType {
@@ -117,12 +124,38 @@ pub enum Command {
     EndTurn,
 }
 
+pub type TeamID = u32;
+
 #[derive(Debug, Resource)]
 pub struct ScenarioState {
     pub map: ScenarioMap,
     pub units: Vec<Unit>,
-    pub active_team: u32,
-    pub teams: Vec<u32>,
+    // pub structures: Vec<Structure>,
+    pub active_team: TeamID,
+    pub teams: Vec<TeamID>,
+    pub creep: Creep,
+}
+
+pub type CreepMap = HashMap<TeamID, Vec<Vec<bool>>>;
+
+#[derive(Debug)]
+pub struct Creep(pub CreepMap);
+
+impl Creep {
+    pub fn empty(number_of_teams: u32, map: &ScenarioMap) -> Self {
+        let mut creep_map: CreepMap = HashMap::new();
+        let h = map.len();
+        let w = map[0].len();
+        for i in 0..number_of_teams {
+            creep_map.insert(i, vec![vec![false; w]; h]);
+        }
+
+        return Self(creep_map);
+    }
+
+    pub fn set(&mut self, id: TeamID, map: Vec<Vec<bool>>) {
+        self.0.insert(id, map);
+    }
 }
 
 #[derive(Debug)]
@@ -295,7 +328,7 @@ impl ScenarioState {
         let attacker = self.get_unit(attacker_id).unwrap();
         let weapon = attacker.unit_type.value().weapon_one.unwrap();
         match weapon.directness {
-            Directness::Splash(splash) => {
+            Delivery::Splash(splash) => {
                 let tile_in_range = check_range_to_tile(attacker, &tile);
                 info!("{:?}", tile_in_range);
                 if !tile_in_range {
@@ -410,8 +443,8 @@ fn check_range(attacker: &Unit, defender: &Unit) -> bool {
         .expect("No weapon found");
 
     let (min, max) = match attacker_weapon.directness {
-        Directness::Melee => (1.0, 1.0),
-        Directness::Ranged(min, max) => (min, max),
+        Delivery::Melee => (1.0, 1.0),
+        Delivery::Ranged(min, max) => (min, max),
         _ => (1.0, 1.0),
     };
     let distance_between_units = attacker.position.distance_to(&defender.position);
@@ -427,9 +460,9 @@ fn check_range_to_tile(attacker: &Unit, tile: &Tile) -> bool {
         .expect("No weapon found");
 
     let (min, max) = match attacker_weapon.directness {
-        Directness::Melee => (1.0, 1.0),
-        Directness::Ranged(min, max) => (min, max),
-        Directness::Splash(splash) => splash.range,
+        Delivery::Melee => (1.0, 1.0),
+        Delivery::Ranged(min, max) => (min, max),
+        Delivery::Splash(splash) => splash.range,
     };
     let distance_to_tile = attacker.position.distance_to(tile);
     let in_range = distance_to_tile >= min && distance_to_tile <= max;

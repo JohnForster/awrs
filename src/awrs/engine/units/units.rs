@@ -6,12 +6,13 @@ pub enum UnitType {
     Roach,
     Marine,
     Baneling,
+    SiegeTank,
 }
 
 #[derive(PartialEq)]
 pub enum UnitTag {
     Biological,
-    _Mechanical,
+    Mechanical,
     Light,
     Armoured,
     Ground,
@@ -46,6 +47,7 @@ impl UnitType {
             Baneling => BANELING,
             Roach => ROACH,
             Marine => MARINE,
+            SiegeTank => SIEGE_TANK,
         }
     }
 }
@@ -89,6 +91,21 @@ pub const MARINE: UnitStats = UnitStats {
     base_armour: 0.0,
     weapon_one: Some(MARINE_ATTACK),
     weapon_two: None,
+};
+
+pub const SIEGE_TANK: UnitStats = UnitStats {
+    id: 5,
+    race: Race::Terran,
+    name: "Siege Tank",
+    max_health: 175.0,
+    max_ammo: 8.0,
+    max_fuel: -1.0,
+    tags: [Some(Ground), Some(Armoured), Some(Mechanical), None],
+    base_armour: 1.0,
+    weapon_one: Some(SIEGED_ATTACK),
+    weapon_two: None,
+    // weapon_one: Some(UNSIEGED_ATTACK),
+    // weapon_two: Some(SIEGED_ATTACK),
 };
 
 pub const ROACH: UnitStats = UnitStats {

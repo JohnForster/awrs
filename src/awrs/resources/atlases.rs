@@ -11,6 +11,12 @@ pub struct TerrainAtlas {
 }
 
 #[derive(Resource)]
+pub struct CreepAtlas {
+    pub layout: Handle<TextureAtlasLayout>,
+    pub texture: Handle<Image>,
+}
+
+#[derive(Resource)]
 pub struct CursorAtlas {
     pub layout: Handle<TextureAtlasLayout>,
     pub texture: Handle<Image>,
