@@ -80,8 +80,9 @@ pub fn game_menu_input(
     for ev in reader.read(&input_events) {
         match ev {
             InputEvent::EndTurn => {
-                info!("Ending Turn");
+                info!("Reading input events... Ending Turn");
                 ev_action.send(ActionEvent(Action::EndTurn));
+                should_clear = true;
             }
             InputEvent::ToggleMenu => {
                 info!("Quitting menu");

@@ -83,11 +83,11 @@ pub fn unit_menu_input(
         next_state.set(GameState::ChooseTarget);
     }
     if keyboard_input.just_pressed(KeyCode::KeyC) {
-        info!("Returning to Browse");
-        let unit_entity = units_query.single();
-
-        info!("Clearing selected unit");
-        commands.entity(unit_entity).remove::<Selected>();
+        info!("Cancel selected. Returning to Browse");
+        if let Ok(unit_entity) = units_query.get_single() {
+            info!("Clearing selected unit");
+            commands.entity(unit_entity).remove::<Selected>();
+        }
 
         next_state.set(GameState::Browsing);
     }

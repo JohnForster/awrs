@@ -1,7 +1,7 @@
-use super::units::{UnitTag, UnitTag::*};
+use super::units::{DamageTag, DamageTag::*};
 
 pub struct Bonus {
-    pub tag: UnitTag,
+    pub tag: DamageTag,
     pub additional_damage: f32,
 }
 
@@ -31,7 +31,7 @@ pub struct Weapon {
     pub base_damage: f32,
     pub num_of_attacks: u32,
     pub bonuses: [Option<Bonus>; 4],
-    pub applicable: [Option<UnitTag>; 4],
+    pub applicable: [Option<DamageTag>; 4],
     pub additional_effects: [Option<AdditionalEffect>; 4],
 }
 

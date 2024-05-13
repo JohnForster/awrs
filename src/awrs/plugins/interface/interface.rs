@@ -54,7 +54,7 @@ pub fn handle_action(
     q_units: Query<&UnitId>,
 ) {
     for ActionEvent(action) in ev_action.read() {
-        info!("Action event fired!");
+        info!("Action event ({:?}) recieved", action);
         let command = match action {
             Action::Attack(attack) => match attack {
                 Attack::Unit(attacker_entity, defender_entity) => {

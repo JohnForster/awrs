@@ -1,21 +1,52 @@
-use crate::awrs::engine::{Creep, ScenarioMap, ScenarioState, Tile, Unit, UnitId, UnitType};
+use crate::awrs::engine::{
+    Creep, ScenarioMap, ScenarioState, Structure, StructureId, StructureType, Tile, Unit, UnitId,
+    UnitType,
+};
 
 pub fn new_scenario_state(scenario_map: ScenarioMap) -> ScenarioState {
     let units = create_units();
-    // let structures = create_structures();
+    let structures = create_structures();
     let creep = create_creep(&scenario_map);
 
     ScenarioState {
         map: scenario_map,
         units,
-        // structures,
+        structures,
         active_team: 0,
         teams: vec![0, 1],
         creep,
     }
 }
 
-// fn create_structures() -> Vec<Structure> {}
+fn create_structures() -> Vec<Structure> {
+    let structure_data = vec![
+        (StructureType::CommandCentre, (1, 2), 0),
+        (StructureType::CommandCentre, (1, 4), 0),
+        (StructureType::Hatchery, (5, 2), 1),
+        (StructureType::Hatchery, (7, 4), 1),
+    ];
+
+    let structures = structure_data
+        .into_iter()
+        .enumerate()
+        .map(|(i, data)| {
+            let (structure_type, location, team) = data;
+
+            Structure {
+                id: i as StructureId,
+                structure_type,
+                position: Tile {
+                    x: location.0,
+                    y: location.1,
+                },
+                team,
+                health: structure_type.value().max_health,
+            }
+        })
+        .collect();
+
+    return structures;
+}
 
 fn create_units() -> Vec<Unit> {
     let unit_data = vec![

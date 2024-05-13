@@ -6,7 +6,7 @@ use crate::awrs::{
     engine::{ScenarioMap, TerrainType},
     resources::{
         animation::AnimationConfig,
-        atlases::{CreepAtlas, HealthAtlas, TerrainAtlas, UnitAtlases},
+        atlases::{CreepAtlas, HealthAtlas, StructureAtlases, TerrainAtlas, UnitAtlases},
         map::{ActiveTeam, GameMap},
         unit::*,
     },
@@ -17,6 +17,7 @@ pub fn build_map(
     mut commands: Commands,
     terrain_atlas: Res<TerrainAtlas>,
     unit_atlases: Res<UnitAtlases>,
+    structure_atlases: Res<StructureAtlases>,
     health_atlas: Res<HealthAtlas>,
     creep_atlas: Res<CreepAtlas>,
 ) {
@@ -40,6 +41,9 @@ pub fn build_map(
 
     for unit in scenario_state.units.iter() {
         spawn_unit(&mut commands, unit, &unit_atlases, &health_atlas);
+    }
+    for structure in scenario_state.structures.iter() {
+        spawn_structure(&mut commands, structure, &structure_atlases, &health_atlas);
     }
     commands.insert_resource(scenario_state);
 }
@@ -143,6 +147,64 @@ fn spawn_unit(
     commands
         .spawn((
             UnitId(unit.id),
+            SpriteSheetBundle {
+                texture: texture_atlas.texture.clone(),
+                atlas: TextureAtlas {
+                    layout: texture_atlas.layout.clone(),
+                    index: 0,
+                },
+                sprite,
+                transform: Transform::from_translation(Vec3::new(
+                    x as f32 * TILE_SIZE,
+                    y as f32 * TILE_SIZE,
+                    1.0,
+                )),
+                ..Default::default()
+            },
+            animation_config,
+        ))
+        .with_children(|unit| {
+            let transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
+            let atlas = TextureAtlas {
+                layout: health_atlas.layout.clone(),
+                index: 9,
+            };
+            unit.spawn((
+                HealthIndicator,
+                SpriteSheetBundle {
+                    atlas,
+                    texture: health_atlas.texture.clone(),
+                    sprite: Sprite::default(),
+                    visibility: Visibility::Hidden,
+                    transform,
+                    ..Default::default()
+                },
+            ));
+        });
+}
+
+fn spawn_structure(
+    commands: &mut Commands,
+    structure: &crate::awrs::engine::Structure,
+    structure_atlases: &Res<StructureAtlases>,
+    health_atlas: &Res<HealthAtlas>,
+) {
+    let x = structure.position.x;
+    let y = structure.position.y;
+    let texture_atlas = structure_atlases
+        .atlas_map
+        .get(&StructureType::from(structure.structure_type))
+        .unwrap();
+
+    let sprite = Sprite {
+        ..Default::default()
+    };
+
+    let animation_config = AnimationConfig::new(0, 3, 2);
+
+    commands
+        .spawn((
+            StructureId(structure.id),
             SpriteSheetBundle {
                 texture: texture_atlas.texture.clone(),
                 atlas: TextureAtlas {

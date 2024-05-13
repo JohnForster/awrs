@@ -8,6 +8,7 @@ use crate::awrs::engine::UnitHp;
 #[derive(Event)]
 pub struct ActionEvent(pub Action);
 
+#[derive(Debug)]
 pub enum Action {
     Attack(Attack),
     Move { entity: Entity, tiles: Vec<Tile> },
@@ -26,6 +27,7 @@ impl From<(Entity, Entity)> for Attack {
     }
 }
 
+#[derive(Debug)]
 pub enum Attack {
     Unit(Entity, Entity),
     Ground(Entity, Tile),

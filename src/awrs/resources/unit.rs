@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::awrs::engine::{ScenarioState, UnitType as EngineUnitType};
+use crate::awrs::engine::{
+    ScenarioState, StructureType as EngineStructureType, UnitType as EngineUnitType,
+};
 
 use super::action_event::ActionResultEvent;
 
@@ -31,6 +33,24 @@ impl From<EngineUnitType> for UnitType {
             EngineUnitType::Baneling => UnitType::Baneling,
             EngineUnitType::Roach => UnitType::Roach,
             EngineUnitType::SiegeTank => UnitType::SiegeTank,
+        }
+    }
+}
+
+#[derive(Component)]
+pub struct StructureId(pub u32);
+
+#[derive(serde::Deserialize, serde::Serialize, Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub enum StructureType {
+    CommandCentre,
+    Hatchery,
+}
+
+impl From<EngineStructureType> for StructureType {
+    fn from(structure_type: EngineStructureType) -> Self {
+        match structure_type {
+            EngineStructureType::CommandCentre => StructureType::CommandCentre,
+            EngineStructureType::Hatchery => StructureType::Hatchery,
         }
     }
 }

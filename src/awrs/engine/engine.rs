@@ -1,7 +1,7 @@
-use core::num;
 use std::collections::HashMap;
 
 use super::{
+    structures::structures::*,
     units::{units::*, weapon::Weapon},
     weapon::{AdditionalEffect, Delivery},
 };
@@ -42,11 +42,17 @@ pub struct Unit {
     pub has_attacked: bool,
 }
 
-// pub struct Building {
-//     pub id: BuildingId,
-//     pub building_type: BuildingType,
-//     pub position
-// }
+pub type StructureId = u32;
+pub type StructureHp = f32;
+
+#[derive(Debug)]
+pub struct Structure {
+    pub id: StructureId,
+    pub structure_type: StructureType,
+    pub position: Tile,
+    pub health: StructureHp,
+    pub team: Team,
+}
 
 #[derive(Debug)]
 pub enum TerrainType {
@@ -130,7 +136,7 @@ pub type TeamID = u32;
 pub struct ScenarioState {
     pub map: ScenarioMap,
     pub units: Vec<Unit>,
-    // pub structures: Vec<Structure>,
+    pub structures: Vec<Structure>,
     pub active_team: TeamID,
     pub teams: Vec<TeamID>,
     pub creep: Creep,

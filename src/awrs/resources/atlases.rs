@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 
-use super::unit::UnitType;
+use super::unit::{StructureType, UnitType};
 
 #[derive(Resource)]
 pub struct TerrainAtlas {
@@ -47,6 +47,17 @@ pub struct ArrowAtlas {
 }
 
 #[derive(Resource)]
+pub struct StructureAtlas {
+    pub layout: Handle<TextureAtlasLayout>,
+    pub texture: Handle<Image>,
+}
+
+#[derive(Resource)]
 pub struct UnitAtlases {
     pub atlas_map: HashMap<UnitType, UnitAtlas>,
+}
+
+#[derive(Resource)]
+pub struct StructureAtlases {
+    pub atlas_map: HashMap<StructureType, StructureAtlas>,
 }

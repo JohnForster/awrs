@@ -69,6 +69,7 @@ pub fn register_inputs(
     }
 
     if keyboard_input.just_pressed(KeyCode::KeyE) {
+        info!("Just pressed E");
         ev_input.send(InputEvent::EndTurn);
         return;
     }

@@ -27,7 +27,8 @@ impl Plugin for LoadAssetsPlugin {
                     create_idle_sprites,           // Move to setup
                     create_movement_arrow_sprites, // Move to setup
                     create_ui_sprites,
-                    create_creep_sprites, // Move to setup
+                    create_creep_sprites,     // Move to setup
+                    create_structure_sprites, // Move to setup
                     load_units,
                 ),
             )

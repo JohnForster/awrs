@@ -21,8 +21,9 @@ pub fn browse_select(
     active_team: Res<ActiveTeam>,
     scenario_state: Res<ScenarioState>,
 ) {
-    for select_event in ev_select.read() {
+    for (select_event, id) in ev_select.read_with_id() {
         info!("Executing browse_select");
+        warn!("Handling select event ({:?})", id);
         match select_event {
             SelectEvent::Entity(entity) => {
                 if let Ok(UnitId(unit_id)) = q_unit.get(*entity) {
@@ -37,7 +38,9 @@ pub fn browse_select(
 
                     // Cannot select enemy units
                     let is_enemy = unit.team != active_team.team;
+                    info!("active_team: {:?}", active_team);
                     if is_enemy {
+                        info!("Can't select enemy units");
                         continue;
                     }
 

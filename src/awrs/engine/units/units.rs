@@ -10,12 +10,13 @@ pub enum UnitType {
 }
 
 #[derive(PartialEq)]
-pub enum UnitTag {
+pub enum DamageTag {
     Biological,
     Mechanical,
     Light,
     Armoured,
     Ground,
+    Structure,
     _Air,
     _Infantry,
 }
@@ -27,7 +28,7 @@ pub struct UnitStats {
     pub max_health: f32,
     pub max_ammo: f32,
     pub max_fuel: f32,
-    pub tags: [Option<UnitTag>; 4],
+    pub tags: [Option<DamageTag>; 4],
     pub base_armour: f32,
     pub weapon_one: Option<Weapon>,
     pub weapon_two: Option<Weapon>,
@@ -52,7 +53,7 @@ impl UnitType {
     }
 }
 
-use UnitTag::*;
+use DamageTag::*;
 
 pub const ZERGLING: UnitStats = UnitStats {
     id: 1,

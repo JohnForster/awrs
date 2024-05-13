@@ -16,7 +16,7 @@ struct GameMapBundle {
     inherited_visibility: InheritedVisibility,
 }
 
-#[derive(Resource)]
+#[derive(Resource, Debug)]
 pub struct ActiveTeam {
     pub team: Team,
 }

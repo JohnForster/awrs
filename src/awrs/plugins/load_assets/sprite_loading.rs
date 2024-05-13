@@ -4,9 +4,10 @@ use bevy::prelude::*;
 
 use crate::awrs::resources::{
     atlases::{
-        ArrowAtlas, CreepAtlas, CursorAtlas, HealthAtlas, TerrainAtlas, UIAtlas, UnitAtlas,
-        UnitAtlases,
+        ArrowAtlas, CreepAtlas, CursorAtlas, HealthAtlas, StructureAtlas, StructureAtlases,
+        TerrainAtlas, UIAtlas, UnitAtlas, UnitAtlases,
     },
+    unit::StructureType,
     unit::UnitType,
 };
 
@@ -131,6 +132,45 @@ pub fn create_idle_sprites(
 
     commands.insert_resource(UnitAtlases {
         atlas_map: unit_atlas_handle_map,
+    });
+}
+
+pub fn create_structure_sprites(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut atlases: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    let mut structure_atlas_handle_map: HashMap<StructureType, StructureAtlas> = HashMap::new();
+
+    let structures = [
+        (
+            StructureType::CommandCentre,
+            "spritesheets/command_centre.png",
+        ),
+        (StructureType::Hatchery, "spritesheets/hatchery.png"),
+    ];
+
+    for (structure_type, spritesheet_path) in structures {
+        let image_handle = asset_server.load(spritesheet_path);
+        let layout = TextureAtlasLayout::from_grid(
+            Vec2::new(48.0, 48.0),
+            4,
+            1,
+            Some(Vec2::new(1.0, 0.0)),
+            None,
+        );
+        let layout_handle = atlases.add(layout);
+        structure_atlas_handle_map.insert(
+            structure_type,
+            StructureAtlas {
+                texture: image_handle,
+                layout: layout_handle,
+            },
+        );
+    }
+
+    commands.insert_resource(StructureAtlases {
+        atlas_map: structure_atlas_handle_map,
     });
 }
 
