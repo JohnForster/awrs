@@ -112,21 +112,21 @@ pub fn handle_damage(
                 health_indicator_query.get_mut(child)
             {
                 info!("Updating health indicator");
-                let max_health = scenario_state
-                    .get_unit(unit_id.0)
-                    .expect("unwrap")
-                    .unit_type
-                    .value()
-                    .max_health;
-                println!("max_health: {:?}", max_health);
-                let health_percent = new_hp / max_health;
-                let ceil_health = (health_percent * 10.0).ceil().max(0.0) as usize;
-                info!("new_hp: {:?}, ceil_health: {:?}", new_hp, ceil_health);
-                if ceil_health == 0 {
-                    commands.entity(*entity).despawn_recursive()
-                } else if ceil_health < 10 {
-                    *visibility = Visibility::Visible;
-                    health_indicator.index = ceil_health - 1;
+                match scenario_state.get_unit(unit_id.0) {
+                    Some(unit) => {
+                        let max_health = unit.unit_type.value().max_health;
+                        println!("max_health: {:?}", max_health);
+                        let health_percent = new_hp / max_health;
+                        let ceil_health = (health_percent * 10.0).ceil().max(0.0) as usize;
+                        info!("new_hp: {:?}, ceil_health: {:?}", new_hp, ceil_health);
+                        if ceil_health == 0 {
+                            commands.entity(*entity).despawn_recursive()
+                        } else if ceil_health < 10 {
+                            *visibility = Visibility::Visible;
+                            health_indicator.index = ceil_health - 1;
+                        }
+                    }
+                    None => commands.entity(*entity).despawn_recursive(),
                 }
             }
         }

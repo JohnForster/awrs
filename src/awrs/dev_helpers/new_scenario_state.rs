@@ -57,7 +57,7 @@ fn create_units() -> Vec<Unit> {
         (UnitType::SiegeTank, (1, 3), 0),
         (UnitType::Zergling, (4, 1), 1),
         (UnitType::Zergling, (4, 4), 1),
-        (UnitType::Zergling, (5, 3), 1),
+        (UnitType::Zergling, (6, 3), 1),
         (UnitType::Baneling, (4, 2), 1),
         (UnitType::Roach, (5, 4), 1),
         (UnitType::Roach, (5, 5), 1),

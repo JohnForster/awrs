@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use super::{
     structures::structures::*,
     units::{units::*, weapon::Weapon},
-    weapon::{AdditionalEffect, Delivery},
+    weapon::{AdditionalEffect, Delivery, Splash},
 };
 use bevy::{ecs::system::Resource, prelude::info};
 
@@ -297,7 +297,13 @@ impl ScenarioState {
             };
         }
 
-        // Choose Weapon
+        // TODO Choose Weapon
+        let weapon = attacker.unit_type.value().weapon_one.unwrap();
+        if let Delivery::Splash(_) = weapon.delivery {
+            return self.attack_ground(attacker_id, defender.position);
+        }
+
+        // Check Range
         let in_range = check_range(attacker, defender);
 
         if !in_range {
@@ -309,7 +315,8 @@ impl ScenarioState {
                 ],
             };
         }
-        // Check Ammo
+
+        // TODO Check Ammo
 
         // Calculate damage
         let (attacker_damage, defender_damage) = self.calculate_damage(attacker.id, defender.id);
@@ -321,19 +328,23 @@ impl ScenarioState {
 
         attacker.has_attacked = true;
 
-        return CommandResult::Attack {
+        let command_result = CommandResult::Attack {
             status: CommandStatus::Ok,
             unit_hp_changes: vec![
                 (attacker.id, attacker.health),
                 (defender.id, defender.health),
             ],
         };
+
+        self.units.retain(|unit| unit.health > 0.0);
+
+        return command_result;
     }
 
     fn attack_ground(&mut self, attacker_id: UnitId, tile: Tile) -> CommandResult {
         let attacker = self.get_unit(attacker_id).unwrap();
         let weapon = attacker.unit_type.value().weapon_one.unwrap();
-        match weapon.directness {
+        match weapon.delivery {
             Delivery::Splash(splash) => {
                 let tile_in_range = check_range_to_tile(attacker, &tile);
                 info!("{:?}", tile_in_range);
@@ -448,10 +459,10 @@ fn check_range(attacker: &Unit, defender: &Unit) -> bool {
         .weapon_one
         .expect("No weapon found");
 
-    let (min, max) = match attacker_weapon.directness {
+    let (min, max) = match attacker_weapon.delivery {
         Delivery::Melee => (1.0, 1.0),
         Delivery::Ranged(min, max) => (min, max),
-        _ => (1.0, 1.0),
+        Delivery::Splash(splash) => splash.range,
     };
     let distance_between_units = attacker.position.distance_to(&defender.position);
     let in_range = distance_between_units >= min && distance_between_units <= max;
@@ -465,7 +476,7 @@ fn check_range_to_tile(attacker: &Unit, tile: &Tile) -> bool {
         .weapon_one
         .expect("No weapon found");
 
-    let (min, max) = match attacker_weapon.directness {
+    let (min, max) = match attacker_weapon.delivery {
         Delivery::Melee => (1.0, 1.0),
         Delivery::Ranged(min, max) => (min, max),
         Delivery::Splash(splash) => splash.range,
@@ -510,11 +521,8 @@ impl ScenarioState {
         let attack_damage = self.get_attack_damage(attacker, defender, attacker.health);
         let new_defender_health = defender.health - attack_damage;
 
-        let counter_attack_damage = if new_defender_health > 0.0 {
-            println!(
-                "{:?} attacking {:?} ",
-                defender.unit_type, attacker.unit_type
-            );
+        let counter_attack_damage = if new_defender_health > 0.0 && check_range(defender, attacker)
+        {
             self.get_attack_damage(defender, attacker, new_defender_health)
         } else {
             0.0
@@ -546,18 +554,12 @@ impl ScenarioState {
     pub fn calculate_full_damage(&self, weapon: &Weapon, defender: &UnitType) -> f32 {
         let defender_tags = defender.value().tags;
         let mut bonus_damage = 0.0;
-        for bonus in weapon.bonuses.iter() {
-            if let Some(bonus) = bonus {
-                if defender_tags.iter().any(|maybe_tag| {
-                    if let Some(tag) = maybe_tag {
-                        *tag == bonus.tag
-                    } else {
-                        false
-                    }
-                }) {
+        for bonus in weapon.bonuses.iter().flatten() {
+            for damage_tag in defender_tags.iter().flatten() {
+                if *damage_tag == bonus.tag {
                     bonus_damage += bonus.additional_damage
                 }
-            };
+            }
         }
         weapon.base_damage + bonus_damage
     }
@@ -625,19 +627,24 @@ impl ScenarioState {
     }
 
     pub fn get_possible_actions(&self, unit_id: &UnitId) -> Vec<UnitAction> {
-        let mut actions: Vec<UnitAction> = vec![];
-        let unit = self
-            .get_unit(*unit_id)
-            .expect(&format!("Could not find unit with id {:?}", unit_id));
-        if unit.has_attacked {
-            return actions;
-        }
-        actions.push(UnitAction::Attack);
+        let unit = self.get_unit(*unit_id);
 
-        if !unit.has_moved {
-            actions.push(UnitAction::Move);
+        match unit {
+            Some(unit) => {
+                let mut actions: Vec<UnitAction> = vec![];
+                if unit.has_attacked {
+                    return actions;
+                }
+
+                actions.push(UnitAction::Attack);
+
+                if !unit.has_moved {
+                    actions.push(UnitAction::Move);
+                }
+                return actions;
+            }
+            None => vec![],
         }
-        return actions;
     }
 
     pub fn unit_cannot_act(&self, unit_id: &UnitId) -> bool {
