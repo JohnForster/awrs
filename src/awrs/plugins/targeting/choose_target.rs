@@ -1,6 +1,7 @@
 use bevy::ecs::event;
 use bevy::prelude::*;
 
+use crate::awrs::engine::weapon::Delivery;
 use crate::awrs::engine::{ScenarioState, Unit};
 use crate::awrs::resources::action_event::Attack;
 use crate::awrs::resources::tile::Tile;
@@ -12,9 +13,20 @@ use crate::awrs::resources::{
     unit::{Selected, UnitId},
 };
 
-pub fn open_target_selection(mut ev_change_cursor: EventWriter<ChangeCursorEvent>) {
+pub fn open_target_selection(
+    mut ev_change_cursor: EventWriter<ChangeCursorEvent>,
+    attacking_unit_query: Query<&UnitId, With<Selected>>,
+    scenario_state: Res<ScenarioState>,
+) {
+    let attacker_id = attacking_unit_query.single();
+    let attacker_unit = get_unit(&scenario_state, attacker_id);
+    let weapon = attacker_unit.unit_type.value().weapon_one.unwrap();
     info!("Changed to Target Selection");
-    ev_change_cursor.send(ChangeCursorEvent(CursorStyle::Target));
+    if let Delivery::Splash(_) = weapon.delivery {
+        ev_change_cursor.send(ChangeCursorEvent(CursorStyle::TargetSplash));
+    } else {
+        ev_change_cursor.send(ChangeCursorEvent(CursorStyle::Target));
+    }
 }
 
 pub fn target_select(
@@ -31,10 +43,13 @@ pub fn target_select(
     for (select_event, id) in ev_select.read_with_id() {
         warn!("Handling event ({:?})", id);
         match select_event {
-            SelectEvent::Entity(defender_entity) => {
+            SelectEvent::Entity { entity, context } => {
+                if context.game_state != GameState::ChooseTarget {
+                    continue;
+                }
                 info!("Executing target_select");
                 // ! What happens if SelectEvent is triggered for a Selected unit?
-                let defender = units_query.get_mut(*defender_entity);
+                let defender = units_query.get_mut(*entity);
                 match defender {
                     Ok((defender_entity, _def_unit_id)) => {
                         info!("Sending Attack Unit Action Event");
@@ -56,7 +71,10 @@ pub fn target_select(
                     }
                 }
             }
-            SelectEvent::Tile(tile) => {
+            SelectEvent::Tile { tile, context } => {
+                if context.game_state != GameState::ChooseTarget {
+                    continue;
+                }
                 send_attack_ground_event(&attacker_entity, tile, &mut ev_action);
             }
         };

@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::awrs::{
     constants::*,
     dev_helpers::{new_scenario_map, new_scenario_state},
-    engine::{ScenarioMap, TerrainType},
+    engine::TerrainType,
     resources::{
         animation::AnimationConfig,
         atlases::{CreepAtlas, HealthAtlas, StructureAtlases, TerrainAtlas, UnitAtlases},
@@ -11,6 +11,8 @@ use crate::awrs::{
         unit::*,
     },
 };
+
+const SCALE: f32 = 2.0;
 
 // TODO: should probably move the part for instantiating units elsewhere?
 pub fn build_map(
@@ -26,7 +28,7 @@ pub fn build_map(
     let scenario_state = new_scenario_state(scenario_map);
 
     let mut camera_bundle = Camera2dBundle::default();
-    camera_bundle.projection.scale /= 2.0;
+    camera_bundle.projection.scale /= SCALE;
     commands.spawn(camera_bundle);
 
     // DEPRECATED?
@@ -215,7 +217,7 @@ fn spawn_structure(
                 transform: Transform::from_translation(Vec3::new(
                     x as f32 * TILE_SIZE,
                     y as f32 * TILE_SIZE,
-                    1.0,
+                    0.9,
                 )),
                 ..Default::default()
             },

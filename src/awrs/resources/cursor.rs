@@ -4,6 +4,7 @@ use crate::awrs::engine::engine::Contains;
 
 use crate::awrs::{engine::ScenarioState, register_inputs::InputEvent};
 
+use super::state::GameState;
 use super::{
     tile::{Tile, TILE_SIZE},
     unit::UnitId,
@@ -12,6 +13,7 @@ use super::{
 pub enum CursorStyle {
     Browse,
     Target,
+    TargetSplash,
     None,
 }
 
@@ -47,17 +49,28 @@ pub fn handle_cursor_move(
     }
 }
 
+pub struct EventContext {
+    pub game_state: GameState,
+}
+
 // ? Do we need this select event, or could this be bundled into handle_cursor_select?
 #[derive(Event)]
 pub enum SelectEvent {
-    Entity(Entity),
-    Tile(Tile),
+    Entity {
+        entity: Entity,
+        context: EventContext,
+    },
+    Tile {
+        tile: Tile,
+        context: EventContext,
+    },
 }
 
 pub fn handle_cursor_select(
     mut ev_input_event: EventReader<InputEvent>,
     q_cursor: Query<&Transform, With<Cursor>>,
     q_units: Query<(Entity, &Transform), With<UnitId>>,
+    game_state: Res<State<GameState>>,
     mut ev_select: EventWriter<SelectEvent>,
 ) {
     for input_event in ev_input_event.read() {
@@ -70,13 +83,18 @@ pub fn handle_cursor_select(
                     .iter()
                     .find(|(_, transform)| Tile::from(**transform) == cursor_tile);
 
+                let context = EventContext {
+                    game_state: *game_state.get(),
+                };
                 match maybe_unit {
                     Some(tuple) => {
                         let entity = tuple.0;
-
-                        ev_select.send(SelectEvent::Entity(entity))
+                        ev_select.send(SelectEvent::Entity { entity, context })
                     }
-                    None => ev_select.send(SelectEvent::Tile(cursor_tile)),
+                    None => ev_select.send(SelectEvent::Tile {
+                        tile: cursor_tile,
+                        context,
+                    }),
                 }
             }
 

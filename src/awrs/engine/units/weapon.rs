@@ -25,13 +25,13 @@ pub struct Splash {
 }
 
 pub struct Weapon {
-    pub id: usize,
-    pub name: &'static str,
-    pub directness: Delivery, // TODO Come up with better name
+    pub _id: usize,
+    pub _name: &'static str,
+    pub delivery: Delivery,
     pub base_damage: f32,
-    pub num_of_attacks: u32,
+    pub _num_of_attacks: u32,
     pub bonuses: [Option<Bonus>; 4],
-    pub applicable: [Option<DamageTag>; 4],
+    pub _applicable: [Option<DamageTag>; 4],
     pub additional_effects: [Option<AdditionalEffect>; 4],
 }
 
@@ -39,32 +39,24 @@ impl Weapon {
     pub fn has_effect(&self, additional_effect: &AdditionalEffect) -> bool {
         self.additional_effects
             .contains(&Some(additional_effect.clone()))
-
-        // self.additional_effects.iter().any(|maybe_effect| {
-        //     if let Some(effect) = maybe_effect {
-        //         effect == additional_effect
-        //     } else {
-        //         false
-        //     }
-        // })
     }
 }
 
 pub const ZERGLING_ATTACK: Weapon = Weapon {
-    id: 1,
-    name: "Zergling Claws",
-    directness: Delivery::Melee,
+    _id: 1,
+    _name: "Zergling Claws",
+    delivery: Delivery::Melee,
     base_damage: 10.0,
     bonuses: [None, None, None, None],
-    num_of_attacks: 1,
-    applicable: [Some(Ground), None, None, None],
+    _num_of_attacks: 1,
+    _applicable: [Some(Ground), None, None, None],
     additional_effects: [None, None, None, None],
 };
 
 pub const BANELING_ATTACK: Weapon = Weapon {
-    id: 2,
-    name: "Acid Boom",
-    directness: Delivery::Splash(Splash {
+    _id: 2,
+    _name: "Acid Boom",
+    delivery: Delivery::Splash(Splash {
         range: (0.0, 0.0),
         radius: 1.5,
         friendly: false,
@@ -79,38 +71,38 @@ pub const BANELING_ATTACK: Weapon = Weapon {
         None,
         None,
     ],
-    num_of_attacks: 1,
-    applicable: [Some(Ground), None, None, None],
+    _num_of_attacks: 1,
+    _applicable: [Some(Ground), None, None, None],
     additional_effects: [Some(AdditionalEffect::Suicide), None, None, None],
 };
 
 pub const MARINE_ATTACK: Weapon = Weapon {
-    id: 0,
-    name: "Machine Gun",
-    directness: Delivery::Melee,
+    _id: 0,
+    _name: "Machine Gun",
+    delivery: Delivery::Melee,
     base_damage: 9.8,
     bonuses: [None, None, None, None],
-    num_of_attacks: 1,
-    applicable: [Some(Ground), None, None, None],
+    _num_of_attacks: 1,
+    _applicable: [Some(Ground), None, None, None],
     additional_effects: [None, None, None, None],
 };
 
 pub const ROACH_ATTACK: Weapon = Weapon {
-    id: 3,
-    name: "Acid Saliva",
-    directness: Delivery::Ranged(1.0, 2.0),
+    _id: 3,
+    _name: "Acid Saliva",
+    delivery: Delivery::Ranged(1.0, 2.0),
     base_damage: 11.2,
     bonuses: [None, None, None, None],
-    num_of_attacks: 1,
-    applicable: [Some(Ground), None, None, None],
+    _num_of_attacks: 1,
+    _applicable: [Some(Ground), None, None, None],
     additional_effects: [None, None, None, None],
 };
 
 pub const SIEGED_ATTACK: Weapon = Weapon {
-    id: 4,
-    name: "Crucio Shock Cannon",
-    directness: Delivery::Splash(Splash {
-        range: (1.0, 3.0),
+    _id: 4,
+    _name: "Crucio Shock Cannon",
+    delivery: Delivery::Splash(Splash {
+        range: (2.0, 4.0),
         radius: 1.5,
         friendly: true,
     }),
@@ -124,7 +116,7 @@ pub const SIEGED_ATTACK: Weapon = Weapon {
         None,
         None,
     ],
-    num_of_attacks: 1,
-    applicable: [Some(Ground), None, None, None],
+    _num_of_attacks: 1,
+    _applicable: [Some(Ground), None, None, None],
     additional_effects: [None, None, None, None],
 };

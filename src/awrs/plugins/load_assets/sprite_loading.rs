@@ -52,8 +52,15 @@ pub fn create_ui_sprites(
         max: Vec2::new(75.0 + 29.0, 5.0 + 32.0),
     };
 
+    // 9, 58, 57x57
+    let splash_cursor_rect = bevy::math::Rect {
+        min: Vec2::new(8.0, 58.0),
+        max: Vec2::new(8.0 + 57.0, 58.0 + 57.0),
+    };
+
     cursor_layout.add_texture(cursor_rect);
     cursor_layout.add_texture(attack_cursor_rect);
+    cursor_layout.add_texture(splash_cursor_rect);
 
     // Set up other UI sprites
     let mut ui_layout = TextureAtlasLayout::new_empty(image_size);

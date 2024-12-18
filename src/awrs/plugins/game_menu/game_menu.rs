@@ -73,7 +73,8 @@ pub fn open_game_menu(
 pub fn game_menu_input(
     mut input_events: ResMut<Events<InputEvent>>,
     mut ev_action: EventWriter<ActionEvent>,
-    mut next_state: ResMut<NextState<MenuState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_menu_state: ResMut<NextState<MenuState>>,
 ) {
     let mut reader = input_events.get_reader();
     let mut should_clear = false;
@@ -87,7 +88,8 @@ pub fn game_menu_input(
             InputEvent::ToggleMenu => {
                 info!("Quitting menu");
 
-                next_state.set(MenuState::Closed);
+                next_game_state.set(GameState::Browsing);
+                next_menu_state.set(MenuState::Closed);
                 should_clear = true;
             }
             _ => {}
