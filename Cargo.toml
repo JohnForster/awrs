@@ -3,10 +3,14 @@ name = "awrs"
 version = "0.1.0"
 edition = "2021"
 
+[workspace]
+members = ["crates/*"]
+
 [dependencies]
 bevy = { version = "0.13", features = ["bevy_dynamic_plugin", "file_watcher"] }
 bevy_common_assets = { version = "0.10.0", features = ["ron"] }
 serde = "*"
+advance_craft_engine = { path = "crates/advance_craft_engine" }
 
 
 [profile.dev.package."*"]

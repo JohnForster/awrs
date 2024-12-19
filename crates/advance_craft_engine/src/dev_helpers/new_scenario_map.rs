@@ -1,4 +1,4 @@
-use crate::awrs::engine::{ScenarioMap, TerrainType};
+use crate::{ScenarioMap, TerrainType};
 
 pub fn new_scenario_map() -> ScenarioMap {
     let mut number_terrain_map = vec![

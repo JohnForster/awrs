@@ -1,8 +1,6 @@
-use bevy::ecs::event;
 use bevy::prelude::*;
 
-use crate::awrs::engine::weapon::Delivery;
-use crate::awrs::engine::{ScenarioState, Unit};
+use crate::awrs::plugins::interface::interface::ScenarioState;
 use crate::awrs::resources::action_event::Attack;
 use crate::awrs::resources::tile::Tile;
 use crate::awrs::resources::{
@@ -12,6 +10,8 @@ use crate::awrs::resources::{
     state::GameState,
     unit::{Selected, UnitId},
 };
+use advance_craft_engine::weapon::Delivery;
+use advance_craft_engine::Unit;
 
 pub fn open_target_selection(
     mut ev_change_cursor: EventWriter<ChangeCursorEvent>,

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::{tile::Tile, unit::UnitId};
 
-use crate::awrs::engine::UnitHp;
+use advance_craft_engine::UnitHp;
 
 // Do we _need_ a wrapper here? Can the event be the enum?
 #[derive(Event)]

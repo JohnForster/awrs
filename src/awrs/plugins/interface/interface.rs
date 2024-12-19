@@ -1,13 +1,18 @@
+use std::ops::Deref;
+
+use advance_craft_engine::{
+    Command, CommandResult, ScenarioState as EngineScenarioState, Tile as EngineTile,
+};
 use bevy::prelude::*;
 
-use crate::awrs::{
-    engine::{Command, CommandResult, ScenarioState, Tile as EngineTile},
-    resources::{
-        action_event::{Action, ActionEvent, ActionResultEvent, Attack},
-        tile::Tile,
-        unit::UnitId,
-    },
+use crate::awrs::resources::{
+    action_event::{Action, ActionEvent, ActionResultEvent, Attack},
+    tile::Tile,
+    unit::UnitId,
 };
+
+#[derive(Deref, DerefMut, Resource)]
+pub struct ScenarioState(pub EngineScenarioState);
 
 impl From<&Tile> for EngineTile {
     fn from(tile: &Tile) -> EngineTile {

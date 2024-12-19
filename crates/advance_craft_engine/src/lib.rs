@@ -1,13 +1,16 @@
 use std::collections::HashMap;
 
-use super::{
-    structures::structures::*,
-    units::{units::*, weapon::Weapon},
-    weapon::{AdditionalEffect, Delivery, Splash},
-};
-use bevy::{ecs::system::Resource, prelude::info};
+mod dev_helpers;
+mod structures;
+mod units;
 
-#[derive(Debug, Clone, Copy)]
+pub use dev_helpers::*;
+use serde::{Deserialize, Serialize};
+pub use structures::*;
+pub use units::*;
+pub use weapon::*;
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Tile {
     pub x: u32,
     pub y: u32,
@@ -132,7 +135,7 @@ pub enum Command {
 
 pub type TeamID = u32;
 
-#[derive(Debug, Resource)]
+#[derive(Debug)]
 pub struct ScenarioState {
     pub map: ScenarioMap,
     pub units: Vec<Unit>,
@@ -164,14 +167,14 @@ impl Creep {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum CommandStatus {
     Ok,
     Partial,
     Err(CommandErr),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum CommandErr {
     AlreadyMoved,
     AlreadyAttacked,
@@ -180,7 +183,7 @@ pub enum CommandErr {
     UnknownErr,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum CommandResult {
     Move {
         status: CommandStatus,
@@ -347,7 +350,7 @@ impl ScenarioState {
         match weapon.delivery {
             Delivery::Splash(splash) => {
                 let tile_in_range = check_range_to_tile(attacker, &tile);
-                info!("{:?}", tile_in_range);
+                println!("{:?}", tile_in_range);
                 if !tile_in_range {
                     return CommandResult::AttackGround {
                         status: CommandStatus::Err(CommandErr::OutOfRange),
@@ -398,7 +401,7 @@ impl ScenarioState {
     }
 
     fn end_turn(&mut self) -> CommandResult {
-        info!("Ending turn");
+        println!("Ending turn");
         let new_active_team = (self.active_team + 1) % (self.teams.len() as u32);
         self.active_team = new_active_team;
         for unit in self.units.iter_mut() {
@@ -532,7 +535,7 @@ impl ScenarioState {
     }
 
     fn get_attack_damage(&self, attacker: &Unit, defender: &Unit, attacker_health: f32) -> f32 {
-        info!(
+        println!(
             "{:?} attacking {:?} ",
             attacker.unit_type, defender.unit_type
         );

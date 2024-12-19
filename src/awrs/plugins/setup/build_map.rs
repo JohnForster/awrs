@@ -1,9 +1,9 @@
+use advance_craft_engine::{new_scenario_map, new_scenario_state, TerrainType};
 use bevy::prelude::*;
 
 use crate::awrs::{
     constants::*,
-    dev_helpers::{new_scenario_map, new_scenario_state},
-    engine::TerrainType,
+    plugins::interface::interface::ScenarioState,
     resources::{
         animation::AnimationConfig,
         atlases::{CreepAtlas, HealthAtlas, StructureAtlases, TerrainAtlas, UnitAtlases},
@@ -25,7 +25,7 @@ pub fn build_map(
 ) {
     info!("Building map");
     let scenario_map = new_scenario_map();
-    let scenario_state = new_scenario_state(scenario_map);
+    let scenario_state = ScenarioState(new_scenario_state(scenario_map));
 
     let mut camera_bundle = Camera2dBundle::default();
     camera_bundle.projection.scale /= SCALE;
@@ -55,7 +55,7 @@ struct Creep;
 
 fn spawn_creep(
     commands: &mut Commands,
-    scenario_state: &crate::awrs::engine::ScenarioState,
+    scenario_state: &advance_craft_engine::ScenarioState,
     creep_atlas: &Res<CreepAtlas>,
 ) {
     commands
@@ -90,7 +90,7 @@ fn spawn_creep(
 
 fn spawn_tiles(
     commands: &mut Commands,
-    scenario_state: &crate::awrs::engine::ScenarioState,
+    scenario_state: &advance_craft_engine::ScenarioState,
     terrain_atlas: &Res<TerrainAtlas>,
 ) {
     commands
@@ -128,7 +128,7 @@ fn spawn_tiles(
 
 fn spawn_unit(
     commands: &mut Commands,
-    unit: &crate::awrs::engine::Unit,
+    unit: &advance_craft_engine::Unit,
     unit_atlases: &Res<UnitAtlases>,
     health_atlas: &Res<HealthAtlas>,
 ) {
@@ -187,7 +187,7 @@ fn spawn_unit(
 
 fn spawn_structure(
     commands: &mut Commands,
-    structure: &crate::awrs::engine::Structure,
+    structure: &advance_craft_engine::Structure,
     structure_atlases: &Res<StructureAtlases>,
     health_atlas: &Res<HealthAtlas>,
 ) {

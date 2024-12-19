@@ -1,6 +1,6 @@
-use crate::awrs::engine::DamageTag;
+use crate::DamageTag;
 
-use super::super::units::weapon::*;
+use crate::units::weapon::*;
 
 #[derive(Clone, Copy, Debug)]
 pub enum StructureType {

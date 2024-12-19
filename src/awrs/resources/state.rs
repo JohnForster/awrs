@@ -18,7 +18,7 @@ pub enum GameState {
     MoveUnit,
     ChooseTarget,
     _EnemyTurn,
-    Waiting,
+    _Waiting,
     None,
 }
 
