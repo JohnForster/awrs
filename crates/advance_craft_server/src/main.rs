@@ -179,7 +179,7 @@ fn handle_incoming(
             handle_connect_to_game(&game_map, &game_id, addr, team_id)
         }
         Ok(Incoming::InGameCommand { game_id, command }) => {
-            handle_game_command(&game_map, &game_id, command)
+            handle_game_command(&game_map, &game_id, command, addr)
         }
         Err(err) => {
             println!("{:?}", err);
@@ -233,12 +233,29 @@ fn handle_create_game(game_map: &GameMap) -> Outgoing {
     };
 }
 
-fn handle_game_command(game_map: &GameMap, game_id: &GameID, command: Command) -> Outgoing {
+fn handle_game_command(
+    game_map: &GameMap,
+    game_id: &GameID,
+    command: Command,
+    issuing_player: &PlayerID,
+) -> Outgoing {
     let mut binding = game_map.lock().unwrap();
     let game = match binding.get_mut(game_id) {
         None => return Outgoing::new_error(format!("No game found with id {}", game_id)),
         Some(v) => v,
     };
+
+    // TODO
+    // Check if game is active
+    // Check if it is the player's turn
+    let (_, issuing_team) = game
+        .players
+        .iter()
+        .find(|(player_id, _)| player_id == issuing_player)
+        .unwrap();
+    if game.scenario_state.active_team != *issuing_team {
+        return Outgoing::new_error("Not your turn".to_string());
+    }
 
     if !game.started {
         game.started = true;
@@ -287,7 +304,7 @@ fn log_message(addr: &SocketAddr, msg: &Message) {
     );
 }
 
-fn broadcast_to_others(addr: &SocketAddr, msg: Message, peer_map: &PeerMap) {
+fn _broadcast_to_others(addr: &SocketAddr, msg: Message, peer_map: &PeerMap) {
     let peers = peer_map.lock().unwrap();
     // We want to broadcast the message to everyone except ourselves.
     let broadcast_recipients = peers

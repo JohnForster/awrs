@@ -181,6 +181,7 @@ pub enum CommandErr {
     AlreadyAttacked,
     NotImplemented,
     OutOfRange,
+    WrongTeam,
     UnknownErr,
 }
 
@@ -229,6 +230,13 @@ impl ScenarioState {
         if unit.has_moved {
             return CommandResult::Move {
                 status: CommandStatus::Err(CommandErr::AlreadyMoved),
+                tiles: vec![unit.position],
+            };
+        }
+
+        if unit.team != self.active_team {
+            return CommandResult::Move {
+                status: CommandStatus::Err(CommandErr::WrongTeam),
                 tiles: vec![unit.position],
             };
         }
@@ -291,6 +299,13 @@ impl ScenarioState {
 
         let (attacker, defender) = self.get_two_units(attacker_id, defender_id).unwrap();
 
+        if attacker.team != self.active_team {
+            return CommandResult::Attack {
+                status: CommandStatus::Err(CommandErr::WrongTeam),
+                unit_hp_changes: vec![],
+            };
+        }
+
         // Attacker is able to attack
         if attacker.has_attacked {
             return CommandResult::Attack {
@@ -348,6 +363,14 @@ impl ScenarioState {
 
     fn attack_ground(&mut self, attacker_id: UnitId, tile: Tile) -> CommandResult {
         let attacker = self.get_unit(attacker_id).unwrap();
+
+        if attacker.team != self.active_team {
+            return CommandResult::Attack {
+                status: CommandStatus::Err(CommandErr::WrongTeam),
+                unit_hp_changes: vec![],
+            };
+        }
+
         let weapon = attacker.unit_type.value().weapon_one.unwrap();
         match weapon.delivery {
             Delivery::Splash(splash) => {
