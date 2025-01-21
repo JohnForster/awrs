@@ -1,14 +1,13 @@
 use std::collections::HashMap;
 
-mod dev_helpers;
-mod structures;
-mod units;
+pub mod dev_helpers;
+pub mod structures;
+pub mod units;
 
-pub use dev_helpers::*;
 use serde::{Deserialize, Serialize};
-pub use structures::*;
-pub use units::*;
-pub use weapon::*;
+use structures::*;
+use units::*;
+use weapon::*;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Tile {
@@ -34,7 +33,7 @@ pub type UnitId = u32;
 pub type UnitHp = f32;
 pub type Team = u32;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Unit {
     pub id: UnitId,
     pub unit_type: UnitType,
@@ -48,7 +47,7 @@ pub struct Unit {
 pub type StructureId = u32;
 pub type StructureHp = f32;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Structure {
     pub id: StructureId,
     pub structure_type: StructureType,
@@ -57,7 +56,7 @@ pub struct Structure {
     pub team: Team,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum TerrainType {
     Grass,
     Water,
@@ -101,12 +100,14 @@ impl Contains<i32> for ScenarioState {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone)]
 pub enum _Moveable {
     Through,
     Stop,
     Blocked,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
 pub enum UnitAction {
     Move,
     Attack,
@@ -116,7 +117,7 @@ pub enum UnitAction {
     _Resupply,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Command {
     Move {
         unit_id: UnitId,
@@ -135,7 +136,7 @@ pub enum Command {
 
 pub type TeamID = u32;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ScenarioState {
     pub map: ScenarioMap,
     pub units: Vec<Unit>,
@@ -147,7 +148,7 @@ pub struct ScenarioState {
 
 pub type CreepMap = HashMap<TeamID, Vec<Vec<bool>>>;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Creep(pub CreepMap);
 
 impl Creep {
@@ -167,14 +168,14 @@ impl Creep {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum CommandStatus {
     Ok,
     Partial,
     Err(CommandErr),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum CommandErr {
     AlreadyMoved,
     AlreadyAttacked,
@@ -183,11 +184,12 @@ pub enum CommandErr {
     UnknownErr,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum CommandResult {
     Move {
         status: CommandStatus,
         tiles: Vec<Tile>,
+        // revealed: Vec<(Unit...)> etc.
     },
     AttackGround {
         status: CommandStatus,

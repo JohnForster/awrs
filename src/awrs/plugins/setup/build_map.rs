@@ -1,4 +1,4 @@
-use advance_craft_engine::{new_scenario_map, new_scenario_state, TerrainType};
+use advance_craft_engine::{dev_helpers::new_scenario_state, TerrainType};
 use bevy::prelude::*;
 
 use crate::awrs::{
@@ -24,8 +24,7 @@ pub fn build_map(
     creep_atlas: Res<CreepAtlas>,
 ) {
     info!("Building map");
-    let scenario_map = new_scenario_map();
-    let scenario_state = ScenarioState(new_scenario_state(scenario_map));
+    let scenario_state = ScenarioState(new_scenario_state());
 
     let mut camera_bundle = Camera2dBundle::default();
     camera_bundle.projection.scale /= SCALE;
@@ -96,8 +95,8 @@ fn spawn_tiles(
     commands
         .spawn((
             GameMap {
-                height: scenario_state.map.len(),
-                width: scenario_state.map[0].len(),
+                _height: scenario_state.map.len(),
+                _width: scenario_state.map[0].len(),
             },
             SpatialBundle::default(),
         ))

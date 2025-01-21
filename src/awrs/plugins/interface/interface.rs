@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use advance_craft_engine::{
     Command, CommandResult, ScenarioState as EngineScenarioState, Tile as EngineTile,
 };

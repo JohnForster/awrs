@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
-use advance_craft_engine::{StructureType as EngineStructureType, UnitType as EngineUnitType};
+use advance_craft_engine::structures::structures::StructureType as EngineStructureType;
+use advance_craft_engine::units::units::UnitType as EngineUnitType;
 
 use crate::awrs::plugins::interface::interface::ScenarioState;
 

@@ -98,8 +98,8 @@ pub fn create_ui_sprites(
         layout: health_layout_handle,
     });
     commands.insert_resource(UIAtlas {
-        texture: ui_texture.clone(),
-        layout: ui_layout_handle,
+        _texture: ui_texture.clone(),
+        _layout: ui_layout_handle,
     });
 }
 

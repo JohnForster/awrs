@@ -1,13 +1,16 @@
+use serde::{Deserialize, Serialize};
+
 use crate::DamageTag;
 
 use crate::units::weapon::*;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum StructureType {
     Hatchery,
     CommandCentre,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct StructureStats {
     pub id: usize,
     pub name: &'static str,
@@ -18,6 +21,7 @@ pub struct StructureStats {
     pub weapon_one: Option<Weapon>,
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum Race {
     Zerg,
     Terran,

@@ -1,3 +1,4 @@
+use advance_craft_engine::units::weapon::Delivery;
 use bevy::prelude::*;
 
 use crate::awrs::plugins::interface::interface::ScenarioState;
@@ -10,7 +11,6 @@ use crate::awrs::resources::{
     state::GameState,
     unit::{Selected, UnitId},
 };
-use advance_craft_engine::weapon::Delivery;
 use advance_craft_engine::Unit;
 
 pub fn open_target_selection(

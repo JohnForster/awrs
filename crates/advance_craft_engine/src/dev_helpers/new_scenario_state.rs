@@ -1,21 +1,49 @@
 use crate::{
-    Creep, ScenarioMap, ScenarioState, Structure, StructureId, StructureType, Tile, Unit, UnitId,
-    UnitType,
+    Creep, ScenarioMap, ScenarioState, Structure, StructureId, StructureType, TerrainType, Tile,
+    Unit, UnitId, UnitType,
 };
 
-pub fn new_scenario_state(scenario_map: ScenarioMap) -> ScenarioState {
+pub fn new_scenario_state() -> ScenarioState {
+    let map = create_map();
     let units = create_units();
     let structures = create_structures();
-    let creep = create_creep(&scenario_map);
+    let creep = create_creep(&map);
 
     ScenarioState {
-        map: scenario_map,
+        map,
         units,
         structures,
         active_team: 0,
         teams: vec![0, 1],
         creep,
     }
+}
+
+fn create_map() -> ScenarioMap {
+    let mut number_terrain_map = vec![
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1],
+        vec![1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ];
+    number_terrain_map.reverse();
+
+    let landscape: ScenarioMap = number_terrain_map
+        .iter()
+        .map(|row| {
+            row.iter()
+                .map(|n| match n {
+                    0 => TerrainType::Water,
+                    1 => TerrainType::Grass,
+                    _ => panic!("No terrain implemented for index {}", n),
+                })
+                .collect()
+        })
+        .collect();
+
+    return landscape;
 }
 
 fn create_structures() -> Vec<Structure> {
