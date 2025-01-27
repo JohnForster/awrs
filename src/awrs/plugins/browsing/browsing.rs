@@ -71,9 +71,9 @@ pub fn listen_for_open_menu(
     mut next_menu_state: ResMut<NextState<MenuState>>,
     mut next_game_state: ResMut<NextState<GameState>>,
 ) {
-    let mut reader = ev_game_menu.get_reader();
+    let mut cursor = ev_game_menu.get_cursor();
     let mut should_clear = false;
-    for ev in reader.read(&ev_game_menu) {
+    for ev in cursor.read(&ev_game_menu) {
         if matches!(ev, InputEvent::ToggleMenu) {
             next_game_state.set(GameState::GameMenu);
             next_menu_state.set(MenuState::Open);

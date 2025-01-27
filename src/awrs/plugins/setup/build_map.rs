@@ -26,9 +26,9 @@ pub fn build_map(
     info!("Building map");
     let scenario_state = ScenarioState(new_scenario_state());
 
-    let mut camera_bundle = Camera2dBundle::default();
-    camera_bundle.projection.scale /= SCALE;
-    commands.spawn(camera_bundle);
+    let mut projection = OrthographicProjection::default_2d();
+    projection.scale /= SCALE;
+    commands.spawn((Camera2d::default(), projection));
 
     // DEPRECATED?
     // commands.spawn_bundle(UiCameraBundle::default());
@@ -58,7 +58,7 @@ fn spawn_creep(
     creep_atlas: &Res<CreepAtlas>,
 ) {
     commands
-        .spawn((SpatialBundle::default(), Creep))
+        .spawn((Transform::default(), Visibility::default(), Creep))
         .with_children(|parent| {
             for id in scenario_state.teams.iter() {
                 if let Some(creep_map) = scenario_state.creep.0.get(&id) {
@@ -66,19 +66,19 @@ fn spawn_creep(
                         for (x, &has_creep) in row.iter().enumerate() {
                             if has_creep {
                                 parent.spawn((
-                                    TextureAtlas {
-                                        layout: creep_atlas.layout.clone(),
-                                        index: get_creep_sprite(creep_map, x, y),
-                                    },
-                                    SpriteBundle {
-                                        texture: creep_atlas.texture.clone(),
-                                        transform: Transform::from_translation(Vec3::new(
-                                            x as f32 * TILE_SIZE,
-                                            y as f32 * TILE_SIZE,
-                                            0.0,
-                                        )),
+                                    Sprite {
+                                        image: creep_atlas.texture.clone(),
+                                        texture_atlas: Some(TextureAtlas {
+                                            layout: creep_atlas.layout.clone(),
+                                            index: get_creep_sprite(creep_map, x, y),
+                                        }),
                                         ..Default::default()
                                     },
+                                    Transform::from_translation(Vec3::new(
+                                        x as f32 * TILE_SIZE,
+                                        y as f32 * TILE_SIZE,
+                                        0.0,
+                                    )),
                                 ));
                             }
                         }
@@ -99,28 +99,29 @@ fn spawn_tiles(
                 _height: scenario_state.map.len(),
                 _width: scenario_state.map[0].len(),
             },
-            SpatialBundle::default(),
+            Transform::default(),
+            Visibility::default(),
         ))
         .with_children(|parent| {
             for (y, row) in scenario_state.map.iter().rev().enumerate() {
                 for (x, terrain_type) in row.iter().enumerate() {
                     parent.spawn((
-                        TextureAtlas {
-                            layout: terrain_atlas.layout.clone(),
-                            index: match terrain_type {
-                                TerrainType::Water => 0,
-                                TerrainType::Grass => 1,
-                            },
-                        },
-                        SpriteBundle {
-                            texture: terrain_atlas.texture.clone(),
-                            transform: Transform::from_translation(Vec3::new(
-                                x as f32 * TILE_SIZE,
-                                y as f32 * TILE_SIZE,
-                                0.0,
-                            )),
+                        Sprite {
+                            image: terrain_atlas.texture.clone(),
+                            texture_atlas: Some(TextureAtlas {
+                                layout: terrain_atlas.layout.clone(),
+                                index: match terrain_type {
+                                    TerrainType::Water => 0,
+                                    TerrainType::Grass => 1,
+                                },
+                            }),
                             ..Default::default()
                         },
+                        Transform::from_translation(Vec3::new(
+                            x as f32 * TILE_SIZE,
+                            y as f32 * TILE_SIZE,
+                            0.0,
+                        )),
                     ));
                 }
             }
@@ -140,48 +141,36 @@ fn spawn_unit(
         .get(&UnitType::from(unit.unit_type))
         .unwrap();
 
-    let sprite = Sprite {
-        flip_x: unit.team % 2 == 0,
-        ..Default::default()
-    };
-
     let animation_config = AnimationConfig::new(0, 3, 2);
 
     commands
         .spawn((
             UnitId(unit.id),
-            TextureAtlas {
-                layout: texture_atlas.layout.clone(),
-                index: 0,
-            },
-            SpriteBundle {
-                texture: texture_atlas.texture.clone(),
-                sprite,
-                transform: Transform::from_translation(Vec3::new(
-                    x as f32 * TILE_SIZE,
-                    y as f32 * TILE_SIZE,
-                    1.0,
-                )),
+            Sprite {
+                image: texture_atlas.texture.clone(),
+                texture_atlas: Some(TextureAtlas {
+                    layout: texture_atlas.layout.clone(),
+                    index: 0,
+                }),
+                flip_x: unit.team % 2 == 0,
                 ..Default::default()
             },
+            Transform::from_translation(Vec3::new(x as f32 * TILE_SIZE, y as f32 * TILE_SIZE, 1.0)),
             animation_config,
         ))
         .with_children(|unit| {
-            let transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
-
             unit.spawn((
-                HealthIndicator,
-                TextureAtlas {
-                    layout: health_atlas.layout.clone(),
-                    index: 9,
-                },
-                SpriteBundle {
-                    texture: health_atlas.texture.clone(),
-                    sprite: Sprite::default(),
-                    visibility: Visibility::Hidden,
-                    transform,
+                HPIndicator,
+                Sprite {
+                    texture_atlas: Some(TextureAtlas {
+                        layout: health_atlas.layout.clone(),
+                        index: 9,
+                    }),
+                    image: health_atlas.texture.clone(),
                     ..Default::default()
                 },
+                Transform::from_translation(Vec3::new(7.0, 7.0, 4.0)),
+                Visibility::Hidden,
             ));
         });
 }
@@ -199,47 +188,33 @@ fn spawn_structure(
         .get(&StructureType::from(structure.structure_type))
         .unwrap();
 
-    let sprite = Sprite {
-        ..Default::default()
-    };
-
-    let animation_config = AnimationConfig::new(0, 3, 2);
-
     commands
         .spawn((
             StructureId(structure.id),
-            TextureAtlas {
-                layout: texture_atlas.layout.clone(),
-                index: 0,
-            },
-            SpriteBundle {
-                texture: texture_atlas.texture.clone(),
-
-                sprite,
-                transform: Transform::from_translation(Vec3::new(
-                    x as f32 * TILE_SIZE,
-                    y as f32 * TILE_SIZE,
-                    0.9,
-                )),
+            Sprite {
+                image: texture_atlas.texture.clone(),
+                texture_atlas: Some(TextureAtlas {
+                    layout: texture_atlas.layout.clone(),
+                    index: 0,
+                }),
                 ..Default::default()
             },
-            animation_config,
+            Transform::from_translation(Vec3::new(x as f32 * TILE_SIZE, y as f32 * TILE_SIZE, 0.9)),
+            AnimationConfig::new(0, 3, 2),
         ))
         .with_children(|unit| {
-            let transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
             unit.spawn((
-                HealthIndicator,
-                TextureAtlas {
-                    layout: health_atlas.layout.clone(),
-                    index: 9,
-                },
-                SpriteBundle {
-                    texture: health_atlas.texture.clone(),
-                    sprite: Sprite::default(),
-                    visibility: Visibility::Hidden,
-                    transform,
+                HPIndicator,
+                Sprite {
+                    image: health_atlas.texture.clone(),
+                    texture_atlas: Some(TextureAtlas {
+                        layout: health_atlas.layout.clone(),
+                        index: 9,
+                    }),
                     ..Default::default()
                 },
+                Transform::from_translation(Vec3::new(7.0, 7.0, 4.0)),
+                Visibility::Hidden,
             ));
         });
 }

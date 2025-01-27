@@ -13,7 +13,7 @@ pub fn open_unit_menu(
     mut commands: Commands,
     units_query: Query<&UnitId, With<Selected>>,
     mut ev_change_cursor: EventWriter<ChangeCursorEvent>,
-    asset_server: Res<AssetServer>,
+    _asset_server: Res<AssetServer>,
 ) {
     ev_change_cursor.send(ChangeCursorEvent(CursorStyle::Browse));
     info!("Opening unit menu...");
@@ -28,39 +28,32 @@ pub fn open_unit_menu(
         commands
             .spawn((
                 UnitMenu,
-                NodeBundle {
-                    style: Style {
-                        width: Val::Percent(100.0),
-                        height: Val::Percent(100.0),
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::FlexStart,
-                        ..Default::default()
-                    },
+                Node {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::FlexStart,
                     ..Default::default()
                 },
             ))
             .with_children(|parent| {
                 for text in options.into_iter() {
                     parent
-                        .spawn(NodeBundle {
-                            style: Style {
-                                margin: UiRect::all(Val::Px(5.0)),
-                                ..Default::default()
-                            },
+                        .spawn(Node {
+                            margin: UiRect::all(Val::Px(5.0)),
                             ..Default::default()
                         })
                         .with_children(|parent| {
-                            parent.spawn(TextBundle {
-                                text: Text::from_section(
-                                    text,
-                                    TextStyle {
-                                        font: asset_server.load("fonts/aw2-gba.otf"),
-                                        font_size: 20.0,
-                                        color: Color::srgb(0.9, 0.9, 0.9),
-                                    },
-                                ),
-                                ..Default::default()
-                            });
+                            parent.spawn((
+                                Text::new(text),
+                                TextFont {
+                                    // ! This font is broken with Bevy 0.15
+                                    // font: asset_server.load("fonts/aw2-gba.otf"),
+                                    font_size: 20.0,
+                                    ..Default::default()
+                                },
+                                TextColor(Color::srgb(0.9, 0.9, 0.9)),
+                            ));
                         });
                 }
             });

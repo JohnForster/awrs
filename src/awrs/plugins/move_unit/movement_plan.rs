@@ -172,29 +172,23 @@ fn add_tile(
     arrow_atlas: &Res<ArrowAtlas>,
     commands: &mut Commands,
 ) {
-    info!("adding tile");
-    let sprite = Sprite {
-        ..Default::default()
-    };
-
     let entity = commands
         .spawn((
             MoveStepSprite,
-            TextureAtlas {
-                layout: arrow_atlas.layout.clone(),
-                index: 0,
-            },
-            SpriteBundle {
-                texture: arrow_atlas.texture.clone(),
-                sprite,
-                visibility: Visibility::Visible,
-                transform: Transform::from_translation(Vec3::new(
-                    tile.x as f32 * TILE_SIZE,
-                    tile.y as f32 * TILE_SIZE,
-                    5.0,
-                )),
+            Transform::from_translation(Vec3::new(
+                tile.x as f32 * TILE_SIZE,
+                tile.y as f32 * TILE_SIZE,
+                5.0,
+            )),
+            Sprite {
+                image: arrow_atlas.texture.clone(),
+                texture_atlas: Some(TextureAtlas {
+                    layout: arrow_atlas.layout.clone(),
+                    index: 0,
+                }),
                 ..Default::default()
             },
+            Visibility::Visible,
         ))
         .id();
 
@@ -224,7 +218,7 @@ pub struct PlanUpdateEvent;
 pub fn update_arrows(
     mut ev_plan_update: EventReader<PlanUpdateEvent>,
     unit_plan: Res<UnitPlan>,
-    mut q_texture_atlas_sprite: Query<(&mut Visibility, &mut TextureAtlas), With<MoveStepSprite>>,
+    mut q_texture_atlas_sprite: Query<(&mut Visibility, &mut Sprite), With<MoveStepSprite>>,
 ) {
     for _ in ev_plan_update.read() {
         info!("Executing update_arrows");
@@ -243,13 +237,15 @@ pub fn update_arrows(
                 unit_plan.steps.get(i + 1).map(|step| step.tile)
             };
 
-            let (mut visibility, mut atlas) = q_texture_atlas_sprite.get_mut(entity).unwrap();
+            let (mut visibility, mut sprite) = q_texture_atlas_sprite.get_mut(entity).unwrap();
 
-            match get_index_from_tiles(before_tile, tile, after_tile) {
-                None => *visibility = Visibility::Hidden,
-                Some(atlas_index) => {
-                    *visibility = Visibility::Visible;
-                    atlas.index = atlas_index;
+            if let Some(atlas) = &mut sprite.texture_atlas {
+                match get_index_from_tiles(before_tile, tile, after_tile) {
+                    None => *visibility = Visibility::Hidden,
+                    Some(atlas_index) => {
+                        *visibility = Visibility::Visible;
+                        atlas.index = atlas_index;
+                    }
                 }
             }
         }
