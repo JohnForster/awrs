@@ -80,9 +80,10 @@ pub fn handle_attack_result(
             }
         }
 
+        const GRAY: Srgba = bevy::color::palettes::css::GRAY;
         for (_, UnitId(unit_id), mut sprite) in q_units.iter_mut() {
             if scenario_state.unit_cannot_act(unit_id) {
-                sprite.color = Color::GRAY;
+                sprite.color = GRAY.into();
             }
         }
     }
