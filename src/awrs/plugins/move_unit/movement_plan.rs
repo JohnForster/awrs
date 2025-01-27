@@ -180,12 +180,12 @@ fn add_tile(
     let entity = commands
         .spawn((
             MoveStepSprite,
-            SpriteSheetBundle {
+            TextureAtlas {
+                layout: arrow_atlas.layout.clone(),
+                index: 0,
+            },
+            SpriteBundle {
                 texture: arrow_atlas.texture.clone(),
-                atlas: TextureAtlas {
-                    layout: arrow_atlas.layout.clone(),
-                    index: 0,
-                },
                 sprite,
                 visibility: Visibility::Visible,
                 transform: Transform::from_translation(Vec3::new(

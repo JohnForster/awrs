@@ -1,10 +1,8 @@
 use bevy::prelude::*;
-use bevy_common_assets::ron::RonAssetPlugin;
 
 use crate::awrs::resources::state::{AppState, GameState};
 
 use super::sprite_loading::*;
-use super::unit_loading::*;
 
 pub struct LoadAssetsPlugin;
 
@@ -17,7 +15,6 @@ struct LoadingSet;
 impl Plugin for LoadAssetsPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(AssetsLoading(vec![]))
-            .add_plugins(RonAssetPlugin::<UnitStats>::new(&["unit.ron"]))
             .configure_sets(Update, LoadingSet.run_if(in_state(AppState::Loading)))
             .add_systems(
                 OnEnter(AppState::Loading),
@@ -29,7 +26,6 @@ impl Plugin for LoadAssetsPlugin {
                     create_ui_sprites,
                     create_creep_sprites,     // Move to setup
                     create_structure_sprites, // Move to setup
-                    load_units,
                 ),
             )
             .add_systems(Update, check_assets_ready.in_set(LoadingSet));

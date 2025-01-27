@@ -34,15 +34,17 @@ pub fn create_cursor(mut commands: Commands, ui_atlas: Res<CursorAtlas>) {
             },
         ))
         .with_children(|parent| {
-            parent.spawn((SpriteSheetBundle {
-                texture: ui_atlas.texture.clone(),
-                atlas: TextureAtlas {
+            parent.spawn((
+                TextureAtlas {
                     layout: ui_atlas.layout.clone(),
                     index: CursorStyle::Browse as usize,
                 },
-                transform: Transform::from_translation(adjustment),
-                ..Default::default()
-            },));
+                SpriteBundle {
+                    texture: ui_atlas.texture.clone(),
+                    transform: Transform::from_translation(adjustment),
+                    ..Default::default()
+                },
+            ));
         });
 }
 

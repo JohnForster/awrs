@@ -65,20 +65,21 @@ fn spawn_creep(
                     for (y, row) in creep_map.iter().enumerate() {
                         for (x, &has_creep) in row.iter().enumerate() {
                             if has_creep {
-                                let atlas = TextureAtlas {
-                                    layout: creep_atlas.layout.clone(),
-                                    index: get_creep_sprite(creep_map, x, y),
-                                };
-                                parent.spawn(SpriteSheetBundle {
-                                    texture: creep_atlas.texture.clone(),
-                                    atlas,
-                                    transform: Transform::from_translation(Vec3::new(
-                                        x as f32 * TILE_SIZE,
-                                        y as f32 * TILE_SIZE,
-                                        0.0,
-                                    )),
-                                    ..Default::default()
-                                });
+                                parent.spawn((
+                                    TextureAtlas {
+                                        layout: creep_atlas.layout.clone(),
+                                        index: get_creep_sprite(creep_map, x, y),
+                                    },
+                                    SpriteBundle {
+                                        texture: creep_atlas.texture.clone(),
+                                        transform: Transform::from_translation(Vec3::new(
+                                            x as f32 * TILE_SIZE,
+                                            y as f32 * TILE_SIZE,
+                                            0.0,
+                                        )),
+                                        ..Default::default()
+                                    },
+                                ));
                             }
                         }
                     }
@@ -103,23 +104,24 @@ fn spawn_tiles(
         .with_children(|parent| {
             for (y, row) in scenario_state.map.iter().rev().enumerate() {
                 for (x, terrain_type) in row.iter().enumerate() {
-                    let atlas = TextureAtlas {
-                        layout: terrain_atlas.layout.clone(),
-                        index: match terrain_type {
-                            TerrainType::Water => 0,
-                            TerrainType::Grass => 1,
+                    parent.spawn((
+                        TextureAtlas {
+                            layout: terrain_atlas.layout.clone(),
+                            index: match terrain_type {
+                                TerrainType::Water => 0,
+                                TerrainType::Grass => 1,
+                            },
                         },
-                    };
-                    parent.spawn(SpriteSheetBundle {
-                        texture: terrain_atlas.texture.clone(),
-                        atlas,
-                        transform: Transform::from_translation(Vec3::new(
-                            x as f32 * TILE_SIZE,
-                            y as f32 * TILE_SIZE,
-                            0.0,
-                        )),
-                        ..Default::default()
-                    });
+                        SpriteBundle {
+                            texture: terrain_atlas.texture.clone(),
+                            transform: Transform::from_translation(Vec3::new(
+                                x as f32 * TILE_SIZE,
+                                y as f32 * TILE_SIZE,
+                                0.0,
+                            )),
+                            ..Default::default()
+                        },
+                    ));
                 }
             }
         });
@@ -148,12 +150,12 @@ fn spawn_unit(
     commands
         .spawn((
             UnitId(unit.id),
-            SpriteSheetBundle {
+            TextureAtlas {
+                layout: texture_atlas.layout.clone(),
+                index: 0,
+            },
+            SpriteBundle {
                 texture: texture_atlas.texture.clone(),
-                atlas: TextureAtlas {
-                    layout: texture_atlas.layout.clone(),
-                    index: 0,
-                },
                 sprite,
                 transform: Transform::from_translation(Vec3::new(
                     x as f32 * TILE_SIZE,
@@ -166,14 +168,14 @@ fn spawn_unit(
         ))
         .with_children(|unit| {
             let transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
-            let atlas = TextureAtlas {
-                layout: health_atlas.layout.clone(),
-                index: 9,
-            };
+
             unit.spawn((
                 HealthIndicator,
-                SpriteSheetBundle {
-                    atlas,
+                TextureAtlas {
+                    layout: health_atlas.layout.clone(),
+                    index: 9,
+                },
+                SpriteBundle {
                     texture: health_atlas.texture.clone(),
                     sprite: Sprite::default(),
                     visibility: Visibility::Hidden,
@@ -206,12 +208,13 @@ fn spawn_structure(
     commands
         .spawn((
             StructureId(structure.id),
-            SpriteSheetBundle {
+            TextureAtlas {
+                layout: texture_atlas.layout.clone(),
+                index: 0,
+            },
+            SpriteBundle {
                 texture: texture_atlas.texture.clone(),
-                atlas: TextureAtlas {
-                    layout: texture_atlas.layout.clone(),
-                    index: 0,
-                },
+
                 sprite,
                 transform: Transform::from_translation(Vec3::new(
                     x as f32 * TILE_SIZE,
@@ -224,14 +227,13 @@ fn spawn_structure(
         ))
         .with_children(|unit| {
             let transform = Transform::from_translation(Vec3::new(7.0, 7.0, 4.0));
-            let atlas = TextureAtlas {
-                layout: health_atlas.layout.clone(),
-                index: 9,
-            };
             unit.spawn((
                 HealthIndicator,
-                SpriteSheetBundle {
-                    atlas,
+                TextureAtlas {
+                    layout: health_atlas.layout.clone(),
+                    index: 9,
+                },
+                SpriteBundle {
                     texture: health_atlas.texture.clone(),
                     sprite: Sprite::default(),
                     visibility: Visibility::Hidden,

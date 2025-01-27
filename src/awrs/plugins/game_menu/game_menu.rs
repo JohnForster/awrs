@@ -60,7 +60,7 @@ pub fn open_game_menu(
                                 TextStyle {
                                     font: asset_server.load("fonts/aw2-gba.otf"),
                                     font_size: 20.0,
-                                    color: Color::rgb(0.9, 0.9, 0.9),
+                                    color: Color::srgb(0.9, 0.9, 0.9),
                                 },
                             ),
                             ..Default::default()
