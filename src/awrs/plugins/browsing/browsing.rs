@@ -2,7 +2,7 @@ use bevy::ecs::event::*;
 use bevy::prelude::*;
 
 use crate::awrs::{
-    engine::ScenarioState,
+    plugins::interface::interface::ScenarioState,
     register_inputs::InputEvent,
     resources::{
         cursor::{ChangeCursorEvent, CursorStyle, SelectEvent},

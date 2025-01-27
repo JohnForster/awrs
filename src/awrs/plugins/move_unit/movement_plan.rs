@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 
 use super::arrows::get_index_from_tiles;
+use advance_craft_engine::Tile as EngineTile;
 
 use crate::awrs::{
-    engine::{ScenarioState, Tile as EngineTile},
+    plugins::interface::interface::ScenarioState,
     register_inputs::InputEvent,
     resources::{
         action_event::{Action, ActionEvent, ActionResultEvent},

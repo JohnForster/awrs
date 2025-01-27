@@ -4,8 +4,8 @@ use super::unit::Team;
 
 #[derive(Component)]
 pub struct GameMap {
-    pub width: usize,
-    pub height: usize,
+    pub _width: usize,
+    pub _height: usize,
 }
 
 #[derive(Bundle)]

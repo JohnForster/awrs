@@ -1,13 +1,15 @@
 use std::collections::HashMap;
 
-use super::{
-    structures::structures::*,
-    units::{units::*, weapon::Weapon},
-    weapon::{AdditionalEffect, Delivery, Splash},
-};
-use bevy::{ecs::system::Resource, prelude::info};
+pub mod dev_helpers;
+pub mod structures;
+pub mod units;
 
-#[derive(Debug, Clone, Copy)]
+use serde::{Deserialize, Serialize};
+use structures::*;
+use units::*;
+use weapon::*;
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Tile {
     pub x: u32,
     pub y: u32,
@@ -31,7 +33,7 @@ pub type UnitId = u32;
 pub type UnitHp = f32;
 pub type Team = u32;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Unit {
     pub id: UnitId,
     pub unit_type: UnitType,
@@ -45,7 +47,7 @@ pub struct Unit {
 pub type StructureId = u32;
 pub type StructureHp = f32;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Structure {
     pub id: StructureId,
     pub structure_type: StructureType,
@@ -54,7 +56,7 @@ pub struct Structure {
     pub team: Team,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum TerrainType {
     Grass,
     Water,
@@ -98,12 +100,14 @@ impl Contains<i32> for ScenarioState {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone)]
 pub enum _Moveable {
     Through,
     Stop,
     Blocked,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
 pub enum UnitAction {
     Move,
     Attack,
@@ -113,7 +117,7 @@ pub enum UnitAction {
     _Resupply,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Command {
     Move {
         unit_id: UnitId,
@@ -132,7 +136,7 @@ pub enum Command {
 
 pub type TeamID = u32;
 
-#[derive(Debug, Resource)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ScenarioState {
     pub map: ScenarioMap,
     pub units: Vec<Unit>,
@@ -144,7 +148,7 @@ pub struct ScenarioState {
 
 pub type CreepMap = HashMap<TeamID, Vec<Vec<bool>>>;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Creep(pub CreepMap);
 
 impl Creep {
@@ -164,27 +168,29 @@ impl Creep {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum CommandStatus {
     Ok,
     Partial,
     Err(CommandErr),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum CommandErr {
     AlreadyMoved,
     AlreadyAttacked,
     NotImplemented,
     OutOfRange,
+    WrongTeam,
     UnknownErr,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum CommandResult {
     Move {
         status: CommandStatus,
         tiles: Vec<Tile>,
+        // revealed: Vec<(Unit...)> etc.
     },
     AttackGround {
         status: CommandStatus,
@@ -224,6 +230,13 @@ impl ScenarioState {
         if unit.has_moved {
             return CommandResult::Move {
                 status: CommandStatus::Err(CommandErr::AlreadyMoved),
+                tiles: vec![unit.position],
+            };
+        }
+
+        if unit.team != self.active_team {
+            return CommandResult::Move {
+                status: CommandStatus::Err(CommandErr::WrongTeam),
                 tiles: vec![unit.position],
             };
         }
@@ -286,6 +299,13 @@ impl ScenarioState {
 
         let (attacker, defender) = self.get_two_units(attacker_id, defender_id).unwrap();
 
+        if attacker.team != self.active_team {
+            return CommandResult::Attack {
+                status: CommandStatus::Err(CommandErr::WrongTeam),
+                unit_hp_changes: vec![],
+            };
+        }
+
         // Attacker is able to attack
         if attacker.has_attacked {
             return CommandResult::Attack {
@@ -343,11 +363,19 @@ impl ScenarioState {
 
     fn attack_ground(&mut self, attacker_id: UnitId, tile: Tile) -> CommandResult {
         let attacker = self.get_unit(attacker_id).unwrap();
+
+        if attacker.team != self.active_team {
+            return CommandResult::Attack {
+                status: CommandStatus::Err(CommandErr::WrongTeam),
+                unit_hp_changes: vec![],
+            };
+        }
+
         let weapon = attacker.unit_type.value().weapon_one.unwrap();
         match weapon.delivery {
             Delivery::Splash(splash) => {
                 let tile_in_range = check_range_to_tile(attacker, &tile);
-                info!("{:?}", tile_in_range);
+                println!("{:?}", tile_in_range);
                 if !tile_in_range {
                     return CommandResult::AttackGround {
                         status: CommandStatus::Err(CommandErr::OutOfRange),
@@ -398,7 +426,7 @@ impl ScenarioState {
     }
 
     fn end_turn(&mut self) -> CommandResult {
-        info!("Ending turn");
+        println!("Ending turn");
         let new_active_team = (self.active_team + 1) % (self.teams.len() as u32);
         self.active_team = new_active_team;
         for unit in self.units.iter_mut() {
@@ -532,7 +560,7 @@ impl ScenarioState {
     }
 
     fn get_attack_damage(&self, attacker: &Unit, defender: &Unit, attacker_health: f32) -> f32 {
-        info!(
+        println!(
             "{:?} attacking {:?} ",
             attacker.unit_type, defender.unit_type
         );

@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
-use crate::awrs::engine::{
-    ScenarioState, StructureType as EngineStructureType, UnitType as EngineUnitType,
-};
+use advance_craft_engine::structures::structures::StructureType as EngineStructureType;
+use advance_craft_engine::units::units::UnitType as EngineUnitType;
+
+use crate::awrs::plugins::interface::interface::ScenarioState;
 
 use super::action_event::ActionResultEvent;
 

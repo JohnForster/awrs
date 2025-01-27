@@ -36,8 +36,8 @@ pub struct HealthAtlas {
 
 #[derive(Resource)]
 pub struct UIAtlas {
-    pub layout: Handle<TextureAtlasLayout>,
-    pub texture: Handle<Image>,
+    pub _layout: Handle<TextureAtlasLayout>,
+    pub _texture: Handle<Image>,
 }
 
 #[derive(Resource)]

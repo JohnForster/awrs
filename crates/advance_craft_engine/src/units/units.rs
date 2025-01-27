@@ -1,6 +1,6 @@
 use super::weapon::*;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum UnitType {
     Zergling,
     Roach,
@@ -9,7 +9,7 @@ pub enum UnitType {
     SiegeTank,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Serialize, Deserialize)]
 pub enum DamageTag {
     Biological,
     Mechanical,
@@ -21,6 +21,7 @@ pub enum DamageTag {
     _Infantry,
 }
 
+#[derive(PartialEq, Serialize, Deserialize)]
 pub struct UnitStats {
     pub id: usize,
     pub name: &'static str,
@@ -34,6 +35,7 @@ pub struct UnitStats {
     pub weapon_two: Option<Weapon>,
 }
 
+#[derive(PartialEq, Serialize, Deserialize)]
 pub enum Race {
     Zerg,
     Terran,
@@ -54,6 +56,7 @@ impl UnitType {
 }
 
 use DamageTag::*;
+use serde::{Deserialize, Serialize};
 
 pub const ZERGLING: UnitStats = UnitStats {
     id: 1,

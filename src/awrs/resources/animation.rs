@@ -6,7 +6,7 @@ use bevy::prelude::*;
 pub struct AnimationConfig {
     pub first_index: usize,
     pub last_index: usize,
-    pub fps: u8,
+    pub _fps: u8,
     pub frame_timer: Timer,
 }
 
@@ -15,7 +15,7 @@ impl AnimationConfig {
         Self {
             first_index: first,
             last_index: last,
-            fps,
+            _fps: fps,
             frame_timer: Self::timer_from_fps(fps),
         }
     }

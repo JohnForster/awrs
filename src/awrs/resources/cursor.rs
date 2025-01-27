@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
-use crate::awrs::engine::engine::Contains;
+use advance_craft_engine::Contains;
 
-use crate::awrs::{engine::ScenarioState, register_inputs::InputEvent};
+use crate::awrs::plugins::interface::interface::ScenarioState;
+use crate::awrs::register_inputs::InputEvent;
 
 use super::state::GameState;
 use super::{

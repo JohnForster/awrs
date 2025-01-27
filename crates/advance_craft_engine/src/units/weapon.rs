@@ -1,22 +1,26 @@
+use serde::{Deserialize, Serialize};
+
 use super::units::{DamageTag, DamageTag::*};
 
+#[derive(PartialEq, Serialize, Deserialize)]
 pub struct Bonus {
     pub tag: DamageTag,
     pub additional_damage: f32,
 }
 
+#[derive(PartialEq, Serialize, Deserialize)]
 pub enum Delivery {
     Melee,
     Ranged(f32, f32), // Min, Max
     Splash(Splash),
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Serialize, Deserialize)]
 pub enum AdditionalEffect {
     Suicide,
 }
 
-#[derive(Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub struct Splash {
     pub range: (f32, f32),
     pub radius: f32,
@@ -24,6 +28,7 @@ pub struct Splash {
     // pub _dropoff: f32, // Dropoff per unit range.
 }
 
+#[derive(PartialEq, Serialize, Deserialize)]
 pub struct Weapon {
     pub _id: usize,
     pub _name: &'static str,
