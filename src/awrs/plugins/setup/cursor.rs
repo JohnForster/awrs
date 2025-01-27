@@ -28,22 +28,20 @@ pub fn create_cursor(mut commands: Commands, ui_atlas: Res<CursorAtlas>) {
     commands
         .spawn((
             Cursor,
-            SpatialBundle {
-                transform: Transform::from_translation(starting_position),
-                ..Default::default()
-            },
+            Transform::from_translation(starting_position),
+            Visibility::Visible,
         ))
         .with_children(|parent| {
             parent.spawn((
-                TextureAtlas {
-                    layout: ui_atlas.layout.clone(),
-                    index: CursorStyle::Browse as usize,
-                },
-                SpriteBundle {
-                    texture: ui_atlas.texture.clone(),
-                    transform: Transform::from_translation(adjustment),
+                Sprite {
+                    image: ui_atlas.texture.clone(),
+                    texture_atlas: Some(TextureAtlas {
+                        layout: ui_atlas.layout.clone(),
+                        index: CursorStyle::Browse as usize,
+                    }),
                     ..Default::default()
                 },
+                Transform::from_translation(adjustment),
             ));
         });
 }
@@ -51,7 +49,7 @@ pub fn create_cursor(mut commands: Commands, ui_atlas: Res<CursorAtlas>) {
 pub fn handle_change_cursor(
     mut ev_change_cursor: EventReader<ChangeCursorEvent>,
     mut q_cursor_children: Query<&mut Children, With<Cursor>>,
-    mut q_sprite: Query<(&mut TextureAtlas, &mut Visibility, &mut Transform)>,
+    mut q_sprite: Query<(&mut Sprite, &mut Visibility, &mut Transform)>,
 ) {
     for ChangeCursorEvent(cursor_style) in ev_change_cursor.read() {
         let sprite_index = match cursor_style {
@@ -74,10 +72,12 @@ pub fn handle_change_cursor(
         let cursor_children = q_cursor_children.single_mut();
 
         for child in cursor_children.iter() {
-            if let Ok((mut atlas, mut visibility, mut transform)) = q_sprite.get_mut(*child) {
-                atlas.index = sprite_index;
-                *visibility = Visibility::Visible;
-                transform.translation = get_cursor_adjustment(cursor_style);
+            if let Ok((mut sprite, mut visibility, mut transform)) = q_sprite.get_mut(*child) {
+                if let Some(atlas) = &mut sprite.texture_atlas {
+                    atlas.index = sprite_index;
+                    *visibility = Visibility::Visible;
+                    transform.translation = get_cursor_adjustment(cursor_style);
+                }
             }
         }
     }

@@ -57,7 +57,7 @@ impl From<EngineStructureType> for StructureType {
 }
 
 #[derive(Component)]
-pub struct HealthIndicator;
+pub struct HPIndicator;
 
 pub fn handle_attack_result(
     mut q_units: Query<(Entity, &UnitId, &mut Sprite)>,
@@ -99,7 +99,7 @@ pub struct DamageEvent {
 pub fn handle_damage(
     mut ev_damage: EventReader<DamageEvent>,
     mut units_query: Query<(&UnitId, &Children)>,
-    mut health_indicator_query: Query<(&mut TextureAtlas, &mut Visibility), With<HealthIndicator>>,
+    mut q_hp_indicator: Query<(&mut Sprite, &mut Visibility), With<HPIndicator>>,
     mut commands: Commands,
     scenario_state: Res<ScenarioState>,
 ) {
@@ -110,26 +110,28 @@ pub fn handle_damage(
             .expect("Could not find unit to damage");
 
         for &child in children.iter() {
-            if let Ok((mut health_indicator, mut visibility)) =
-                health_indicator_query.get_mut(child)
-            {
-                info!("Updating health indicator");
-                match scenario_state.get_unit(unit_id.0) {
-                    Some(unit) => {
-                        let max_health = unit.unit_type.value().max_health;
-                        println!("max_health: {:?}", max_health);
-                        let health_percent = new_hp / max_health;
-                        let ceil_health = (health_percent * 10.0).ceil().max(0.0) as usize;
-                        info!("new_hp: {:?}, ceil_health: {:?}", new_hp, ceil_health);
-                        if ceil_health == 0 {
-                            commands.entity(*entity).despawn_recursive()
-                        } else if ceil_health < 10 {
-                            *visibility = Visibility::Visible;
-                            health_indicator.index = ceil_health - 1;
-                        }
+            let Ok((mut sprite, mut visibility)) = q_hp_indicator.get_mut(child) else {
+                continue;
+            };
+            info!("Updating health indicator");
+            match scenario_state.get_unit(unit_id.0) {
+                Some(unit) => {
+                    let max_health = unit.unit_type.value().max_health;
+                    println!("max_health: {:?}", max_health);
+                    let health_percent = new_hp / max_health;
+                    let ceil_health = (health_percent * 10.0).ceil().max(0.0) as usize;
+                    info!("new_hp: {:?}, ceil_health: {:?}", new_hp, ceil_health);
+                    let Some(atlas) = &mut sprite.texture_atlas else {
+                        continue;
+                    };
+                    if ceil_health == 0 {
+                        commands.entity(*entity).despawn_recursive()
+                    } else if ceil_health < 10 {
+                        *visibility = Visibility::Visible;
+                        atlas.index = ceil_health - 1;
                     }
-                    None => commands.entity(*entity).despawn_recursive(),
                 }
+                None => commands.entity(*entity).despawn_recursive(),
             }
         }
     }

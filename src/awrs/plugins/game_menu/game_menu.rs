@@ -18,7 +18,7 @@ pub struct GameMenu;
 pub fn open_game_menu(
     mut commands: Commands,
     mut ev_change_cursor: EventWriter<ChangeCursorEvent>,
-    asset_server: Res<AssetServer>,
+    _asset_server: Res<AssetServer>,
 ) {
     ev_change_cursor.send(ChangeCursorEvent(CursorStyle::Browse));
     info!("Opening game menu...");
@@ -27,18 +27,15 @@ pub fn open_game_menu(
 
     // TODO get unit menu options from selected unit.
     // eg. Move if hasn't moved yet. Attack if unit next to it etc.
-    let options = vec!["E - End Turn", "Enter - Return to game"];
+    let options = vec!["E to End Turn", "Enter to Return to game"];
 
     commands
         .spawn((
-            NodeBundle {
-                style: Style {
-                    height: Val::Percent(100.0),
-                    width: Val::Percent(100.0),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::FlexStart,
-                    ..Default::default()
-                },
+            Node {
+                height: Val::Percent(100.0),
+                width: Val::Percent(100.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::FlexStart,
                 ..Default::default()
             },
             GameMenu,
@@ -46,25 +43,21 @@ pub fn open_game_menu(
         .with_children(|parent| {
             for text in options.into_iter() {
                 parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            margin: UiRect::all(Val::Px(5.0)),
-                            ..Default::default()
-                        },
+                    .spawn(Node {
+                        margin: UiRect::all(Val::Px(5.0)),
                         ..Default::default()
                     })
                     .with_children(|parent| {
-                        parent.spawn(TextBundle {
-                            text: Text::from_section(
-                                text,
-                                TextStyle {
-                                    font: asset_server.load("fonts/aw2-gba.otf"),
-                                    font_size: 20.0,
-                                    color: Color::srgb(0.9, 0.9, 0.9),
-                                },
-                            ),
-                            ..Default::default()
-                        });
+                        parent.spawn((
+                            Text::new(text),
+                            TextFont {
+                                // ! This font is broken with Bevy 0.15
+                                // font: asset_server.load("fonts/aw2-gba.otf"),
+                                font_size: 20.0,
+                                ..Default::default()
+                            },
+                            TextColor(Color::srgb(0.9, 0.9, 0.9)),
+                        ));
                     });
             }
         });
@@ -76,9 +69,9 @@ pub fn game_menu_input(
     mut next_game_state: ResMut<NextState<GameState>>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
 ) {
-    let mut reader = input_events.get_reader();
+    let mut cursor = input_events.get_cursor();
     let mut should_clear = false;
-    for ev in reader.read(&input_events) {
+    for ev in cursor.read(&input_events) {
         match ev {
             InputEvent::EndTurn => {
                 info!("Reading input events... Ending Turn");
