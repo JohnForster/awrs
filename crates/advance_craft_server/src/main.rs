@@ -1,7 +1,6 @@
 use std::{
     collections::HashMap,
     env,
-    fmt::format,
     io::Error as IoError,
     net::SocketAddr,
     sync::{Arc, Mutex},
@@ -10,6 +9,7 @@ use std::{
 use advance_craft_engine::{
     Command, CommandResult, ScenarioState, TeamID, dev_helpers::new_scenario_state,
 };
+use advance_craft_server::*;
 use futures_channel::mpsc::{TrySendError, UnboundedSender, unbounded};
 use futures_util::{StreamExt, future, pin_mut, stream::TryStreamExt};
 
@@ -28,12 +28,6 @@ struct Player {
     socket_addr: SocketAddr,
     game_id: GameID, // For now, assume player can only be in one game at a time.
 }
-
-// ? --- 21/01/25 Move into engine? ---
-//   - History could be useful?
-type GameID = Uuid;
-
-type PlayerID = SocketAddr; // Temporary 
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct Game {
@@ -59,51 +53,6 @@ impl Game {
 }
 // ? ----------------------------------
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum Incoming {
-    CreateGame {
-        // Map, rules etc.
-    },
-    ConnectToGame {
-        game_id: GameID,
-        team_id: TeamID,
-    },
-    InGameCommand {
-        game_id: GameID,
-        command: Command,
-    },
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-pub enum Outgoing {
-    Error {
-        message: String,
-    },
-    CreateGameResult {
-        game_id: GameID,
-        scenario_state: ScenarioState,
-    },
-    ConnectToGameResult {
-        game_id: GameID,
-        scenario_state: ScenarioState,
-        team_id: TeamID,
-    },
-    // Combine these two?
-    CommandResult {
-        game_id: GameID,
-        result: CommandResult,
-    },
-    GameUpdate {
-        game_id: GameID,
-        result: CommandResult,
-    },
-}
-
-impl Outgoing {
-    fn new_error(message: String) -> Outgoing {
-        Outgoing::Error { message }
-    }
-}
 #[tokio::main]
 async fn main() -> Result<(), IoError> {
     let addr = env::args()
@@ -167,31 +116,31 @@ async fn handle_connection(
 
 fn handle_incoming(
     peer_map: &PeerMap,
-    player_map: &PlayerMap,
+    _player_map: &PlayerMap,
     game_map: &GameMap,
     addr: &SocketAddr,
     msg: Message,
 ) -> future::Ready<Result<(), tokio_tungstenite::tungstenite::Error>> {
     log_message(addr, &msg);
     let outgoing_message = match parse_incoming_message(&msg) {
-        Ok(Incoming::CreateGame {}) => handle_create_game(&game_map),
-        Ok(Incoming::ConnectToGame { game_id, team_id }) => {
+        Ok(ClientToServer::CreateGame {}) => handle_create_game(&game_map),
+        Ok(ClientToServer::ConnectToGame { game_id, team_id }) => {
             handle_connect_to_game(&game_map, &game_id, addr, team_id)
         }
-        Ok(Incoming::InGameCommand { game_id, command }) => {
+        Ok(ClientToServer::InGameCommand { game_id, command }) => {
             handle_game_command(&game_map, &game_id, command, addr)
         }
         Err(err) => {
             println!("{:?}", err);
-            Outgoing::Error {
+            ServerToClient::Error {
                 message: "Error parsing message".to_string(),
             }
         }
-        _ => Outgoing::new_error("Not yet implemented".to_string()),
+        _ => ServerToClient::new_error("Not yet implemented".to_string()),
     };
 
     send_response(&outgoing_message, addr, peer_map).unwrap();
-    if let Outgoing::CommandResult { result, game_id } = outgoing_message {
+    if let ServerToClient::CommandResult { result, game_id } = outgoing_message {
         update_other_players(addr, &result, game_map, &game_id, peer_map);
     }
     future::ok(())
@@ -210,7 +159,7 @@ fn update_other_players(
         if player_id == issuing_player {
             continue;
         }
-        let message = Outgoing::GameUpdate {
+        let message = ServerToClient::GameUpdate {
             game_id: game_id.clone(),
             result: command_result.clone(),
         };
@@ -218,7 +167,7 @@ fn update_other_players(
     }
 }
 
-fn handle_create_game(game_map: &GameMap) -> Outgoing {
+fn handle_create_game(game_map: &GameMap) -> ServerToClient {
     let scenario_state = new_scenario_state();
     let game = Game::new(scenario_state);
 
@@ -227,7 +176,7 @@ fn handle_create_game(game_map: &GameMap) -> Outgoing {
         .unwrap()
         .insert(game.id.clone(), game.clone());
 
-    return Outgoing::CreateGameResult {
+    return ServerToClient::CreateGameResult {
         game_id: game.id,
         scenario_state: game.scenario_state,
     };
@@ -238,10 +187,10 @@ fn handle_game_command(
     game_id: &GameID,
     command: Command,
     issuing_player: &PlayerID,
-) -> Outgoing {
+) -> ServerToClient {
     let mut binding = game_map.lock().unwrap();
     let game = match binding.get_mut(game_id) {
-        None => return Outgoing::new_error(format!("No game found with id {}", game_id)),
+        None => return ServerToClient::new_error(format!("No game found with id {}", game_id)),
         Some(v) => v,
     };
 
@@ -254,7 +203,7 @@ fn handle_game_command(
         .find(|(player_id, _)| player_id == issuing_player)
         .unwrap();
     if game.scenario_state.active_team != *issuing_team {
-        return Outgoing::new_error("Not your turn".to_string());
+        return ServerToClient::new_error("Not your turn".to_string());
     }
 
     if !game.started {
@@ -262,7 +211,7 @@ fn handle_game_command(
     }
 
     let result = game.scenario_state.execute(command);
-    return Outgoing::CommandResult {
+    return ServerToClient::CommandResult {
         game_id: game.id,
         result,
     };
@@ -273,10 +222,10 @@ fn handle_connect_to_game(
     game_id: &GameID,
     player_id: &PlayerID,
     team_id: TeamID,
-) -> Outgoing {
+) -> ServerToClient {
     let mut binding = game_map.lock().unwrap();
     let game = match binding.get_mut(game_id) {
-        None => return Outgoing::new_error(format!("No game found with id {}", game_id)),
+        None => return ServerToClient::new_error(format!("No game found with id {}", game_id)),
         Some(v) => v,
     };
 
@@ -284,12 +233,12 @@ fn handle_connect_to_game(
         existing_player == player_id || *existing_team == team_id
     }) {
         let err_msg = format!("Player {} or team {} already occupied ", player_id, team_id);
-        return Outgoing::new_error(err_msg);
+        return ServerToClient::new_error(err_msg);
     }
 
     game.players.push((*player_id, team_id));
 
-    return Outgoing::ConnectToGameResult {
+    return ServerToClient::ConnectToGameResult {
         game_id: *game_id,
         scenario_state: game.scenario_state.clone(),
         team_id: team_id,
@@ -323,9 +272,9 @@ enum IncomingMsgParseErr {
     SerdeErr,
 }
 
-fn parse_incoming_message(msg: &Message) -> Result<Incoming, IncomingMsgParseErr> {
+fn parse_incoming_message(msg: &Message) -> Result<ClientToServer, IncomingMsgParseErr> {
     match msg.to_text() {
-        Ok(str) => serde_json::from_str::<Incoming>(str).map_err(|serde_err| {
+        Ok(str) => serde_json::from_str::<ClientToServer>(str).map_err(|serde_err| {
             println!("serde_err: {:?}", serde_err);
             IncomingMsgParseErr::SerdeErr
         }),
@@ -334,7 +283,7 @@ fn parse_incoming_message(msg: &Message) -> Result<Incoming, IncomingMsgParseErr
 }
 
 fn send_response(
-    message: &Outgoing,
+    message: &ServerToClient,
     addr: &SocketAddr,
     peer_map: &PeerMap,
 ) -> Result<(), TrySendError<Message>> {
