@@ -21,6 +21,9 @@ pub enum ClientToServer {
         game_id: GameID,
         command: Command,
     },
+    Test {
+        message: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -45,6 +48,9 @@ pub enum ServerToClient {
     GameUpdate {
         game_id: GameID,
         result: CommandResult,
+    },
+    Test {
+        message: String,
     },
 }
 impl ServerToClient {

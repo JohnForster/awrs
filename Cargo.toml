@@ -11,7 +11,25 @@ bevy = { version = "0.15", features = ["file_watcher"] }
 bevy_common_assets = { version = "0.10.0", features = ["ron"] }
 serde = "*"
 advance_craft_engine = { path = "crates/advance_craft_engine" }
+thiserror = "2.0.11"
 
+# ------ Platform dependent dependencies for networking ------
+[target.'cfg(not(target_arch="wasm32"))'.dependencies]
+tungstenite = { version = "0.26.1", features = [
+  "rustls-tls-webpki-roots",
+  "rustls",
+] }
+rustls = "0.23.21"
+
+[target.'cfg(target_arch="wasm32")'.dependencies]
+web-sys = { version = "0.3.72", features = [
+  "WebSocket",
+  "EventTarget",
+  "MessageEvent",
+  "BinaryType",
+] }
+send_wrapper = "0.6.0"
+# ------------------------------------------------------------
 
 [profile.dev.package."*"]
 opt-level = 3

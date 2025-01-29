@@ -130,6 +130,9 @@ fn handle_incoming(
         Ok(ClientToServer::InGameCommand { game_id, command }) => {
             handle_game_command(&game_map, &game_id, command, addr)
         }
+        Ok(ClientToServer::Test { message }) => ServerToClient::Test {
+            message: format!("message received: {}", message),
+        },
         Err(err) => {
             println!("{:?}", err);
             ServerToClient::Error {

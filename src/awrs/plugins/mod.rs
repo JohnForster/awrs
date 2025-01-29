@@ -1,4 +1,5 @@
 pub mod browsing;
+pub mod client;
 pub mod dev_debug;
 pub mod game_menu;
 pub mod idle_animation;
@@ -10,6 +11,7 @@ pub mod targeting;
 pub mod unit_menu;
 
 pub use browsing::*;
+pub use client::*;
 pub use dev_debug::*;
 pub use game_menu::*;
 pub use idle_animation::*;

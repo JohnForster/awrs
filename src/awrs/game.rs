@@ -26,6 +26,7 @@ impl Plugin for AWRSPlugin {
                 GameMenuPlugin,
                 MoveUnitPlugin,
                 TargetingPlugin,
+                WebsocketClientPlugin,
             ));
         // Add events
     }

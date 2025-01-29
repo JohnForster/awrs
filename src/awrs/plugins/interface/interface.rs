@@ -3,10 +3,13 @@ use advance_craft_engine::{
 };
 use bevy::prelude::*;
 
-use crate::awrs::resources::{
-    action_event::{Action, ActionEvent, ActionResultEvent, Attack},
-    tile::Tile,
-    unit::UnitId,
+use crate::awrs::{
+    plugins::client::client::SendWebsocketMessageEvent,
+    resources::{
+        action_event::{Action, ActionEvent, ActionResultEvent, Attack},
+        tile::Tile,
+        unit::UnitId,
+    },
 };
 
 #[derive(Deref, DerefMut, Resource)]
@@ -53,6 +56,7 @@ impl From<CommandResult> for ActionResultEvent {
 pub fn handle_action(
     mut ev_action: EventReader<ActionEvent>,
     mut ev_action_result: EventWriter<ActionResultEvent>,
+    mut ev_client: EventWriter<SendWebsocketMessageEvent>,
     mut scenario_state: ResMut<ScenarioState>,
     q_units: Query<&UnitId>,
 ) {
@@ -95,6 +99,10 @@ pub fn handle_action(
             Action::EndTurn => Command::EndTurn,
         };
 
+        info!("Sending message to server!");
+        ev_client.send(SendWebsocketMessageEvent {
+            message: format!("{:?}", command),
+        });
         info!("Sending Action Result Event! ({:?})", command);
         let result = scenario_state.execute(command);
         info!("{:?}", result);
