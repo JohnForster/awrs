@@ -23,6 +23,7 @@ pub fn register_inputs(
     mut ev_input: EventWriter<InputEvent>,
 ) {
     if keyboard_input.just_pressed(KeyCode::KeyW) {
+        info!("Pressed W");
         ev_input.send(InputEvent::Up);
         return;
     }

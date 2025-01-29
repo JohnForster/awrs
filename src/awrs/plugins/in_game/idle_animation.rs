@@ -1,5 +1,16 @@
-use crate::awrs::resources::animation::AnimationConfig;
+use crate::awrs::resources::{animation::AnimationConfig, state::AppState};
 use bevy::prelude::*;
+
+pub struct IdleAnimationPlugin;
+
+impl Plugin for IdleAnimationPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            (animate_sprite_system).run_if(in_state(AppState::InGame)),
+        );
+    }
+}
 
 pub fn animate_sprite_system(
     time: Res<Time>,

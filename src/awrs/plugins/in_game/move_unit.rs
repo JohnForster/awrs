@@ -1,20 +1,40 @@
 use bevy::prelude::*;
 
-use super::arrows::get_index_from_tiles;
 use advance_craft_engine::Tile as EngineTile;
 
 use crate::awrs::{
-    plugins::interface::interface::ScenarioState,
     register_inputs::InputEvent,
     resources::{
-        action_event::{Action, ActionEvent, ActionResultEvent},
+        action_event::{Action, ActionEvent},
         atlases::ArrowAtlas,
-        cursor::{ChangeCursorEvent, Cursor, CursorStyle},
+        cursor::{ChangeCursorEvent, CursorStyle},
+        scenario::ScenarioState,
         state::GameState,
         tile::{Tile, TILE_SIZE},
         unit::{Selected, UnitId},
     },
 };
+
+pub struct MoveUnitPlugin;
+
+impl Plugin for MoveUnitPlugin {
+    fn build(&self, app: &mut App) {
+        app.insert_resource(UnitPlan {
+            range: 0,
+            steps: vec![],
+        })
+        .add_event::<PlanUpdateEvent>()
+        .add_event::<ConfirmMoveEvent>()
+        .add_systems(OnEnter(GameState::MoveUnit), begin_unit_plan)
+        .add_systems(
+            Update,
+            (update_arrows, update_movement_plan, confirm_move)
+                .run_if(in_state(GameState::MoveUnit))
+                .chain(),
+        )
+        .add_systems(OnExit(GameState::MoveUnit), exit_movement_plan);
+    }
+}
 
 #[derive(Resource)]
 pub struct UnitPlan {
@@ -270,37 +290,6 @@ pub fn confirm_move(
     }
 }
 
-pub fn move_result(
-    mut ev_move_result: EventReader<ActionResultEvent>,
-    mut next_state: ResMut<NextState<GameState>>,
-    mut q: ParamSet<(
-        Query<&mut Transform, With<Selected>>,
-        Query<&mut Transform, With<Cursor>>,
-    )>,
-) {
-    for action_result in ev_move_result.read() {
-        if let ActionResultEvent::MoveResult(tiles) = action_result {
-            info!("Executing move_result");
-            if let Some(location) = tiles.last() {
-                info!("Moving unit...");
-
-                let mut unit_query = q.p0();
-                let mut unit_transform = unit_query.single_mut();
-                unit_transform.translation.x = location.x as f32 * TILE_SIZE;
-                unit_transform.translation.y = location.y as f32 * TILE_SIZE;
-
-                let mut cursor_query = q.p1();
-                let mut cursor_transform = cursor_query.single_mut();
-                cursor_transform.translation.x = location.x as f32 * TILE_SIZE;
-                cursor_transform.translation.y = location.y as f32 * TILE_SIZE;
-            } else {
-            }
-
-            next_state.set(GameState::Browsing);
-        }
-    }
-}
-
 pub fn exit_movement_plan(mut unit_plan: ResMut<UnitPlan>, mut commands: Commands) {
     for step in unit_plan.steps.iter() {
         commands.entity(step.entity).despawn();
@@ -308,4 +297,80 @@ pub fn exit_movement_plan(mut unit_plan: ResMut<UnitPlan>, mut commands: Command
 
     unit_plan.range = 0;
     unit_plan.steps = vec![];
+}
+
+pub fn get_index_from_tiles(
+    before_tile: Option<Tile>,
+    tile: Tile,
+    after_tile: Option<Tile>,
+) -> Option<usize> {
+    let before_dir = before_tile.map_or(Dir::None, |before| get_direction(before, tile));
+    let after_dir = after_tile.map_or(Dir::None, |after| get_direction(tile, after));
+    return get_index_from_directions((before_dir, after_dir));
+}
+
+fn get_direction(tile_a: Tile, tile_b: Tile) -> Dir {
+    if tile_b.x < tile_a.x {
+        return Dir::Left;
+    }
+    if tile_b.x > tile_a.x {
+        return Dir::Right;
+    }
+    if tile_b.y < tile_a.y {
+        return Dir::Down;
+    }
+    if tile_b.y > tile_a.y {
+        return Dir::Up;
+    }
+    panic!(
+        "Tried to create arrow path between tiles which were not next to each other: {:?} and {:?}",
+        tile_a, tile_b
+    );
+}
+
+#[derive(Debug, Copy, Clone)]
+enum Dir {
+    Up,
+    Down,
+    Left,
+    Right,
+    None,
+}
+
+fn get_index_from_directions((from, to): (Dir, Dir)) -> Option<usize> {
+    let index = match (from, to) {
+        (Dir::Down, Dir::Down) => 11,
+        (Dir::Down, Dir::Right) => 15,
+        (Dir::Down, Dir::Left) => 14,
+        (Dir::Down, Dir::None) => 17,
+        // -
+        (Dir::Up, Dir::Right) => 7,
+        (Dir::Up, Dir::Up) => 12,
+        (Dir::Up, Dir::None) => 6,
+        (Dir::Up, Dir::Left) => 10,
+        // -
+        (Dir::Left, Dir::Up) => 13,
+        (Dir::Left, Dir::Down) => 9,
+        (Dir::Left, Dir::Left) => 22,
+        (Dir::Left, Dir::None) => 21,
+        // -
+        (Dir::Right, Dir::Right) => 1,
+        (Dir::Right, Dir::None) => 2,
+        (Dir::Right, Dir::Down) => 8,
+        (Dir::Right, Dir::Up) => 16,
+        // -
+        (Dir::None, Dir::Right) => 0,
+        (Dir::None, Dir::Down) => 5,
+        (Dir::None, Dir::Up) => 18,
+        (Dir::None, Dir::Left) => 23,
+        // -
+        (Dir::Right, Dir::Left)
+        | (Dir::Left, Dir::Right)
+        | (Dir::Up, Dir::Down)
+        | (Dir::Down, Dir::Up)
+        | (Dir::None, Dir::None) => {
+            return Option::None;
+        }
+    };
+    return Option::Some(index);
 }

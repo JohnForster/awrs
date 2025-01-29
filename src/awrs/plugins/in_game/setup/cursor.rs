@@ -2,9 +2,10 @@ use bevy::prelude::*;
 
 use crate::awrs::{
     constants::TILE_SIZE,
+    plugins::in_game::cursor::Cursor,
     resources::{
         atlases::CursorAtlas,
-        cursor::{ChangeCursorEvent, Cursor, CursorStyle},
+        cursor::{ChangeCursorEvent, CursorStyle},
         tile::Tile,
     },
 };

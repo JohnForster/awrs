@@ -1,8 +1,8 @@
 use advance_craft_engine::units::weapon::Delivery;
 use bevy::prelude::*;
 
-use crate::awrs::plugins::interface::interface::ScenarioState;
 use crate::awrs::resources::action_event::Attack;
+use crate::awrs::resources::scenario::ScenarioState;
 use crate::awrs::resources::tile::Tile;
 use crate::awrs::resources::{
     action_event::{Action, ActionEvent},
@@ -12,6 +12,18 @@ use crate::awrs::resources::{
     unit::{Selected, UnitId},
 };
 use advance_craft_engine::Unit;
+
+pub struct TargetingPlugin;
+
+impl Plugin for TargetingPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(GameState::ChooseTarget), open_target_selection)
+            .add_systems(
+                Update,
+                target_select.run_if(in_state(GameState::ChooseTarget)),
+            );
+    }
+}
 
 pub fn open_target_selection(
     mut ev_change_cursor: EventWriter<ChangeCursorEvent>,

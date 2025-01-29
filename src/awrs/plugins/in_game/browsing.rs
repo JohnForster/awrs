@@ -2,15 +2,27 @@ use bevy::ecs::event::*;
 use bevy::prelude::*;
 
 use crate::awrs::{
-    plugins::interface::interface::ScenarioState,
     register_inputs::InputEvent,
     resources::{
         cursor::{ChangeCursorEvent, CursorStyle, SelectEvent},
         map::ActiveTeam,
+        scenario::ScenarioState,
         state::{GameState, MenuState},
         unit::{Selected, UnitId},
     },
 };
+
+pub struct BrowsingPlugin;
+
+impl Plugin for BrowsingPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(GameState::Browsing), open_browse)
+            .add_systems(
+                Update,
+                (browse_select, listen_for_open_menu).run_if(in_state(GameState::Browsing)),
+            );
+    }
+}
 
 pub fn browse_select(
     mut ev_select: EventReader<SelectEvent>,

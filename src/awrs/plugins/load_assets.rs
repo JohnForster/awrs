@@ -7,11 +7,61 @@ use crate::awrs::resources::{
         ArrowAtlas, CreepAtlas, CursorAtlas, HealthAtlas, StructureAtlas, StructureAtlases,
         TerrainAtlas, UIAtlas, UnitAtlas, UnitAtlases,
     },
-    unit::StructureType,
-    unit::UnitType,
+    state::{AppState, GameState},
+    unit::{StructureType, UnitType},
 };
 
-use super::AssetsLoading;
+pub struct LoadAssetsPlugin;
+
+#[derive(bevy::prelude::Resource)]
+pub struct AssetsLoading(pub Vec<UntypedHandle>);
+
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+struct LoadingSet;
+
+impl Plugin for LoadAssetsPlugin {
+    fn build(&self, app: &mut App) {
+        app.insert_resource(AssetsLoading(vec![]))
+            .add_systems(
+                OnEnter(AppState::Loading),
+                (
+                    load_images,
+                    create_terrain_sprites,        // Move to setup
+                    create_idle_sprites,           // Move to setup
+                    create_movement_arrow_sprites, // Move to setup
+                    create_ui_sprites,
+                    create_creep_sprites,     // Move to setup
+                    create_structure_sprites, // Move to setup
+                ),
+            )
+            .add_systems(
+                Update,
+                check_assets_ready.run_if(in_state(AppState::Loading)),
+            );
+    }
+}
+
+pub fn check_assets_ready(
+    loading: ResMut<AssetsLoading>,
+    asset_server: Res<AssetServer>,
+    mut next_app_state: ResMut<NextState<AppState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    mut commands: Commands,
+) {
+    let mut loading_states = loading
+        .0
+        .iter()
+        .map(|h| asset_server.get_load_state(h.id()));
+
+    let all_complete = loading_states.all(|opt| opt.is_some());
+
+    if all_complete {
+        // all loading is complete (it is possible loading failed)
+        commands.remove_resource::<AssetsLoading>();
+        next_app_state.set(AppState::InGame);
+        next_game_state.set(GameState::SetUp);
+    }
+}
 
 pub fn load_images(asset_server: Res<AssetServer>, mut loading: ResMut<AssetsLoading>) {
     let paths = [

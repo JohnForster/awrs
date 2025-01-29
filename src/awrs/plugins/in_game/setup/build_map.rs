@@ -3,11 +3,11 @@ use bevy::prelude::*;
 
 use crate::awrs::{
     constants::*,
-    plugins::interface::interface::ScenarioState,
     resources::{
         animation::AnimationConfig,
         atlases::{CreepAtlas, HealthAtlas, StructureAtlases, TerrainAtlas, UnitAtlases},
         map::{ActiveTeam, GameMap},
+        scenario::ScenarioState,
         unit::*,
     },
 };

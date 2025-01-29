@@ -12,6 +12,19 @@ use crate::awrs::{
     },
 };
 
+pub struct GameMenuPlugin;
+
+impl Plugin for GameMenuPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(MenuState::Open), open_game_menu)
+            .add_systems(
+                Update,
+                (game_menu_input, end_turn_result).run_if(in_state(MenuState::Open)),
+            )
+            .add_systems(OnExit(MenuState::Open), exit_game_menu);
+    }
+}
+
 #[derive(Component)]
 pub struct GameMenu;
 

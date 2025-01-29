@@ -6,6 +6,19 @@ use crate::awrs::resources::{
     unit::{Selected, UnitId},
 };
 
+pub struct UnitMenuPlugin;
+
+impl Plugin for UnitMenuPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(GameState::UnitMenu), open_unit_menu)
+            .add_systems(
+                Update,
+                unit_menu_input.run_if(in_state(GameState::UnitMenu)),
+            )
+            .add_systems(OnExit(GameState::UnitMenu), exit_unit_menu);
+    }
+}
+
 #[derive(Component)]
 pub struct UnitMenu;
 
