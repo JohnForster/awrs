@@ -11,6 +11,7 @@ use bevy::{
     tasks::{block_on, futures_lite::future, AsyncComputeTaskPool, Task},
 };
 
+use serde::{Deserialize, Serialize};
 #[cfg(not(target_arch = "wasm32"))]
 use tungstenite::{connect, http::Response, stream::MaybeTlsStream, Message, WebSocket};
 
@@ -27,8 +28,13 @@ pub struct WebSocketClient(
 );
 
 #[derive(Event)]
-pub struct SendWebsocketMessageEvent {
-    pub message: String,
+pub struct SendWebsocketMessageEvent(String);
+
+impl<T: Serialize + Deserialize<'static>> From<T> for SendWebsocketMessageEvent {
+    fn from(data: T) -> Self {
+        let string = serde_json::to_string(&data).unwrap();
+        Self(string)
+    }
 }
 
 // TODO - Introduce rate limiting to prevent server message spamming.
@@ -39,7 +45,7 @@ pub fn send_info(
     for (mut client,) in entities_with_client.iter_mut() {
         for data in ev_ws_message.read() {
             info!("Sending message...");
-            let msg = data.message.clone();
+            let msg = data.0.clone();
 
             #[cfg(not(target_arch = "wasm32"))]
             {

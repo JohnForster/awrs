@@ -2,6 +2,7 @@ use advance_craft_engine::{
     Command, CommandResult, ScenarioState as EngineScenarioState, Tile as EngineTile,
 };
 use bevy::prelude::*;
+use uuid::{uuid, Uuid};
 
 use crate::awrs::{
     plugins::client::client::SendWebsocketMessageEvent,
@@ -11,6 +12,8 @@ use crate::awrs::{
         unit::UnitId,
     },
 };
+
+use advance_craft_server::ClientToServer;
 
 #[derive(Deref, DerefMut, Resource)]
 pub struct ScenarioState(pub EngineScenarioState);
@@ -99,13 +102,18 @@ pub fn handle_action(
             Action::EndTurn => Command::EndTurn,
         };
 
-        info!("Sending message to server!");
-        ev_client.send(SendWebsocketMessageEvent {
-            message: format!("{:?}", command),
-        });
-        info!("Sending Action Result Event! ({:?})", command);
-        let result = scenario_state.execute(command);
+        let result = scenario_state.execute(command.clone());
         info!("{:?}", result);
+
+        info!("Sending message to server!");
+
+        let message = ClientToServer::InGameCommand {
+            game_id: Uuid::new_v4(),
+            command,
+        };
+        info!("Sending Action Result Event! ({:?})", message);
+        ev_client.send(SendWebsocketMessageEvent::from(message));
+
         ev_action_result.send(ActionResultEvent::from(result));
     }
 }

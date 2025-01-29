@@ -23,8 +23,6 @@ pub fn open_game_menu(
     ev_change_cursor.send(ChangeCursorEvent(CursorStyle::Browse));
     info!("Opening game menu...");
 
-    // ! Spawning ui camera on every time the menu is opened?
-
     // TODO get unit menu options from selected unit.
     // eg. Move if hasn't moved yet. Attack if unit next to it etc.
     let options = vec!["E to End Turn", "Enter to Return to game"];
