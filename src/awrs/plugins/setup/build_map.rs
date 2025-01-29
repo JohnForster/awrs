@@ -77,7 +77,7 @@ fn spawn_creep(
                                     Transform::from_translation(Vec3::new(
                                         x as f32 * TILE_SIZE,
                                         y as f32 * TILE_SIZE,
-                                        0.0,
+                                        0.5,
                                     )),
                                 ));
                             }

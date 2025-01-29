@@ -11,7 +11,7 @@ use crate::awrs::{
 
 pub fn get_cursor_adjustment(cursor_style: &CursorStyle) -> Vec3 {
     match cursor_style {
-        CursorStyle::Target => Vec3::new(4.0, -5.0, 2.0),
+        CursorStyle::Target => Vec3::new(2.0, -4.0, 2.0),
         CursorStyle::TargetSplash => Vec3::new(0.0, 0.0, 2.0),
         CursorStyle::Browse => Vec3::new(4.0, -5.0, 2.0),
         CursorStyle::None => Vec3::ZERO,
@@ -22,9 +22,9 @@ pub fn create_cursor(mut commands: Commands, ui_atlas: Res<CursorAtlas>) {
     info!("Creating Cursor");
     let tile = Tile { x: 0, y: 0 };
     let starting_position = Vec3::new(tile.x as f32, tile.y as f32, 0.0) * TILE_SIZE;
-    let adjustment = get_cursor_adjustment(&CursorStyle::Browse);
 
-    // Combine these into the Cursor struct?
+    let cursor_style = CursorStyle::Browse;
+    let adjustment = get_cursor_adjustment(&cursor_style);
     commands
         .spawn((
             Cursor,
@@ -37,7 +37,7 @@ pub fn create_cursor(mut commands: Commands, ui_atlas: Res<CursorAtlas>) {
                     image: ui_atlas.texture.clone(),
                     texture_atlas: Some(TextureAtlas {
                         layout: ui_atlas.layout.clone(),
-                        index: CursorStyle::Browse as usize,
+                        index: cursor_style as usize,
                     }),
                     ..Default::default()
                 },
@@ -68,6 +68,7 @@ pub fn handle_change_cursor(
                 continue;
             }
         };
+
         info!("Changing cursor sprite index to {:?}", sprite_index);
         let cursor_children = q_cursor_children.single_mut();
 
