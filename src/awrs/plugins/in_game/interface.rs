@@ -24,14 +24,22 @@ impl Plugin for InterfacePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ActionEvent>()
             .add_event::<ActionResultEvent>()
-            .add_systems(Update, handle_action.run_if(in_state(AppState::InGame)))
+            .add_systems(Update, handle_action.run_if(game_is_running))
             .add_systems(
                 Update,
                 (handle_attack_result, handle_damage, move_result)
-                    .run_if(in_state(AppState::InGame))
+                    .run_if(game_is_running)
                     .after(handle_action),
             );
     }
+}
+
+fn game_is_running(game_state: Res<State<GameState>>, app_state: Res<State<AppState>>) -> bool {
+    **app_state == AppState::InGame
+        && match **game_state {
+            GameState::None | GameState::SetUp => false,
+            _ => true,
+        }
 }
 
 impl From<&Tile> for EngineTile {

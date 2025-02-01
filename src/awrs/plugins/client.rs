@@ -11,7 +11,9 @@ use bevy::{
     tasks::{block_on, futures_lite::future, AsyncComputeTaskPool, Task},
 };
 
-use crate::awrs::resources::client::{SendWebsocketMessageEvent, WebSocketConnectionEvents};
+use crate::awrs::resources::client::{
+    ReceiveWebsocketMessageEvent, SendWebsocketMessageEvent, WebSocketConnectionEvents,
+};
 
 pub struct WebsocketClientPlugin;
 
@@ -26,6 +28,7 @@ impl Plugin for WebsocketClientPlugin {
 
         app.add_event::<WebSocketConnectionEvents>()
             .add_event::<SendWebsocketMessageEvent>()
+            .add_event::<ReceiveWebsocketMessageEvent>()
             .add_systems(
                 Update,
                 (setup_connection, handle_tasks, send_info, recv_info),
@@ -75,16 +78,23 @@ pub fn send_info(
     }
 }
 
-pub fn recv_info(mut q: Query<(&mut WebSocketClient,)>) {
+pub fn recv_info(
+    mut q: Query<(&mut WebSocketClient,)>,
+    mut ev_ws_msg_recv: EventWriter<ReceiveWebsocketMessageEvent>,
+) {
     for (mut client,) in q.iter_mut() {
         #[cfg(not(target_arch = "wasm32"))]
         {
             match client.0 .0.read() {
-                Ok(m) => info!("Received message {m:?}"),
+                Ok(m) => {
+                    let data_string = m.to_string();
+                    info!("Received: {data_string}");
+                    ev_ws_msg_recv.send(ReceiveWebsocketMessageEvent(data_string));
+                }
                 Err(tungstenite::Error::Io(e)) if e.kind() == ErrorKind::WouldBlock => { /* ignore */
                 }
                 Err(e) => warn!("error receiving: {e}"),
-            }
+            };
         }
 
         #[cfg(target_arch = "wasm32")]

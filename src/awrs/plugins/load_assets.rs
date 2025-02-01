@@ -16,9 +16,6 @@ pub struct LoadAssetsPlugin;
 #[derive(bevy::prelude::Resource)]
 pub struct AssetsLoading(pub Vec<UntypedHandle>);
 
-#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
-struct LoadingSet;
-
 impl Plugin for LoadAssetsPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(AssetsLoading(vec![]))
@@ -58,8 +55,8 @@ pub fn check_assets_ready(
     if all_complete {
         // all loading is complete (it is possible loading failed)
         commands.remove_resource::<AssetsLoading>();
-        next_app_state.set(AppState::InGame);
-        next_game_state.set(GameState::SetUp);
+        next_app_state.set(AppState::MainMenu);
+        next_game_state.set(GameState::None);
     }
 }
 

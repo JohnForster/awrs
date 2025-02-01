@@ -5,6 +5,7 @@ pub mod client;
 pub mod cursor;
 pub mod map;
 pub mod scenario;
+pub mod start_game;
 pub mod state;
 pub mod tile;
 pub mod unit;

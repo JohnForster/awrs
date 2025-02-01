@@ -5,7 +5,7 @@ use bevy::{
 
 mod awrs;
 
-use awrs::game::AWRSPlugin;
+use awrs::AWRSPlugin;
 
 const WINDOW_WIDTH: f32 = 1280.;
 const WINDOW_HEIGHT: f32 = 800.;

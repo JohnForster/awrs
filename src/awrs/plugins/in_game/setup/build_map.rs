@@ -1,4 +1,4 @@
-use advance_craft_engine::{dev_helpers::new_scenario_state, TerrainType};
+use advance_craft_engine::TerrainType;
 use bevy::prelude::*;
 
 use crate::awrs::{
@@ -22,9 +22,10 @@ pub fn build_map(
     structure_atlases: Res<StructureAtlases>,
     health_atlas: Res<HealthAtlas>,
     creep_atlas: Res<CreepAtlas>,
+    scenario_state: Res<ScenarioState>,
 ) {
     info!("Building map");
-    let scenario_state = ScenarioState(new_scenario_state());
+    // let scenario_state = ScenarioState(new_scenario_state());
 
     let mut projection = OrthographicProjection::default_2d();
     projection.scale /= SCALE;
@@ -46,7 +47,7 @@ pub fn build_map(
     for structure in scenario_state.structures.iter() {
         spawn_structure(&mut commands, structure, &structure_atlases, &health_atlas);
     }
-    commands.insert_resource(scenario_state);
+    // commands.insert_resource(scenario_state);
 }
 
 #[derive(Component)]

@@ -15,7 +15,7 @@ impl Plugin for AWRSPlugin {
             .insert_state(MenuState::Closed)
             .add_systems(Update, register_inputs)
             // Add plugins for each of the InGame states
-            .add_plugins((WebsocketClientPlugin, InGamePlugin));
+            .add_plugins((MainMenuPlugin, WebsocketClientPlugin, InGamePlugin));
         // Add events
     }
 }

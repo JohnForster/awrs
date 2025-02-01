@@ -6,3 +6,6 @@ pub use load_assets::LoadAssetsPlugin;
 
 mod client;
 pub use client::WebsocketClientPlugin;
+
+mod main_menu;
+pub use main_menu::MainMenuPlugin;

@@ -1,6 +1,8 @@
-pub mod constants;
+mod constants;
 
-pub mod game;
-pub mod plugins;
-pub mod register_inputs;
-pub mod resources;
+mod awrs;
+mod plugins;
+mod register_inputs;
+mod resources;
+
+pub use awrs::AWRSPlugin;
