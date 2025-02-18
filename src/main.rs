@@ -8,7 +8,7 @@ mod awrs;
 use awrs::AWRSPlugin;
 
 const WINDOW_WIDTH: f32 = 1280.;
-const WINDOW_HEIGHT: f32 = 800.;
+const WINDOW_HEIGHT: f32 = 720.;
 
 fn main() {
     App::new()
@@ -18,7 +18,7 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         resolution: WindowResolution::new(WINDOW_WIDTH, WINDOW_HEIGHT)
-                            .with_scale_factor_override(1.0),
+                            .with_scale_factor_override(2.0),
                         ..default()
                     }),
                     ..default()

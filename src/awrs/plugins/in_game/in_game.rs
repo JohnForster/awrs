@@ -1,7 +1,7 @@
 pub use bevy::prelude::*;
 
 use crate::awrs::resources::{
-    start_game::{GameMetadata, StartGameEvent},
+    start_game::StartGameEvent,
     state::{AppState, GameState, MenuState},
 };
 
@@ -46,15 +46,11 @@ fn listen_for_game_start(
 ) {
     for StartGameEvent {
         scenario_state,
-        online,
-        game_id,
+        game_type,
     } in ev_start_game.read()
     {
         commands.insert_resource(scenario_state.clone());
-        commands.insert_resource(GameMetadata {
-            _online: *online,
-            _game_id: game_id.clone(),
-        });
+        commands.insert_resource(game_type.clone());
         next_app_state.set(AppState::InGame);
         next_game_state.set(GameState::SetUp);
         next_menu_state.set(MenuState::Closed);

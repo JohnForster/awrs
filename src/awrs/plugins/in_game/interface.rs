@@ -1,20 +1,20 @@
-use advance_craft_engine::{Command, CommandResult, Tile as EngineTile};
+use advance_craft_engine::{Command, CommandResult, CommandStatus, Tile as EngineTile};
 use bevy::prelude::*;
-use uuid::Uuid;
 
 use crate::awrs::{
     constants::TILE_SIZE,
     resources::{
         action_event::{Action, ActionEvent, ActionResultEvent, Attack},
-        client::SendWebsocketMessageEvent,
+        client::{ReceiveWebsocketMessageEvent, SendWebsocketMessageEvent},
         scenario::ScenarioState,
+        start_game::GameType,
         state::{AppState, GameState},
         tile::Tile,
         unit::{DamageEvent, HPIndicator, Selected, UnitId},
     },
 };
 
-use advance_craft_server::ClientToServer;
+use advance_craft_server::{ClientToServer, ServerToClient};
 
 use super::cursor::Cursor;
 
@@ -27,7 +27,12 @@ impl Plugin for InterfacePlugin {
             .add_systems(Update, handle_action.run_if(game_is_running))
             .add_systems(
                 Update,
-                (handle_attack_result, handle_damage, move_result)
+                (
+                    handle_attack_result,
+                    handle_damage,
+                    move_result,
+                    translate_websocket_message,
+                )
                     .run_if(game_is_running)
                     .after(handle_action),
             );
@@ -86,6 +91,7 @@ pub fn handle_action(
     mut ev_client: EventWriter<SendWebsocketMessageEvent>,
     mut scenario_state: ResMut<ScenarioState>,
     q_units: Query<&UnitId>,
+    game_type: Res<GameType>,
 ) {
     for ActionEvent(action) in ev_action.read() {
         info!("Action event ({:?}) recieved", action);
@@ -126,19 +132,21 @@ pub fn handle_action(
             Action::EndTurn => Command::EndTurn,
         };
 
-        let result = scenario_state.execute(command.clone());
-        info!("{:?}", result);
-
-        info!("Sending message to server!");
-
-        let message = ClientToServer::InGameCommand {
-            game_id: Uuid::new_v4(),
-            command,
-        };
-        info!("Sending Action Result Event! ({:?})", message);
-        ev_client.send(SendWebsocketMessageEvent::from(message));
-
-        ev_action_result.send(ActionResultEvent::from(result));
+        match *game_type {
+            GameType::Offline => {
+                let result = scenario_state.execute(command.clone());
+                info!("{:?}", result);
+                ev_action_result.send(ActionResultEvent::from(result));
+            }
+            GameType::Online(metadata) => {
+                let message = ClientToServer::InGameCommand {
+                    game_id: metadata.game_id,
+                    command: command.clone(),
+                };
+                info!("Sending Websocket Message Event! ({:?})", message);
+                ev_client.send(SendWebsocketMessageEvent::from(message));
+            }
+        }
     }
 }
 
@@ -239,6 +247,31 @@ pub fn move_result(
             }
 
             next_state.set(GameState::Browsing);
+        }
+    }
+}
+
+fn translate_websocket_message(
+    mut ev_ws_message: EventReader<ReceiveWebsocketMessageEvent>,
+    mut ev_action_result: EventWriter<ActionResultEvent>,
+    mut _scenario_state: ResMut<ScenarioState>,
+) {
+    for event in ev_ws_message.read() {
+        let message = event.try_into_data::<ServerToClient>().unwrap();
+        match message {
+            ServerToClient::CommandResult {
+                game_id: _,
+                ref result,
+            } => match result {
+                CommandResult::Move { status, tiles: _ } => match status {
+                    CommandStatus::Ok => {
+                        ev_action_result.send(ActionResultEvent::from(result.clone()));
+                    }
+                    _ => todo!(),
+                },
+                _ => todo!(),
+            },
+            _ => {}
         }
     }
 }

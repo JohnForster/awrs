@@ -1,3 +1,4 @@
+use advance_craft_engine::dev_helpers::new_scenario_state;
 use advance_craft_server::{ClientToServer, ServerToClient};
 use bevy::prelude::*;
 
@@ -6,7 +7,7 @@ use crate::awrs::{
     resources::{
         client::{ReceiveWebsocketMessageEvent, SendWebsocketMessageEvent},
         scenario::ScenarioState,
-        start_game::StartGameEvent,
+        start_game::{GameType, StartGameEvent},
         state::AppState,
     },
 };
@@ -28,7 +29,10 @@ impl Plugin for MainMenuPlugin {
                 OnEnter(AppState::MainMenu),
                 (setup_main_menu, connect_to_server),
             )
-            .add_systems(Update, (handle_navigation, change_menu, load_game))
+            .add_systems(
+                Update,
+                (handle_navigation, change_menu, load_game, join_game),
+            )
             .add_systems(OnExit(AppState::MainMenu), teardown_main_menu);
     }
 }
@@ -106,6 +110,7 @@ fn create_option(parent: &mut ChildBuilder<'_>, text: &str, index: u32) {
 fn change_menu(
     mut ev_select_option: EventReader<SelectOptionEvent>,
     mut ev_websocket: EventWriter<SendWebsocketMessageEvent>,
+    mut ev_start_game: EventWriter<StartGameEvent>,
 ) {
     for event in ev_select_option.read() {
         match event.0 {
@@ -113,14 +118,15 @@ fn change_menu(
                 ev_websocket.send(SendWebsocketMessageEvent::from(
                     ClientToServer::CreateGame {},
                 ));
-                // Replace menu with "loading" indicator.
-                info!("New Game");
             }
             1 => {
                 info!("Join Game");
             }
             2 => {
-                info!("Play Solo");
+                ev_start_game.send(StartGameEvent {
+                    scenario_state: ScenarioState(new_scenario_state()),
+                    game_type: GameType::Offline,
+                });
             }
             _ => {}
         }
@@ -134,15 +140,38 @@ fn load_game(
     for event in ev_ws_message.read() {
         let message = event.try_into_data::<ServerToClient>().unwrap();
         match message {
-            ServerToClient::CreateGameResult {
+            ServerToClient::ConnectToGameResult {
                 game_id,
                 scenario_state,
+                team_id,
             } => {
                 ev_start_game.send(StartGameEvent {
-                    game_id: Some(game_id.to_string()),
                     scenario_state: ScenarioState(scenario_state),
-                    online: true,
+                    game_type: GameType::new_online(game_id, team_id),
                 });
+            }
+            _ => {}
+        }
+    }
+}
+
+fn join_game(
+    mut ev_ws_rx: EventReader<ReceiveWebsocketMessageEvent>,
+    mut ev_ws_tx: EventWriter<SendWebsocketMessageEvent>,
+) {
+    for event in ev_ws_rx.read() {
+        let message = event.try_into_data::<ServerToClient>().unwrap();
+        match message {
+            ServerToClient::CreateGameResult {
+                game_id,
+                scenario_state: _,
+            } => {
+                ev_ws_tx.send(SendWebsocketMessageEvent::from(
+                    ClientToServer::ConnectToGame {
+                        game_id,
+                        team_id: 0,
+                    },
+                ));
             }
             _ => {}
         }

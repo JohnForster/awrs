@@ -25,14 +25,10 @@ pub fn build_map(
     scenario_state: Res<ScenarioState>,
 ) {
     info!("Building map");
-    // let scenario_state = ScenarioState(new_scenario_state());
 
     let mut projection = OrthographicProjection::default_2d();
     projection.scale /= SCALE;
     commands.spawn((Camera2d::default(), projection));
-
-    // DEPRECATED?
-    // commands.spawn_bundle(UiCameraBundle::default());
 
     commands.insert_resource(ActiveTeam {
         team: scenario_state.active_team,
@@ -47,7 +43,6 @@ pub fn build_map(
     for structure in scenario_state.structures.iter() {
         spawn_structure(&mut commands, structure, &structure_atlases, &health_atlas);
     }
-    // commands.insert_resource(scenario_state);
 }
 
 #[derive(Component)]
@@ -78,7 +73,7 @@ fn spawn_creep(
                                     Transform::from_translation(Vec3::new(
                                         x as f32 * TILE_SIZE,
                                         y as f32 * TILE_SIZE,
-                                        0.0,
+                                        0.5,
                                     )),
                                 ));
                             }
