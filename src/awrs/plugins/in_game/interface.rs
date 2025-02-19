@@ -269,7 +269,33 @@ fn translate_websocket_message(
                     }
                     _ => todo!(),
                 },
-                _ => todo!(),
+                CommandResult::Attack {
+                    status,
+                    unit_hp_changes,
+                } => match status {
+                    CommandStatus::Ok => {
+                        ev_action_result.send(ActionResultEvent::from(result.clone()));
+                    }
+                    _ => todo!(),
+                },
+                CommandResult::AttackGround {
+                    status,
+                    unit_hp_changes,
+                } => match status {
+                    CommandStatus::Ok => {
+                        ev_action_result.send(ActionResultEvent::from(result.clone()));
+                    }
+                    _ => todo!(),
+                },
+                CommandResult::EndTurn {
+                    status,
+                    new_active_team,
+                } => match status {
+                    CommandStatus::Ok => {
+                        ev_action_result.send(ActionResultEvent::from(result.clone()));
+                    }
+                    _ => todo!(),
+                },
             },
             _ => {}
         }
