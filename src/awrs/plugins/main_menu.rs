@@ -1,6 +1,7 @@
 use advance_craft_engine::dev_helpers::new_scenario_state;
 use advance_craft_server::{ClientToServer, ServerToClient};
 use bevy::prelude::*;
+use uuid::Uuid;
 
 use crate::awrs::{
     register_inputs::InputEvent,
@@ -10,6 +11,7 @@ use crate::awrs::{
         start_game::{GameType, StartGameEvent},
         state::AppState,
     },
+    AppConfig,
 };
 
 pub struct MainMenuPlugin;
@@ -31,7 +33,7 @@ impl Plugin for MainMenuPlugin {
             )
             .add_systems(
                 Update,
-                (handle_navigation, change_menu, load_game, join_game),
+                (handle_navigation, change_menu, load_game, join_created_game),
             )
             .add_systems(OnExit(AppState::MainMenu), teardown_main_menu);
     }
@@ -111,6 +113,7 @@ fn change_menu(
     mut ev_select_option: EventReader<SelectOptionEvent>,
     mut ev_websocket: EventWriter<SendWebsocketMessageEvent>,
     mut ev_start_game: EventWriter<StartGameEvent>,
+    app_config: Res<AppConfig>,
 ) {
     for event in ev_select_option.read() {
         match event.0 {
@@ -120,7 +123,16 @@ fn change_menu(
                 ));
             }
             1 => {
-                info!("Join Game");
+                if let Some(game_id) = app_config.game_id {
+                    ev_websocket.send(SendWebsocketMessageEvent::from(
+                        ClientToServer::ConnectToGame {
+                            game_id,
+                            team_id: 1,
+                        },
+                    ));
+                } else {
+                    warn!("No game_id provided");
+                }
             }
             2 => {
                 ev_start_game.send(StartGameEvent {
@@ -155,7 +167,7 @@ fn load_game(
     }
 }
 
-fn join_game(
+fn join_created_game(
     mut ev_ws_rx: EventReader<ReceiveWebsocketMessageEvent>,
     mut ev_ws_tx: EventWriter<SendWebsocketMessageEvent>,
 ) {

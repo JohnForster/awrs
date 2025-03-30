@@ -15,6 +15,7 @@ advance_craft_server = { path = "crates/advance_craft_server" }
 thiserror = "2.0.11"
 serde_json = "1.0.138"
 uuid = "1.12.1"
+clap = { version = "4.5.30", features = ["derive"] }
 
 # ------ Platform dependent dependencies for networking ------
 [target.'cfg(not(target_arch="wasm32"))'.dependencies]

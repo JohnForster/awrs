@@ -64,16 +64,12 @@ pub fn target_select(
                 let defender = units_query.get_mut(*entity);
                 match defender {
                     Ok((defender_entity, _def_unit_id)) => {
-                        info!("Sending Attack Unit Action Event");
                         ev_action.send(ActionEvent(Action::Attack(Attack::Unit(
                             attacker_entity,
                             defender_entity,
                         ))));
-                        info!("Clearing selected unit");
                     }
                     Err(_) => {
-                        warn!("Select event was fired for entity, but entity was not found.");
-                        warn!("Attacking self");
                         let attacker_unit = get_unit(&scenario_state, attacker_id);
                         send_attack_ground_event(
                             &attacker_entity,

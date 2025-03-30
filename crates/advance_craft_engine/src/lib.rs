@@ -186,22 +186,24 @@ pub enum CommandErr {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum CommandResult {
+pub struct CommandResult {
+    pub status: CommandStatus,
+    pub data: ResultData,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum ResultData {
     Move {
-        status: CommandStatus,
         tiles: Vec<Tile>,
         // revealed: Vec<(Unit...)> etc.
     },
     AttackGround {
-        status: CommandStatus,
         unit_hp_changes: Vec<(UnitId, UnitHp)>,
     },
     Attack {
-        status: CommandStatus,
         unit_hp_changes: Vec<(UnitId, UnitHp)>,
     },
     EndTurn {
-        status: CommandStatus,
         new_active_team: Team,
     },
 }
@@ -228,16 +230,20 @@ impl ScenarioState {
             .expect(format!("No unit found with id {}", id).as_str());
 
         if unit.has_moved {
-            return CommandResult::Move {
+            return CommandResult {
                 status: CommandStatus::Err(CommandErr::AlreadyMoved),
-                tiles: vec![unit.position],
+                data: ResultData::Move {
+                    tiles: vec![unit.position],
+                },
             };
         }
 
         if unit.team != self.active_team {
-            return CommandResult::Move {
+            return CommandResult {
                 status: CommandStatus::Err(CommandErr::WrongTeam),
-                tiles: vec![unit.position],
+                data: ResultData::Move {
+                    tiles: vec![unit.position],
+                },
             };
         }
 
@@ -284,9 +290,11 @@ impl ScenarioState {
         // Set has_moved true
         unit.has_moved = true;
 
-        return CommandResult::Move {
+        return CommandResult {
             status,
-            tiles: successful_moves,
+            data: ResultData::Move {
+                tiles: successful_moves,
+            },
         };
     }
 
@@ -300,20 +308,24 @@ impl ScenarioState {
         let (attacker, defender) = self.get_two_units(attacker_id, defender_id).unwrap();
 
         if attacker.team != self.active_team {
-            return CommandResult::Attack {
+            return CommandResult {
                 status: CommandStatus::Err(CommandErr::WrongTeam),
-                unit_hp_changes: vec![],
+                data: ResultData::Attack {
+                    unit_hp_changes: vec![],
+                },
             };
         }
 
         // Attacker is able to attack
         if attacker.has_attacked {
-            return CommandResult::Attack {
+            return CommandResult {
                 status: CommandStatus::Err(CommandErr::AlreadyAttacked),
-                unit_hp_changes: vec![
-                    (attacker.id, attacker.health),
-                    (defender.id, defender.health),
-                ],
+                data: ResultData::Attack {
+                    unit_hp_changes: vec![
+                        (attacker.id, attacker.health),
+                        (defender.id, defender.health),
+                    ],
+                },
             };
         }
 
@@ -327,12 +339,14 @@ impl ScenarioState {
         let in_range = check_range(attacker, defender);
 
         if !in_range {
-            return CommandResult::Attack {
+            return CommandResult {
                 status: CommandStatus::Err(CommandErr::OutOfRange),
-                unit_hp_changes: vec![
-                    (attacker.id, attacker.health),
-                    (defender.id, defender.health),
-                ],
+                data: ResultData::Attack {
+                    unit_hp_changes: vec![
+                        (attacker.id, attacker.health),
+                        (defender.id, defender.health),
+                    ],
+                },
             };
         }
 
@@ -348,12 +362,14 @@ impl ScenarioState {
 
         attacker.has_attacked = true;
 
-        let command_result = CommandResult::Attack {
+        let command_result = CommandResult {
             status: CommandStatus::Ok,
-            unit_hp_changes: vec![
-                (attacker.id, attacker.health),
-                (defender.id, defender.health),
-            ],
+            data: ResultData::Attack {
+                unit_hp_changes: vec![
+                    (attacker.id, attacker.health),
+                    (defender.id, defender.health),
+                ],
+            },
         };
 
         self.units.retain(|unit| unit.health > 0.0);
@@ -365,9 +381,11 @@ impl ScenarioState {
         let attacker = self.get_unit(attacker_id).unwrap();
 
         if attacker.team != self.active_team {
-            return CommandResult::Attack {
+            return CommandResult {
                 status: CommandStatus::Err(CommandErr::WrongTeam),
-                unit_hp_changes: vec![],
+                data: ResultData::AttackGround {
+                    unit_hp_changes: vec![],
+                },
             };
         }
 
@@ -376,10 +394,12 @@ impl ScenarioState {
             Delivery::Splash(splash) => {
                 let tile_in_range = check_range_to_tile(attacker, &tile);
                 println!("{:?}", tile_in_range);
-                if !tile_in_range {
-                    return CommandResult::AttackGround {
+                if (!tile_in_range) {
+                    return CommandResult {
                         status: CommandStatus::Err(CommandErr::OutOfRange),
-                        unit_hp_changes: vec![],
+                        data: ResultData::AttackGround {
+                            unit_hp_changes: vec![],
+                        },
                     };
                 }
 
@@ -413,14 +433,19 @@ impl ScenarioState {
                     unit_hp_changes.push((attacker_id, 0.0));
                 }
 
-                CommandResult::AttackGround {
+                let attacker = self.get_unit_mut(attacker_id).unwrap();
+                attacker.has_attacked = true;
+
+                CommandResult {
                     status: CommandStatus::Ok,
-                    unit_hp_changes,
+                    data: ResultData::AttackGround { unit_hp_changes },
                 }
             }
-            _ => CommandResult::AttackGround {
+            _ => CommandResult {
                 status: CommandStatus::Err(CommandErr::NotImplemented),
-                unit_hp_changes: vec![],
+                data: ResultData::AttackGround {
+                    unit_hp_changes: vec![],
+                },
             },
         }
     }
@@ -433,10 +458,14 @@ impl ScenarioState {
             unit.has_attacked = false;
             unit.has_moved = false;
         }
-        return CommandResult::EndTurn {
+        return CommandResult {
             status: CommandStatus::Ok,
-            new_active_team,
+            data: ResultData::EndTurn { new_active_team },
         };
+    }
+
+    pub fn get_unit_mut(&mut self, unit_id: UnitId) -> Option<&mut Unit> {
+        self.units.iter_mut().find(|u| u.id == unit_id)
     }
 
     pub fn get_two_units_mut(
@@ -666,7 +695,7 @@ impl ScenarioState {
 
                 actions.push(UnitAction::Attack);
 
-                if !unit.has_moved {
+                if (!unit.has_moved) {
                     actions.push(UnitAction::Move);
                 }
                 return actions;

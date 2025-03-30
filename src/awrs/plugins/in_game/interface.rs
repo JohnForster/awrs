@@ -1,4 +1,4 @@
-use advance_craft_engine::{Command, CommandResult, CommandStatus, Tile as EngineTile};
+use advance_craft_engine::{Command, CommandResult, CommandStatus, ResultData, Tile as EngineTile};
 use bevy::prelude::*;
 
 use crate::awrs::{
@@ -58,29 +58,26 @@ impl From<&Tile> for EngineTile {
 
 impl From<CommandResult> for ActionResultEvent {
     fn from(command_result: CommandResult) -> ActionResultEvent {
-        match command_result {
-            CommandResult::Move { status: _, tiles } => ActionResultEvent::MoveResult(
+        match command_result.data {
+            ResultData::Move { tiles } => ActionResultEvent::MoveResult(
                 tiles
                     .iter()
                     .map(|EngineTile { x, y }| Tile { x: *x, y: *y })
                     .collect(),
             ),
-            CommandResult::Attack {
-                status: _,
+            ResultData::Attack {
                 unit_hp_changes: unit_hp,
             } => ActionResultEvent::AttackResult(
                 unit_hp.iter().map(|(id, hp)| (UnitId(*id), *hp)).collect(),
             ),
-            CommandResult::AttackGround {
-                status: _,
+            ResultData::AttackGround {
                 unit_hp_changes: unit_hp,
             } => ActionResultEvent::AttackResult(
                 unit_hp.iter().map(|(id, hp)| (UnitId(*id), *hp)).collect(),
             ),
-            CommandResult::EndTurn {
-                status: _,
-                new_active_team,
-            } => ActionResultEvent::EndTurnResult(new_active_team),
+            ResultData::EndTurn { new_active_team } => {
+                ActionResultEvent::EndTurnResult(new_active_team)
+            }
         }
     }
 }
@@ -255,49 +252,42 @@ fn translate_websocket_message(
     mut ev_ws_message: EventReader<ReceiveWebsocketMessageEvent>,
     mut ev_action_result: EventWriter<ActionResultEvent>,
     mut _scenario_state: ResMut<ScenarioState>,
+    game_type: Res<GameType>,
 ) {
     for event in ev_ws_message.read() {
         let message = event.try_into_data::<ServerToClient>().unwrap();
+        let metadata = match *game_type {
+            GameType::Online(ref metadata) => metadata,
+            _ => continue,
+        };
         match message {
             ServerToClient::CommandResult {
-                game_id: _,
+                game_id,
                 ref result,
-            } => match result {
-                CommandResult::Move { status, tiles: _ } => match status {
-                    CommandStatus::Ok => {
-                        ev_action_result.send(ActionResultEvent::from(result.clone()));
-                    }
-                    _ => todo!(),
-                },
-                CommandResult::Attack {
-                    status,
-                    unit_hp_changes,
-                } => match status {
-                    CommandStatus::Ok => {
-                        ev_action_result.send(ActionResultEvent::from(result.clone()));
-                    }
-                    _ => todo!(),
-                },
-                CommandResult::AttackGround {
-                    status,
-                    unit_hp_changes,
-                } => match status {
-                    CommandStatus::Ok => {
-                        ev_action_result.send(ActionResultEvent::from(result.clone()));
-                    }
-                    _ => todo!(),
-                },
-                CommandResult::EndTurn {
-                    status,
-                    new_active_team,
-                } => match status {
-                    CommandStatus::Ok => {
-                        ev_action_result.send(ActionResultEvent::from(result.clone()));
-                    }
-                    _ => todo!(),
-                },
-            },
+            }
+            | ServerToClient::GameUpdate {
+                game_id,
+                ref result,
+            } => {
+                if game_id == metadata.game_id {
+                    handle_command_result(&mut ev_action_result, result)
+                } else {
+                    warn!("Received CommandResult for wrong game_id");
+                }
+            }
             _ => {}
         }
+    }
+}
+
+fn handle_command_result(
+    ev_action_result: &mut EventWriter<'_, ActionResultEvent>,
+    result: &CommandResult,
+) {
+    match result.status {
+        CommandStatus::Ok | CommandStatus::Partial => {
+            ev_action_result.send(ActionResultEvent::from(result.clone()));
+        }
+        _ => {}
     }
 }

@@ -26,4 +26,11 @@ impl GameType {
     pub fn new_online(game_id: Uuid, team_id: TeamID) -> Self {
         GameType::Online(OnlineMetadata { game_id, team_id })
     }
+
+    pub fn is_online(&self) -> bool {
+        match self {
+            GameType::Online(_) => true,
+            GameType::Offline => false,
+        }
+    }
 }
