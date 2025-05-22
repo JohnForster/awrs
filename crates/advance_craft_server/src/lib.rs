@@ -9,6 +9,13 @@ pub type GameID = Uuid;
 pub type PlayerID = SocketAddr; // Temporary 
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct OpenGameInfo {
+    pub id: GameID,
+    pub scenario_state: ScenarioState,
+    pub players: Vec<(PlayerID, TeamID)>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ClientToServer {
     CreateGame {
         // Map, rules etc.
@@ -23,6 +30,9 @@ pub enum ClientToServer {
     },
     Test {
         message: String,
+    },
+    ListGames {
+        // Filter rules?
     },
 }
 
@@ -44,6 +54,9 @@ pub enum ServerToClient {
     CommandResult {
         game_id: GameID,
         result: CommandResult,
+    },
+    GamesList {
+        games: Vec<OpenGameInfo>,
     },
     GameUpdate {
         game_id: GameID,

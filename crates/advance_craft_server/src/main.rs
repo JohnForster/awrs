@@ -69,7 +69,7 @@ async fn main() -> Result<(), IoError> {
     let listener = try_socket.expect("Failed to bind");
     println!("Listening on: {}", addr);
 
-    // Let's spawn the handling of each connection in a separate task.
+    // Spawn the handling of each connection in a separate task.
     while let Ok((stream, addr)) = listener.accept().await {
         tokio::spawn(handle_connection(
             state.clone(),
@@ -133,6 +133,7 @@ fn handle_incoming(
         Ok(ClientToServer::Test { message }) => ServerToClient::Test {
             message: format!("message received: {}", message),
         },
+        Ok(ClientToServer::ListGames {}) => handle_list_games(&game_map),
         Err(err) => {
             println!("{:?}", err);
             ServerToClient::Error {
@@ -246,6 +247,21 @@ fn handle_connect_to_game(
         scenario_state: game.scenario_state.clone(),
         team_id: team_id,
     };
+}
+
+fn handle_list_games(game_map: &GameMap) -> ServerToClient {
+    let binding = game_map.lock().unwrap();
+    let games = binding
+        .iter()
+        .filter(|(_, game)| game.started == false)
+        .map(|(id, game)| OpenGameInfo {
+            id: id.clone(),
+            scenario_state: game.scenario_state.clone(),
+            players: game.players.clone(),
+        })
+        .collect();
+
+    ServerToClient::GamesList { games }
 }
 
 fn log_message(addr: &SocketAddr, msg: &Message) {
