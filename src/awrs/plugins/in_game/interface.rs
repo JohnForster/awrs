@@ -3,7 +3,6 @@ use bevy::prelude::*;
 
 use crate::awrs::{
     constants::TILE_SIZE,
-    plugins::in_game::setup::spawn_unit,
     resources::{
         action_event::{Action, ActionEvent, ActionResultEvent, Attack},
         client::{ReceiveWebsocketMessageEvent, SendWebsocketMessageEvent},
@@ -11,7 +10,7 @@ use crate::awrs::{
         start_game::GameType,
         state::{AppState, GameState},
         tile::Tile,
-        unit::{DamageEvent, HPIndicator, Selected, UnitId},
+        unit::{DamageEvent, HPIndicator, UnitId},
     },
 };
 

@@ -7,11 +7,8 @@ use std::{
 };
 
 mod handlers;
-use handlers::*;
 
-use advance_craft_engine::{
-    Command, CommandResult, ScenarioState, TeamID, dev_helpers::new_scenario_state,
-};
+use advance_craft_engine::{Command, CommandResult, ScenarioState, TeamID};
 use advance_craft_server::*;
 use futures_channel::mpsc::{TrySendError, UnboundedSender, unbounded};
 use futures_util::{StreamExt, future, pin_mut, stream::TryStreamExt};
@@ -27,9 +24,9 @@ type GameMap = Arc<Mutex<HashMap<GameID, Game>>>;
 type PlayerMap = Arc<Mutex<HashMap<PlayerID, Player>>>;
 
 struct Player {
-    id: PlayerID,
-    socket_addr: SocketAddr,
-    game_id: GameID, // For now, assume player can only be in one game at a time.
+    _id: PlayerID,
+    _socket_addr: SocketAddr,
+    _game_id: GameID, // For now, assume player can only be in one game at a time.
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

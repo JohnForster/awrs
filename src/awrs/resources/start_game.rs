@@ -19,15 +19,18 @@ pub enum GameType {
 #[derive(Debug, Clone, Copy)]
 pub struct OnlineMetadata {
     pub game_id: Uuid,
-    pub team_id: TeamID,
+    pub _team_id: TeamID,
 }
 
 impl GameType {
     pub fn new_online(game_id: Uuid, team_id: TeamID) -> Self {
-        GameType::Online(OnlineMetadata { game_id, team_id })
+        GameType::Online(OnlineMetadata {
+            game_id,
+            _team_id: team_id,
+        })
     }
 
-    pub fn is_online(&self) -> bool {
+    pub fn _is_online(&self) -> bool {
         match self {
             GameType::Online(_) => true,
             GameType::Offline => false,

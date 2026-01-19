@@ -1,7 +1,6 @@
 use advance_craft_engine::dev_helpers::new_scenario_state;
 use advance_craft_server::{ClientToServer, ServerToClient};
 use bevy::prelude::*;
-use uuid::Uuid;
 
 use crate::awrs::{
     register_inputs::InputEvent,

@@ -44,9 +44,9 @@ fn main() {
             AWRSPlugin,
         ))
         .insert_resource(AppConfig {
-            window_width: args.window_width,
-            window_height: args.window_height,
-            server_address: args.server_address,
+            _window_width: args.window_width,
+            _window_height: args.window_height,
+            _server_address: args.server_address,
             game_id: args.game_id.and_then(|id| id.parse().ok()),
         })
         .run();

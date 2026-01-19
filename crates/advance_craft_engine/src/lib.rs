@@ -398,7 +398,7 @@ impl ScenarioState {
             Delivery::Splash(splash) => {
                 let tile_in_range = check_range_to_tile(attacker, &tile);
                 println!("{:?}", tile_in_range);
-                if (!tile_in_range) {
+                if !tile_in_range {
                     return CommandResult {
                         status: CommandStatus::Err(CommandErr::OutOfRange),
                         data: ResultData::AttackGround {
@@ -699,7 +699,7 @@ impl ScenarioState {
 
                 actions.push(UnitAction::Attack);
 
-                if (!unit.has_moved) {
+                if !unit.has_moved {
                     actions.push(UnitAction::Move);
                 }
                 return actions;
