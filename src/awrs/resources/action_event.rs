@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::{tile::Tile, unit::UnitId};
 
-use advance_craft_engine::UnitHp;
+use advance_craft_engine::{Unit, UnitHp};
 
 // Do we _need_ a wrapper here? Can the event be the enum?
 #[derive(Event)]
@@ -37,6 +37,6 @@ pub enum Attack {
 #[derive(Event)]
 pub enum ActionResultEvent {
     AttackResult(Vec<(UnitId, UnitHp)>), // Include ammo in this struct?
-    MoveResult(Vec<Tile>),
+    MoveResult(Unit, Vec<Tile>),
     EndTurnResult(u32),
 }

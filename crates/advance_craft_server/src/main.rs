@@ -6,6 +6,9 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+mod handlers;
+use handlers::*;
+
 use advance_craft_engine::{
     Command, CommandResult, ScenarioState, TeamID, dev_helpers::new_scenario_state,
 };
@@ -30,7 +33,7 @@ struct Player {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct Game {
+pub struct Game {
     id: GameID,
     scenario_state: ScenarioState,
     players: Vec<(PlayerID, TeamID)>,
@@ -123,17 +126,17 @@ fn handle_incoming(
 ) -> future::Ready<Result<(), tokio_tungstenite::tungstenite::Error>> {
     log_message(addr, &msg);
     let outgoing_message = match parse_incoming_message(&msg) {
-        Ok(ClientToServer::CreateGame {}) => handle_create_game(&game_map),
+        Ok(ClientToServer::CreateGame {}) => handlers::create_game(&game_map),
         Ok(ClientToServer::ConnectToGame { game_id, team_id }) => {
-            handle_connect_to_game(&game_map, &game_id, addr, team_id)
+            handlers::connect_to_game(&game_map, &game_id, addr, team_id)
         }
         Ok(ClientToServer::InGameCommand { game_id, command }) => {
-            handle_game_command(&game_map, &game_id, command, addr)
+            handlers::game_command(&game_map, &game_id, command, addr)
         }
         Ok(ClientToServer::Test { message }) => ServerToClient::Test {
             message: format!("message received: {}", message),
         },
-        Ok(ClientToServer::ListGames {}) => handle_list_games(&game_map),
+        Ok(ClientToServer::ListGames {}) => handlers::list_games(&game_map),
         Err(err) => {
             println!("{:?}", err);
             ServerToClient::Error {
@@ -169,99 +172,6 @@ fn update_other_players(
         };
         send_response(&message, player_id, peer_map).unwrap();
     }
-}
-
-fn handle_create_game(game_map: &GameMap) -> ServerToClient {
-    let scenario_state = new_scenario_state();
-    let game = Game::new(scenario_state);
-
-    game_map
-        .lock()
-        .unwrap()
-        .insert(game.id.clone(), game.clone());
-
-    return ServerToClient::CreateGameResult {
-        game_id: game.id,
-        scenario_state: game.scenario_state,
-    };
-}
-
-fn handle_game_command(
-    game_map: &GameMap,
-    game_id: &GameID,
-    command: Command,
-    issuing_player: &PlayerID,
-) -> ServerToClient {
-    let mut binding = game_map.lock().unwrap();
-    let game = match binding.get_mut(game_id) {
-        None => return ServerToClient::new_error(format!("No game found with id {}", game_id)),
-        Some(v) => v,
-    };
-
-    // TODO
-    // Check if game is active
-    // Check if it is the player's turn
-    let (_, issuing_team) = game
-        .players
-        .iter()
-        .find(|(player_id, _)| player_id == issuing_player)
-        .unwrap();
-    if game.scenario_state.active_team != *issuing_team {
-        return ServerToClient::new_error("Not your turn".to_string());
-    }
-
-    if !game.started {
-        game.started = true;
-    }
-
-    let result = game.scenario_state.execute(command);
-    return ServerToClient::CommandResult {
-        game_id: game.id,
-        result,
-    };
-}
-
-fn handle_connect_to_game(
-    game_map: &GameMap,
-    game_id: &GameID,
-    player_id: &PlayerID,
-    team_id: TeamID,
-) -> ServerToClient {
-    let mut binding = game_map.lock().unwrap();
-    let game = match binding.get_mut(game_id) {
-        None => return ServerToClient::new_error(format!("No game found with id {}", game_id)),
-        Some(v) => v,
-    };
-
-    if game.players.iter().any(|(existing_player, existing_team)| {
-        existing_player == player_id || *existing_team == team_id
-    }) {
-        let err_msg = format!("Player {} or team {} already occupied ", player_id, team_id);
-        return ServerToClient::new_error(err_msg);
-    }
-
-    game.players.push((*player_id, team_id));
-
-    return ServerToClient::ConnectToGameResult {
-        game_id: *game_id,
-        scenario_state: game.scenario_state.clone(),
-        team_id: team_id,
-    };
-}
-
-fn handle_list_games(game_map: &GameMap) -> ServerToClient {
-    let binding = game_map.lock().unwrap();
-    let games = binding
-        .iter()
-        .filter(|(_, game)| game.started == false)
-        .map(|(id, game)| OpenGameInfo {
-            id: id.clone(),
-            scenario_state: game.scenario_state.clone(),
-            players: game.players.clone(),
-        })
-        .collect();
-
-    ServerToClient::GamesList { games }
 }
 
 fn log_message(addr: &SocketAddr, msg: &Message) {

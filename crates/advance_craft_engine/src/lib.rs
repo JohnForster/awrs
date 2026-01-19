@@ -194,6 +194,7 @@ pub struct CommandResult {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ResultData {
     Move {
+        unit: Unit,
         tiles: Vec<Tile>,
         // revealed: Vec<(Unit...)> etc.
     },
@@ -233,6 +234,7 @@ impl ScenarioState {
             return CommandResult {
                 status: CommandStatus::Err(CommandErr::AlreadyMoved),
                 data: ResultData::Move {
+                    unit: *unit,
                     tiles: vec![unit.position],
                 },
             };
@@ -242,6 +244,7 @@ impl ScenarioState {
             return CommandResult {
                 status: CommandStatus::Err(CommandErr::WrongTeam),
                 data: ResultData::Move {
+                    unit: *unit,
                     tiles: vec![unit.position],
                 },
             };
@@ -293,6 +296,7 @@ impl ScenarioState {
         return CommandResult {
             status,
             data: ResultData::Move {
+                unit: *unit,
                 tiles: successful_moves,
             },
         };

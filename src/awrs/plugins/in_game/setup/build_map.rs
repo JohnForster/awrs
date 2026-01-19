@@ -48,7 +48,7 @@ pub fn build_map(
 #[derive(Component)]
 struct Creep;
 
-fn spawn_creep(
+pub fn spawn_creep(
     commands: &mut Commands,
     scenario_state: &advance_craft_engine::ScenarioState,
     creep_atlas: &Res<CreepAtlas>,
@@ -84,7 +84,7 @@ fn spawn_creep(
         });
 }
 
-fn spawn_tiles(
+pub fn spawn_tiles(
     commands: &mut Commands,
     scenario_state: &advance_craft_engine::ScenarioState,
     terrain_atlas: &Res<TerrainAtlas>,
@@ -124,7 +124,7 @@ fn spawn_tiles(
         });
 }
 
-fn spawn_unit(
+pub fn spawn_unit(
     commands: &mut Commands,
     unit: &advance_craft_engine::Unit,
     unit_atlases: &Res<UnitAtlases>,
@@ -171,7 +171,7 @@ fn spawn_unit(
         });
 }
 
-fn spawn_structure(
+pub fn spawn_structure(
     commands: &mut Commands,
     structure: &advance_craft_engine::Structure,
     structure_atlases: &Res<StructureAtlases>,

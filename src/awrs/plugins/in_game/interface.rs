@@ -3,6 +3,7 @@ use bevy::prelude::*;
 
 use crate::awrs::{
     constants::TILE_SIZE,
+    plugins::in_game::setup::spawn_unit,
     resources::{
         action_event::{Action, ActionEvent, ActionResultEvent, Attack},
         client::{ReceiveWebsocketMessageEvent, SendWebsocketMessageEvent},
@@ -59,7 +60,8 @@ impl From<&Tile> for EngineTile {
 impl From<CommandResult> for ActionResultEvent {
     fn from(command_result: CommandResult) -> ActionResultEvent {
         match command_result.data {
-            ResultData::Move { tiles } => ActionResultEvent::MoveResult(
+            ResultData::Move { unit, tiles } => ActionResultEvent::MoveResult(
+                unit,
                 tiles
                     .iter()
                     .map(|EngineTile { x, y }| Tile { x: *x, y: *y })
@@ -217,24 +219,35 @@ pub fn handle_attack_result(
         }
     }
 }
+
 pub fn move_result(
     mut ev_move_result: EventReader<ActionResultEvent>,
     mut next_state: ResMut<NextState<GameState>>,
     mut q: ParamSet<(
-        Query<&mut Transform, With<Selected>>,
+        Query<(&UnitId, &mut Transform)>,
         Query<&mut Transform, With<Cursor>>,
     )>,
 ) {
     for action_result in ev_move_result.read() {
-        if let ActionResultEvent::MoveResult(tiles) = action_result {
+        if let ActionResultEvent::MoveResult(unit, tiles) = action_result {
             info!("Executing move_result");
+
             if let Some(location) = tiles.last() {
                 info!("Moving unit...");
 
-                let mut unit_query = q.p0();
-                let mut unit_transform = unit_query.single_mut();
-                unit_transform.translation.x = location.x as f32 * TILE_SIZE;
-                unit_transform.translation.y = location.y as f32 * TILE_SIZE;
+                let mut units_query = q.p0();
+                let moved_unit = units_query
+                    .iter_mut()
+                    .find(|(UnitId(id), _)| *id == unit.id);
+
+                if let Some((_, mut unit_transform)) = moved_unit {
+                    unit_transform.translation.x = location.x as f32 * TILE_SIZE;
+                    unit_transform.translation.y = location.y as f32 * TILE_SIZE;
+                }
+                {
+                    // TODO: Handle fog of war updates
+                    warn!("Could not find moved unit in move_result");
+                }
 
                 let mut cursor_query = q.p1();
                 let mut cursor_transform = cursor_query.single_mut();
